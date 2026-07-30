@@ -102,6 +102,10 @@ export default async function AdminLayout({ children }) {
                 <i className="fas fa-bars"></i>
                 Menus
               </Link>
+              <Link href="/admin/pages" className="admin-nav-link">
+                <i className="fas fa-file-alt"></i>
+                Pages
+              </Link>
               <Link href="/admin/newsletter" className="admin-nav-link">
                 <i className="fas fa-envelope"></i> Newsletter
               </Link>
