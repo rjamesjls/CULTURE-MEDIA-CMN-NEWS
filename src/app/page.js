@@ -11,27 +11,35 @@ export default async function Home() {
     .select('*')
     .eq('status', 'published')
     .order('pub_date', { ascending: false })
-    .limit(4);
+    .limit(7);
 
   return (
     <>
       {/* HERO CAROUSEL (Simplified) */}
       <section className="hero-carousel" id="heroCarousel">
         <div className="carousel-container">
-          <div className="carousel-slide active">
-            <img src={articles && articles.length > 0 ? articles[0].image_url : "/assets/hero_culture_article_1767385072389.png"} alt="À la Une" className="carousel-image" />
-            <div className="carousel-overlay">
-              <div className="container">
-                <span className="badge badge-red">À LA UNE</span>
-                <h1 className="carousel-title">{articles && articles.length > 0 ? articles[0].title : "Culture Média News"}</h1>
-                <p className="carousel-excerpt">{articles && articles.length > 0 ? (articles[0].description || '').substring(0, 150) + '...' : "Le meilleur de l'actualité culturelle"}</p>
-                {articles && articles.length > 0 && (
-                  <Link href={`/article/${articles[0].slug}`} className="btn btn-primary">Lire l'article</Link>
-                )}
+          {articles && articles.slice(0, 3).map((article, index) => (
+            <div key={article.id} className={`carousel-slide ${index === 0 ? 'active' : ''}`}>
+              <img src={article.image_url} alt={article.title} className="carousel-image" />
+              <div className="carousel-overlay">
+                <div className="container">
+                  <span className="badge badge-red">À LA UNE</span>
+                  <h1 className="carousel-title">{article.title}</h1>
+                  <p className="carousel-excerpt">{(article.description || '').substring(0, 150) + '...'}</p>
+                  <Link href={`/article/${article.slug}`} className="btn btn-primary">Lire l'article</Link>
+                </div>
               </div>
             </div>
-          </div>
+          ))}
         </div>
+        
+        {articles && articles.length > 1 && (
+          <div className="carousel-indicators">
+            {articles.slice(0, 3).map((_, index) => (
+              <button key={index} className={`indicator ${index === 0 ? 'active' : ''}`} aria-label={`Slide ${index + 1}`}></button>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* FLASH NEWS TICKER */}
@@ -64,7 +72,7 @@ export default async function Home() {
 
           <div className="grid grid-4 featured-grid">
             {error && <p>Erreur lors du chargement des articles.</p>}
-            {articles && articles.map(article => (
+            {articles && articles.slice(3).map(article => (
               <article key={article.id} className="card article-card">
                 <div className="card-image-wrapper">
                   <img src={article.image_url} alt={article.title} className="card-image" loading="lazy" style={{ height: '200px', objectFit: 'cover' }} />
