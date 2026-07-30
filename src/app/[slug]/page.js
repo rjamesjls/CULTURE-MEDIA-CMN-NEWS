@@ -44,7 +44,7 @@ export default async function CustomPage({ params }) {
           </h1>
         </header>
 
-        <div className="article-body" style={{ fontSize: '1.1rem', lineHeight: '1.8', color: 'var(--color-dark)', textAlign: 'center' }}>
+        <div className="article-body" style={{ fontSize: '1.1rem', lineHeight: '1.8', color: 'var(--color-dark)' }}>
           <div dangerouslySetInnerHTML={{ __html: page.content }} />
         </div>
       </article>
