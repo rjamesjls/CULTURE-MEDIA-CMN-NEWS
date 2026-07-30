@@ -21,6 +21,11 @@ const FontWeightStyle = new StyleAttributor("font-weight", "font-weight", {
 });
 Quill.register(FontWeightStyle, true);
 
+// Configure Custom Icons so they actually appear in the toolbar
+const icons = Quill.import("ui/icons");
+icons.customColor = `<span style="font-size:12px; font-weight:bold; color:#ef4444;">Texte🎨</span>`;
+icons.customBgColor = `<span style="font-size:12px; font-weight:bold; color:#854d0e;">Fond🎨</span>`;
+
 export default function CustomEditor({ value, onChange, style, className }) {
   const modules = useMemo(
     () => ({
@@ -114,36 +119,22 @@ export default function CustomEditor({ value, onChange, style, className }) {
         .ql-snow .ql-toolbar button.ql-customColor {
           width: auto !important;
           padding: 0 8px !important;
-          background-color: #f3f4f6;
+          background-color: #f3f4f6 !important;
           border-radius: 4px;
           margin-right: 4px;
         }
         .ql-snow .ql-toolbar button.ql-customColor:hover {
-          background-color: #e5e7eb;
-        }
-        .ql-snow .ql-toolbar button.ql-customColor::after {
-          content: 'Texte 🎨';
-          font-weight: bold;
-          font-size: 12px;
-          color: #1f2937;
-          line-height: 24px;
+          background-color: #e5e7eb !important;
         }
         
         .ql-snow .ql-toolbar button.ql-customBgColor {
           width: auto !important;
           padding: 0 8px !important;
-          background-color: #f3f4f6;
+          background-color: #fef08a !important;
           border-radius: 4px;
         }
         .ql-snow .ql-toolbar button.ql-customBgColor:hover {
-          background-color: #e5e7eb;
-        }
-        .ql-snow .ql-toolbar button.ql-customBgColor::after {
-          content: 'Fond 🎨';
-          font-weight: bold;
-          font-size: 12px;
-          color: #1f2937;
-          line-height: 24px;
+          background-color: #fde047 !important;
         }
         
         /* Permettre à la dropdown Taille et Graisse d'être plus large */
