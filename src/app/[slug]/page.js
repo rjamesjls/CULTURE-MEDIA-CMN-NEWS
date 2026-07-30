@@ -37,7 +37,7 @@ export default async function CustomPage({ params }) {
 
   return (
     <>
-      <article className="article-container" style={{ maxWidth: '800px', margin: '40px auto', padding: '0 20px', minHeight: '60vh' }}>
+      <article className="article-container" style={{ maxWidth: '800px', margin: '140px auto 40px auto', padding: '0 20px', minHeight: '60vh' }}>
         <header className="article-header" style={{ marginBottom: '40px' }}>
           <h1 className="article-title" style={{ fontSize: '2.5rem', marginTop: '15px', fontFamily: 'var(--font-heading)' }}>
             {page.title}

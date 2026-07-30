@@ -37,7 +37,7 @@ export default async function ArticlePage({ params }) {
 
   return (
     <>
-      <article className="article-container" style={{ maxWidth: '800px', margin: '40px auto', padding: '0 20px' }}>
+      <article className="article-container" style={{ maxWidth: '800px', margin: '140px auto 40px auto', padding: '0 20px' }}>
         <header className="article-header">
           <span className="badge" style={{ background: 'var(--color-primary)', color: 'white', padding: '5px 10px', borderRadius: '4px' }}>
             {article.category}
