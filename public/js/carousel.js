@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     let currentSlide = 0;
     let autoPlayInterval;
-    const autoPlayDelay = 5000; // 5 seconds
+    const autoPlayDelay = 3000; // 3 seconds
 
     // =================================================================
     // NAVIGATION FUNCTIONS
