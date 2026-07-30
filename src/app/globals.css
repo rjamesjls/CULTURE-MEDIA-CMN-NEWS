@@ -2478,3 +2478,9 @@ body.theme-alternate .reading-progress {
   padding: 0 !important;
   display: inline !important;
 }
+
+/* Quill Editor Alignments */
+.ql-align-center { text-align: center; }
+.ql-align-right { text-align: right; }
+.ql-align-justify { text-align: justify; }
+
