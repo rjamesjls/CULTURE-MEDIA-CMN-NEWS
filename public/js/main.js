@@ -72,8 +72,7 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         const query = searchInput.value.trim();
         if (query) {
-          // Redirect to search results page
-          window.location.href = `all-articles.html?search=${encodeURIComponent(query)}`;
+          window.location.href = `/all-articles?search=${encodeURIComponent(query)}`;
         }
       }
     });

@@ -8,19 +8,30 @@ export const metadata = {
   description: 'Retrouvez tous les articles de Culture Média News.',
 };
 
-export default async function AllArticlesPage() {
-  const { data: articles, error } = await supabase
+export default async function AllArticlesPage({ searchParams }) {
+  const resolvedSearchParams = await searchParams;
+  const searchQuery = resolvedSearchParams.search || '';
+
+  let dbQuery = supabase
     .from('articles')
     .select('*')
     .eq('status', 'published')
     .order('pub_date', { ascending: false });
 
+  if (searchQuery) {
+    dbQuery = dbQuery.ilike('title', `%${searchQuery}%`);
+  }
+
+  const { data: articles, error } = await dbQuery;
+
   return (
     <div className="container" style={{ margin: '140px auto 60px auto', minHeight: '60vh' }}>
       <header className="page-header" style={{ marginBottom: '40px' }}>
-        <h1 style={{ fontSize: '2.5rem', fontFamily: 'var(--font-heading)' }}>Tous les articles</h1>
+        <h1 style={{ fontSize: '2.5rem', fontFamily: 'var(--font-heading)' }}>
+          {searchQuery ? `Recherche : "${searchQuery}"` : 'Tous les articles'}
+        </h1>
         <p style={{ color: 'var(--color-gray-600)', marginTop: '10px' }}>
-          Retrouvez ici l'intégralité de nos publications.
+          {searchQuery ? `${articles?.length || 0} résultat(s) trouvé(s)` : 'Retrouvez ici l\'intégralité de nos publications.'}
         </p>
       </header>
 
