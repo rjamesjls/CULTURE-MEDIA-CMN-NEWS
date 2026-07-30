@@ -19,7 +19,7 @@ export default async function Home() {
       <section className="hero-carousel" id="heroCarousel">
         <div className="carousel-container">
           {articles && articles.slice(0, 3).map((article, index) => (
-            <div key={article.id} className={`carousel-slide ${index === 0 ? 'active' : ''}`}>
+            <div key={article.id} className={`carousel-slide${index === 0 ? ' active' : ''}`}>
               <img src={article.image_url} alt={article.title} className="carousel-image" />
               <div className="carousel-overlay">
                 <div className="container">
@@ -36,7 +36,7 @@ export default async function Home() {
         {articles && articles.length > 1 && (
           <div className="carousel-indicators">
             {articles.slice(0, 3).map((_, index) => (
-              <button key={index} className={`indicator ${index === 0 ? 'active' : ''}`} aria-label={`Slide ${index + 1}`}></button>
+              <button key={index} className={`indicator${index === 0 ? ' active' : ''}`} aria-label={`Slide ${index + 1}`}></button>
             ))}
           </div>
         )}
