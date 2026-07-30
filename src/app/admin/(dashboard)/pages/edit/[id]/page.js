@@ -3,7 +3,8 @@ import PageForm from '../../PageForm';
 import { notFound } from 'next/navigation';
 
 export default async function EditPage({ params }) {
-  const { id } = params;
+  const resolvedParams = await params;
+  const { id } = resolvedParams;
   const supabase = await createClient();
 
   const { data: page } = await supabase
