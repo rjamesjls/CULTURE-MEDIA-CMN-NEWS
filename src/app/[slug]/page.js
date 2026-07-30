@@ -36,20 +36,18 @@ export default async function CustomPage({ params }) {
   }
 
   return (
-    <main className="container" style={{ paddingTop: '120px', paddingBottom: '60px', minHeight: '60vh', maxWidth: '800px', margin: '0 auto' }}>
-      <article>
-        <header style={{ marginBottom: '40px' }}>
-          <h1 style={{ fontFamily: 'var(--font-heading, "Playfair Display", serif)', fontSize: '42px', color: '#111827', marginBottom: '20px', lineHeight: '1.2' }}>
+    <>
+      <article className="article-container" style={{ maxWidth: '800px', margin: '40px auto', padding: '0 20px', minHeight: '60vh' }}>
+        <header className="article-header" style={{ marginBottom: '40px' }}>
+          <h1 className="article-title" style={{ fontSize: '2.5rem', marginTop: '15px', fontFamily: 'var(--font-heading)' }}>
             {page.title}
           </h1>
         </header>
 
-        <div 
-          className="article-content"
-          style={{ fontSize: '18px', lineHeight: '1.8', color: '#374151' }}
-          dangerouslySetInnerHTML={{ __html: page.content }}
-        />
+        <div className="article-body" style={{ fontSize: '1.1rem', lineHeight: '1.8', color: 'var(--color-dark)' }}>
+          <div dangerouslySetInnerHTML={{ __html: page.content }} />
+        </div>
       </article>
-    </main>
+    </>
   );
 }
