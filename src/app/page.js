@@ -1,66 +1,98 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+import { supabase } from '@/lib/supabase';
+import Link from 'next/link';
+import NewsletterForm from '@/components/NewsletterForm';
 
-export default function Home() {
+export const revalidate = 60; // Revalidate every minute
+
+export default async function Home() {
+  // Fetch latest articles
+  const { data: articles, error } = await supabase
+    .from('articles')
+    .select('*')
+    .eq('status', 'published')
+    .order('pub_date', { ascending: false })
+    .limit(4);
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.js file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <>
+      {/* HERO CAROUSEL (Simplified) */}
+      <section className="hero-carousel" id="heroCarousel">
+        <div className="carousel-container">
+          <div className="carousel-slide active">
+            <img src={articles && articles.length > 0 ? articles[0].image_url : "/assets/hero_culture_article_1767385072389.png"} alt="À la Une" className="carousel-image" />
+            <div className="carousel-overlay">
+              <div className="container">
+                <span className="badge badge-red">À LA UNE</span>
+                <h1 className="carousel-title">{articles && articles.length > 0 ? articles[0].title : "Culture Média News"}</h1>
+                <p className="carousel-excerpt">{articles && articles.length > 0 ? (articles[0].description || '').substring(0, 150) + '...' : "Le meilleur de l'actualité culturelle"}</p>
+                {articles && articles.length > 0 && (
+                  <Link href={`/article/${articles[0].slug}`} className="btn btn-primary">Lire l'article</Link>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </section>
+
+      {/* FLASH NEWS TICKER */}
+      <section className="flash-ticker" id="flashTicker">
+        <div className="ticker-container">
+          <div className="ticker-label">
+            <i className="fas fa-bolt"></i>
+            <span>FLASH INFO</span>
+          </div>
+          <div className="ticker-content">
+            <div className="ticker-track">
+              {articles && articles.map((article, i) => (
+                <span key={i} className="ticker-item">🔥 {article.title}</span>
+              ))}
+              {articles && articles.map((article, i) => (
+                <span key={`dup-${i}`} className="ticker-item">🔥 {article.title}</span>
+              ))}
+            </div>
+          </div>
         </div>
-      </main>
-    </div>
+      </section>
+
+      {/* À LA UNE SECTION */}
+      <section className="section featured-section">
+        <div className="container">
+          <div className="section-header">
+            <h2 className="section-title">Derniers Articles</h2>
+            <Link href="/faits-divers" className="section-link">Voir tout <i className="fas fa-arrow-right"></i></Link>
+          </div>
+
+          <div className="grid grid-4 featured-grid">
+            {error && <p>Erreur lors du chargement des articles.</p>}
+            {articles && articles.map(article => (
+              <article key={article.id} className="card article-card">
+                <div className="card-image-wrapper">
+                  <img src={article.image_url} alt={article.title} className="card-image" loading="lazy" style={{ height: '200px', objectFit: 'cover' }} />
+                  <span className="badge card-badge">{article.category}</span>
+                </div>
+                <div className="card-body">
+                  <h3 className="card-title">
+                    <Link href={`/article/${article.slug}`}>{article.title}</Link>
+                  </h3>
+                  <div className="card-meta">
+                    <span><i className="far fa-clock"></i> {new Date(article.pub_date).toLocaleDateString('fr-FR')}</span>
+                    <span style={{ marginLeft: '10px' }}><i className="fas fa-user"></i> {article.author}</span>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* NEWSLETTER SECTION */}
+      <section className="section newsletter-section" id="newsletter">
+        <div className="container-narrow">
+          <div className="newsletter-box" style={{ padding: '40px', backgroundColor: '#fff', borderRadius: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.05)' }}>
+            <NewsletterForm />
+          </div>
+        </div>
+      </section>
+    </>
   );
 }

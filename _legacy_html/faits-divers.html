@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Culture Média News - Votre source d'actualité culturelle et locale. News, événements, tendances et breaking news en lien avec la culture populaire.">
+    <meta name="keywords" content="culture, actualité, news, événements, musique, local, breaking news">
+    <meta name="author" content="Culture Média News">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Culture Média News - Actualité Culturelle & Locale">
+    <meta property="og:description"
+        content="Votre source d'actualité culturelle et locale. News, événements, tendances et breaking news.">
+    <meta property="og:image" content="./assets/logo.png">
+    <meta property="og:url" content="https://culturemedianews.fr">
+    <meta property="og:type" content="website">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Culture Média News">
+    <meta name="twitter:description" content="Actualité culturelle et locale">
+    <meta name="twitter:image" content="./assets/logo.png">
+
+    <title>Culture Média News - Actualité Culturelle & Locale</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;900&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="css/homepage.css">
+    <link rel="stylesheet" href="css/theme-alternate.css">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="./assets/logo.png">
+</head>
+
+<body>
+    <!-- HEADER -->
+    <header class="header" id="header">
+        <div class="header-container">
+            <a href="index.html" class="logo-link">
+                <img src="./assets/logo.png" alt="Culture Média News" class="header-logo">
+            </a>
+
+            <nav class="nav-menu" id="navMenu">
+                <a href="#" class="nav-link active">Accueil</a>
+                <a href="category.html?cat=culture" class="nav-link">Culture</a>
+                <a href="category.html?cat=musique" class="nav-link">Musique</a>
+                <a href="category.html?cat=evenements" class="nav-link">Événements</a>
+                <a href="category.html?cat=societe" class="nav-link">Société</a>
+                <a href="category.html?cat=opinion" class="nav-link">Opinion</a>
+                <a href="category.html?cat=videos" class="nav-link">Vidéos</a>
+
+                <div class="search-bar">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" placeholder="Rechercher..." class="search-input" id="searchInput">
+                </div>
+
+                <a href="#newsletter" class="btn btn-primary btn-sm">S'abonner</a>
+            </nav>
+
+            <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main content offset for fixed header -->
+    <div style="height: 70px;"></div>
+
+    <!-- HERO CAROUSEL -->
+    <section class="hero-carousel" id="heroCarousel">
+        <div class="carousel-container">
+            <div class="carousel-slide active">
+                <img src="./assets/hero_culture_article_1767385072389.png" alt="Festival Culturel 2026"
+                    class="carousel-image">
+                <div class="carousel-overlay">
+                    <div class="container">
+                        <span class="badge badge-red">À LA UNE</span>
+                        <h1 class="carousel-title">Le Festival de Jazz fait son grand retour en 2026</h1>
+                        <p class="carousel-excerpt">Après deux ans d'absence, le plus grand festival de jazz de la
+                            région revient avec une programmation exceptionnelle.</p>
+                        <a href="article.html" class="btn btn-primary">Lire l'article</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="carousel-slide">
+                <img src="./assets/hero_music_festival_1767385087697.png" alt="Concert en plein air"
+                    class="carousel-image">
+                <div class="carousel-overlay">
+                    <div class="container">
+                        <span class="badge badge-red">BREAKING NEWS</span>
+                        <h1 class="carousel-title">Concert géant : 50 000 spectateurs attendus</h1>
+                        <p class="carousel-excerpt">L'événement musical de l'année s'annonce déjà comme un succès
+                            monumental avec des artistes internationaux.</p>
+                        <a href="article.html" class="btn btn-primary">Lire l'article</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="carousel-slide">
+                <img src="./assets/local_event_news_1767385102717.png" alt="Événement local" class="carousel-image">
+                <div class="carousel-overlay">
+                    <div class="container">
+                        <span class="badge badge-red">ÉVÉNEMENTS</span>
+                        <h1 class="carousel-title">La ville lance son nouveau centre culturel</h1>
+                        <p class="carousel-excerpt">Un espace moderne de 5000m² dédié à la culture et aux arts ouvre ses
+                            portes au public.</p>
+                        <a href="article.html" class="btn btn-primary">Lire l'article</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <button class="carousel-prev" id="carouselPrev" aria-label="Article précédent">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <button class="carousel-next" id="carouselNext" aria-label="Article suivant">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+
+            <!-- Indicators -->
+            <div class="carousel-indicators">
+                <button class="indicator active" data-slide="0"></button>
+                <button class="indicator" data-slide="1"></button>
+                <button class="indicator" data-slide="2"></button>
+            </div>
+        </div>
+    </section>
+
+    <!-- FLASH NEWS TICKER -->
+    <section class="flash-ticker" id="flashTicker">
+        <div class="ticker-container">
+            <div class="ticker-label">
+                <i class="fas fa-bolt"></i>
+                <span>FLASH INFO</span>
+            </div>
+            <div class="ticker-content">
+                <div class="ticker-track">
+                    <span class="ticker-item">🔥 Nouveau single de l'artiste local en tête des charts</span>
+                    <span class="ticker-item">🎬 Festival du film indépendant : les nominations révélées</span>
+                    <span class="ticker-item">🎨 Exposition exceptionnelle au musée d'art contemporain</span>
+                    <span class="ticker-item">🎪 Cirque international : dernières places disponibles</span>
+                    <span class="ticker-item">🎵 Concert surprise ce weekend au parc central</span>
+                    <!-- Duplicate for seamless loop -->
+                    <span class="ticker-item">🔥 Nouveau single de l'artiste local en tête des charts</span>
+                    <span class="ticker-item">🎬 Festival du film indépendant : les nominations révélées</span>
+                    <span class="ticker-item">🎨 Exposition exceptionnelle au musée d'art contemporain</span>
+                    <span class="ticker-item">🎪 Cirque international : dernières places disponibles</span>
+                    <span class="ticker-item">🎵 Concert surprise ce weekend au parc central</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    
+    <section class="section featured-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Faits divers (Importés)</h2>
+            </div>
+            <div class="grid grid-4 featured-grid">
+
+                <article class="card article-card">
+                    <div class="card-image-wrapper">
+                        <img src="https://culturemedianews.fr/wp-content/uploads/2025/04/1218837-le-pape-francois-le-2-septembre-2020-au-vatican.jpg" alt="Le pape François est mort à l’âge de 88 ans" class="card-image" loading="lazy" style="height:200px; object-fit:cover;">
+                        <span class="badge card-badge">Faits divers</span>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="card-title">
+                            <a href="faits-divers-le-pape-franois-est-mort-lge-de-88-ans.html">Le pape François est mort à l’âge de 88 ans</a>
+                        </h3>
+                        <div class="card-meta">
+                            <span><i class="far fa-clock"></i> 21 April 2025</span>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="card article-card">
+                    <div class="card-image-wrapper">
+                        <img src="https://culturemedianews.fr/wp-content/uploads/2025/04/DJ-Marocaan-1-696x392-1.jpg" alt="DJ Marocaan, promoteur de la musique surinamaise, est décédé à 46 ans" class="card-image" loading="lazy" style="height:200px; object-fit:cover;">
+                        <span class="badge card-badge">Faits divers</span>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="card-title">
+                            <a href="faits-divers-dj-marocaan-promoteur-de-la-musique-surinamaise-est-dcd-46-ans.html">DJ Marocaan, promoteur de la musique surinamaise, est décédé à 46 ans</a>
+                        </h3>
+                        <div class="card-meta">
+                            <span><i class="far fa-clock"></i> 20 April 2025</span>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="card article-card">
+                    <div class="card-image-wrapper">
+                        <img src="https://culturemedianews.fr/wp-content/uploads/2024/10/Incendie.png" alt="Incendie à Albina 2, en face de Maripasoula : quatre commerces et un poste de police détruits" class="card-image" loading="lazy" style="height:200px; object-fit:cover;">
+                        <span class="badge card-badge">Faits divers</span>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="card-title">
+                            <a href="faits-divers-incendie-albina-2-en-face-de-maripasoula-quatre-commerces-et-un-poste-de-police-dtruits.html">Incendie à Albina 2, en face de Maripasoula : quatre commerces et un poste de police détruits</a>
+                        </h3>
+                        <div class="card-meta">
+                            <span><i class="far fa-clock"></i> 23 October 2024</span>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="card article-card">
+                    <div class="card-image-wrapper">
+                        <img src="https://culturemedianews.fr/wp-content/uploads/2024/10/2151142176.jpg" alt="Un homme de Guyane accusé d’abus sexuels sur de nombreuses jeunes femmes, dont des mineures. Plus de 25 victimes signalées" class="card-image" loading="lazy" style="height:200px; object-fit:cover;">
+                        <span class="badge card-badge">Faits divers</span>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="card-title">
+                            <a href="faits-divers-un-homme-de-guyane-accus-dabus-sexuels-sur-de-nombreuses-jeunes-femmes-dont-des-mineures-plus-de-25-victimes-signales.html">Un homme de Guyane accusé d’abus sexuels sur de nombreuses jeunes femmes, dont des mineures. Plus de 25 victimes signalées</a>
+                        </h3>
+                        <div class="card-meta">
+                            <span><i class="far fa-clock"></i> 22 October 2024</span>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="card article-card">
+                    <div class="card-image-wrapper">
+                        <img src="https://culturemedianews.fr/wp-content/uploads/2024/04/image.png" alt="Tragédie à St-Laurent-du-Maroni : La Pharmacienne du SDIS Assassinée dans une Attaque au Couteau" class="card-image" loading="lazy" style="height:200px; object-fit:cover;">
+                        <span class="badge card-badge">Faits divers</span>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="card-title">
+                            <a href="faits-divers-tragdie-st-laurent-du-maroni-la-pharmacienne-du-sdis-assassine-dans-une-attaque-au-couteau.html">Tragédie à St-Laurent-du-Maroni : La Pharmacienne du SDIS Assassinée dans une Attaque au Couteau</a>
+                        </h3>
+                        <div class="card-meta">
+                            <span><i class="far fa-clock"></i> 08 April 2024</span>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="card article-card">
+                    <div class="card-image-wrapper">
+                        <img src="https://culturemedianews.fr/wp-content/uploads/2024/02/Le-rappeur-francais-Mohamed-Sylla-alias-MHD-.jpg" alt="Le rappeur MHD libéré après sa condamnation pour meurtre" class="card-image" loading="lazy" style="height:200px; object-fit:cover;">
+                        <span class="badge card-badge">Faits divers</span>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="card-title">
+                            <a href="faits-divers-le-rappeur-mhd-libr-aprs-sa-condamnation-pour-meurtre.html">Le rappeur MHD libéré après sa condamnation pour meurtre</a>
+                        </h3>
+                        <div class="card-meta">
+                            <span><i class="far fa-clock"></i> 02 February 2024</span>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="card article-card">
+                    <div class="card-image-wrapper">
+                        <img src="https://culturemedianews.fr/wp-content/uploads/2024/01/Papayo.webp" alt="Saint-Laurent-du-Maroni : L’Adjoint Mickle Papayo au Cœur d’une Fusillade" class="card-image" loading="lazy" style="height:200px; object-fit:cover;">
+                        <span class="badge card-badge">Faits divers</span>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="card-title">
+                            <a href="faits-divers-saint-laurent-du-maroni-ladjoint-mickle-papayo-au-cur-dune-fusillade.html">Saint-Laurent-du-Maroni : L’Adjoint Mickle Papayo au Cœur d’une Fusillade</a>
+                        </h3>
+                        <div class="card-meta">
+                            <span><i class="far fa-clock"></i> 31 January 2024</span>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="card article-card">
+                    <div class="card-image-wrapper">
+                        <img src="https://culturemedianews.fr/wp-content/uploads/2023/11/image.jpg" alt="Protected: Catastrophe dans un match de football de championnat à Saint-Laurent du Maroni" class="card-image" loading="lazy" style="height:200px; object-fit:cover;">
+                        <span class="badge card-badge">Faits divers</span>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="card-title">
+                            <a href="faits-divers-protected-catastrophe-dans-un-match-de-football-de-championnat-saint-laurent-du-maroni.html">Protected: Catastrophe dans un match de football de championnat à Saint-Laurent du Maroni</a>
+                        </h3>
+                        <div class="card-meta">
+                            <span><i class="far fa-clock"></i> 01 December 2023</span>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="card article-card">
+                    <div class="card-image-wrapper">
+                        <img src="https://culturemedianews.fr/wp-content/uploads/2023/02/Vert-et-Noir-Naturel-Remise-en-forme-Yoga-YouTube-Video-Publicite.png" alt="Une bande de sept a tenté de cambrioler la gendarmerie de Matoury" class="card-image" loading="lazy" style="height:200px; object-fit:cover;">
+                        <span class="badge card-badge">Faits divers</span>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="card-title">
+                            <a href="faits-divers-une-bande-de-sept-a-tent-de-cambrioler-la-gendarmerie-de-matoury.html">Une bande de sept a tenté de cambrioler la gendarmerie de Matoury</a>
+                        </h3>
+                        <div class="card-meta">
+                            <span><i class="far fa-clock"></i> 27 February 2023</span>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="card article-card">
+                    <div class="card-image-wrapper">
+                        <img src="https://culturemedianews.fr/wp-content/uploads/2023/02/Air-france.png" alt="Un vol d’Air France vers Cayenne contraint à un demi-tour en raison d’une urgence médicale à bord" class="card-image" loading="lazy" style="height:200px; object-fit:cover;">
+                        <span class="badge card-badge">Faits divers</span>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="card-title">
+                            <a href="faits-divers-un-vol-dair-france-vers-cayenne-contraint-un-demi-tour-en-raison-dune-urgence-mdicale-bord.html">Un vol d’Air France vers Cayenne contraint à un demi-tour en raison d’une urgence médicale à bord</a>
+                        </h3>
+                        <div class="card-meta">
+                            <span><i class="far fa-clock"></i> 20 February 2023</span>
+                        </div>
+                    </div>
+                </article>
+
+            </div>
+        </div>
+    </section>
+<!-- DOSSIERS & ENQUÊTES -->
+    <section class="section investigations-section" style="background: var(--color-gray-100);">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Dossiers & Enquêtes</h2>
+                <a href="category.html?cat=dossiers" class="section-link">Voir tout <i
+                        class="fas fa-arrow-right"></i></a>
+            </div>
+
+            <div class="investigations-grid">
+                <!-- Featured Investigation -->
+                <article class="investigation-featured">
+                    <img src="./assets/hero_music_festival_1767385087697.png" alt="Enquête" class="investigation-image"
+                        loading="lazy">
+                    <div class="investigation-content">
+                        <span class="badge badge-red">ENQUÊTE</span>
+                        <h3 class="investigation-title">L'impact économique des festivals sur les régions</h3>
+                        <p class="investigation-excerpt">Une enquête approfondie sur les retombées économiques et
+                            sociales des grands événements culturels dans nos territoires. Comment les festivals
+                            transforment-ils l'économie locale ?</p>
+                        <div class="card-meta">
+                            <span><i class="far fa-user"></i> Équipe CMN</span>
+                            <span><i class="far fa-clock"></i> 15 min de lecture</span>
+                        </div>
+                        <a href="article.html" class="btn btn-secondary mt-3">Lire l'enquête complète</a>
+                    </div>
+                </article>
+
+                <!-- Investigation List -->
+                <div class="investigation-list">
+                    <article class="investigation-item">
+                        <div class="investigation-number">01</div>
+                        <div>
+                            <h4 class="investigation-item-title">
+                                <a href="article.html">Les coulisses de la scène musicale locale</a>
+                            </h4>
+                            <p class="investigation-item-excerpt">Immersion dans l'univers des artistes émergents de
+                                notre région.</p>
+                            <span class="card-meta"><i class="far fa-clock"></i> 12 min</span>
+                        </div>
+                    </article>
+
+                    <article class="investigation-item">
+                        <div class="investigation-number">02</div>
+                        <div>
+                            <h4 class="investigation-item-title">
+                                <a href="article.html">Culture et numérique : la révolution en marche</a>
+                            </h4>
+                            <p class="investigation-item-excerpt">Comment le digital transforme notre façon de consommer
+                                la culture.</p>
+                            <span class="card-meta"><i class="far fa-clock"></i> 10 min</span>
+                        </div>
+                    </article>
+
+                    <article class="investigation-item">
+                        <div class="investigation-number">03</div>
+                        <div>
+                            <h4 class="investigation-item-title">
+                                <a href="article.html">Le street art s'empare de nos quartiers</a>
+                            </h4>
+                            <p class="investigation-item-excerpt">Reportage sur l'explosion de l'art urbain dans la
+                                ville.</p>
+                            <span class="card-meta"><i class="far fa-clock"></i> 8 min</span>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- VIDEOS SECTION -->
+    <section class="section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Vidéos & Podcasts</h2>
+                <a href="category.html?cat=videos" class="section-link">Voir tout <i class="fas fa-arrow-right"></i></a>
+            </div>
+
+            <div class="grid grid-3">
+                <div class="video-card">
+                    <div class="video-thumbnail">
+                        <img src="./assets/hero_culture_article_1767385072389.png" alt="Video" loading="lazy">
+                        <div class="video-play-button">
+                            <i class="fas fa-play"></i>
+                        </div>
+                        <span class="video-duration">12:34</span>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="card-title">
+                            <a href="#">Reportage : Dans les coulisses du festival</a>
+                        </h3>
+                        <div class="card-meta">
+                            <span><i class="far fa-eye"></i> 15k vues</span>
+                            <span><i class="far fa-clock"></i> Il y a 1 jour</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="video-card">
+                    <div class="video-thumbnail">
+                        <img src="./assets/hero_music_festival_1767385087697.png" alt="Video" loading="lazy">
+                        <div class="video-play-button">
+                            <i class="fas fa-play"></i>
+                        </div>
+                        <span class="video-duration">8:15</span>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="card-title">
+                            <a href="#">Interview : L'artiste qui buzz sur TikTok</a>
+                        </h3>
+                        <div class="card-meta">
+                            <span><i class="far fa-eye"></i> 25k vues</span>
+                            <span><i class="far fa-clock"></i> Il y a 2 jours</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="video-card">
+                    <div class="video-thumbnail">
+                        <img src="./assets/local_event_news_1767385102717.png" alt="Video" loading="lazy">
+                        <div class="video-play-button">
+                            <i class="fas fa-play"></i>
+                        </div>
+                        <span class="video-duration">15:42</span>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="card-title">
+                            <a href="#">Podcast : Les nouveaux lieux culturels</a>
+                        </h3>
+                        <div class="card-meta">
+                            <span><i class="far fa-eye"></i> 8k vues</span>
+                            <span><i class="far fa-clock"></i> Il y a 3 jours</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- NEWSLETTER SECTION -->
+    <section class="section newsletter-section" id="newsletter">
+        <div class="container-narrow">
+            <div class="newsletter-box">
+                <h2 class="newsletter-title">Restez informé·e !</h2>
+                <p class="newsletter-description">Recevez chaque semaine notre sélection d'articles, événements et
+                    actualités culturelles directement dans votre boîte mail.</p>
+
+                <form class="newsletter-form" id="newsletterForm">
+                    <div class="form-group">
+                        <input type="email" class="input" placeholder="Votre adresse email" required
+                            id="newsletterEmail">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="far fa-envelope"></i> S'abonner gratuitement
+                    </button>
+                </form>
+
+                <p class="newsletter-privacy">
+                    <i class="fas fa-lock"></i> Vos données sont protégées. Pas de spam, désinscription facile.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <!-- About -->
+                <div class="footer-section">
+                    <h4>Culture Média News</h4>
+                    <p style="color: var(--color-gray-400); margin-bottom: var(--space-3);">
+                        Votre source d'actualité culturelle et locale. News, événements, tendances et breaking news.
+                    </p>
+                    <div class="social-icons">
+                        <a href="#" class="social-icon" aria-label="Facebook">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="social-icon" aria-label="Twitter">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="social-icon" aria-label="Instagram">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" class="social-icon" aria-label="YouTube">
+                            <i class="fab fa-youtube"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Rubriques -->
+                <div class="footer-section">
+                    <h4>Rubriques</h4>
+                    <div class="footer-links">
+                        <a href="category.html?cat=culture" class="footer-link">Culture</a>
+                        <a href="category.html?cat=musique" class="footer-link">Musique</a>
+                        <a href="category.html?cat=evenements" class="footer-link">Événements</a>
+                        <a href="category.html?cat=societe" class="footer-link">Société</a>
+                        <a href="category.html?cat=opinion" class="footer-link">Opinion</a>
+                        <a href="category.html?cat=videos" class="footer-link">Vidéos</a>
+                    </div>
+                </div>
+
+                <!-- À propos -->
+                <div class="footer-section">
+                    <h4>À propos</h4>
+                    <div class="footer-links">
+                        <a href="about.html" class="footer-link">Qui sommes-nous</a>
+                        <a href="about.html#team" class="footer-link">L'équipe</a>
+                        <a href="contact.html" class="footer-link">Contact</a>
+                        <a href="contact.html#submit" class="footer-link">Proposer un article</a>
+                        <a href="all-articles.html" class="footer-link">Tous les articles</a>
+                    </div>
+                </div>
+
+                <!-- Légal -->
+                <div class="footer-section">
+                    <h4>Informations légales</h4>
+                    <div class="footer-links">
+                        <a href="legal.html" class="footer-link">Mentions légales</a>
+                        <a href="legal.html#privacy" class="footer-link">Politique de confidentialité</a>
+                        <a href="legal.html#cookies" class="footer-link">Gestion des cookies</a>
+                        <a href="legal.html#cgv" class="footer-link">CGV</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2026 Culture Média News. Tous droits réservés.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="js/main.js"></script>
+    <script src="js/carousel.js"></script>
+    <script src="js/theme-switcher.js"></script>
+</body>
+
+</html>
