@@ -103,27 +103,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
   
-  // =================================================================
-  // LAZY LOADING IMAGES
-  // =================================================================
-  const lazyImages = document.querySelectorAll('img[loading="lazy"]');
-  
-  if ('IntersectionObserver' in window) {
-    const imageObserver = new IntersectionObserver(function(entries, observer) {
-      entries.forEach(function(entry) {
-        if (entry.isIntersecting) {
-          const img = entry.target;
-          img.src = img.dataset.src || img.src;
-          img.classList.add('fade-in');
-          observer.unobserve(img);
-        }
-      });
-    });
-    
-    lazyImages.forEach(function(img) {
-      imageObserver.observe(img);
-    });
-  }
+  // Legacy Lazy Loading block removed to prevent React Hydration errors
   
   // =================================================================
   // SMOOTH SCROLL TO ANCHORS
