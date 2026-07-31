@@ -141,10 +141,10 @@ export default function DashboardClient({ initialStats, latestArticles }) {
           <div style={styles.card}>
             <h3 style={{ ...styles.cardTitle, textAlign: 'center', marginBottom: '20px' }}>Your Current Stats</h3>
             <div style={styles.statsGrid}>
-              <StatSquare icon="fa-eye" color="#4f46e5" bg="#eef2ff" value="2.9m" label="Pageviews" />
-              <StatSquare icon="fa-user" color="#f59e0b" bg="#fef3c7" value="872k" label="Visitors" />
+              <StatSquare icon="fa-eye" color="#4f46e5" bg="#eef2ff" value={initialStats.totalViews?.toLocaleString('fr-FR') || "0"} label="Pageviews" />
+              <StatSquare icon="fa-heart" color="#f59e0b" bg="#fef3c7" value={initialStats.totalLikes?.toLocaleString('fr-FR') || "0"} label="Likes" />
               <StatSquare icon="fa-file-alt" color="#ef4444" bg="#fee2e2" value={initialStats.totalArticles} label="Posts" />
-              <StatSquare icon="fa-comment" color="#10b981" bg="#d1fae5" value="325" label="Comments" />
+              <StatSquare icon="fa-comment" color="#10b981" bg="#d1fae5" value={initialStats.totalComments?.toLocaleString('fr-FR') || "0"} label="Comments" />
             </div>
           </div>
 

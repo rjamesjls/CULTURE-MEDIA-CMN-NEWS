@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import ArticleInteractions from '@/components/ArticleInteractions';
 import ArticleComments from '@/components/ArticleComments';
+import ViewTracker from '@/components/ViewTracker';
 
 export const revalidate = 60; // Revalidate every minute
 
@@ -65,6 +66,7 @@ export default async function ArticlePage({ params }) {
 
   return (
     <div className="article-layout-wrapper" style={{ maxWidth: '1400px', margin: '140px auto 40px auto', padding: '0 20px', display: 'flex', gap: '40px', alignItems: 'flex-start' }}>
+      <ViewTracker articleId={article.id} />
       
       {/* Left Sidebar: Latest Articles */}
       <aside className="sidebar-latest" style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '20px', position: 'sticky', top: '100px' }}>
