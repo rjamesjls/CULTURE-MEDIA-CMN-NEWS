@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 import FlashTicker from './FlashTicker';
+import SubscribeButton from './SubscribeButton';
 
 export default async function Header() {
   const { data: menus } = await supabase
@@ -15,9 +16,32 @@ export default async function Header() {
       <header className="header" id="header" suppressHydrationWarning>
         <FlashTicker />
         <div className="header-container">
-          <Link href="/" className="logo-link">
-            {/* Si Next.js Image pose problème avec le chemin local sans width/height, on utilise img classique ou on configure */}
+          <Link href="/" className="logo-link" style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none' }}>
             <img src="/assets/logo.png" alt="Culture Média News" className="header-logo" />
+            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <span style={{ 
+                fontFamily: 'var(--font-heading)', 
+                fontSize: '22px', 
+                fontWeight: '900', 
+                color: 'var(--color-white, #FFFFFF)', 
+                letterSpacing: '-0.5px',
+                whiteSpace: 'nowrap',
+                lineHeight: '1.1'
+              }}>
+                CULTURE <span style={{ color: 'var(--color-primary)' }}>MEDIA</span>
+              </span>
+              <span style={{
+                fontFamily: 'var(--font-body)',
+                fontSize: '13px',
+                fontWeight: '400',
+                color: 'var(--color-white, #FFFFFF)',
+                letterSpacing: '1px',
+                whiteSpace: 'nowrap',
+                opacity: 0.8
+              }}>
+                CMN NEWS
+              </span>
+            </div>
           </Link>
 
           <nav className="nav-menu" id="navMenu">
@@ -32,7 +56,15 @@ export default async function Header() {
               <input type="text" placeholder="Rechercher..." className="search-input" id="searchInput" />
             </div>
 
-            <a href="#newsletter" className="btn btn-primary btn-sm">S'abonner</a>
+            <Link href="/pro" style={{ 
+              background: '#F59E0B', color: '#FFF', fontWeight: 'bold', 
+              padding: '4px 10px', borderRadius: '12px', textDecoration: 'none', 
+              fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' 
+            }}>
+              Espace PRO
+            </Link>
+
+            <SubscribeButton />
           </nav>
 
           <button className="menu-toggle" id="menuToggle" aria-label="Toggle menu">

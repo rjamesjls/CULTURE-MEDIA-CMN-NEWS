@@ -42,7 +42,7 @@ export default async function AllArticlesPage({ searchParams }) {
           {articles.map((article) => (
             <div key={article.id} className="article-card" style={{ border: '1px solid var(--color-gray-200)', borderRadius: '8px', overflow: 'hidden' }}>
               <div style={{ height: '200px', overflow: 'hidden' }}>
-                <img src={article.image_url} alt={article.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <img src={article.image_url || 'https://images.unsplash.com/photo-1620287341056-49a2f1ab2fdc?q=80&w=600&auto=format&fit=crop'} alt={article.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </div>
               <div style={{ padding: '20px' }}>
                 <span className="badge" style={{ background: 'var(--color-primary)', color: 'white', padding: '3px 8px', borderRadius: '4px', fontSize: '0.8rem' }}>

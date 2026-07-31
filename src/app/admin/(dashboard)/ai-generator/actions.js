@@ -11,15 +11,23 @@ const model = genAI.getGenerativeModel({
   model: 'gemini-flash-latest',
 });
 
-export async function generateArticleDraft(subject, context) {
+export async function generateArticleDraft(formData) {
   const profile = await getUserProfile();
   if (!profile || (profile.role !== 'admin' && profile.role !== 'author')) {
     throw new Error('Non autorisé');
   }
 
-  const prompt = `
+  const subject = formData.get('subject');
+  const context = formData.get('context') || '';
+  const links = formData.get('links') || '';
+  const files = formData.getAll('files') || [];
+
+  if (!subject) throw new Error("Le sujet est requis.");
+
+  let prompt = `
 Tu es un journaliste professionnel expert et rigoureux. Écris un article complet et formaté en HTML sur le sujet suivant: "${subject}".
 ${context ? `Prends en compte ce contexte supplémentaire: "${context}"` : ''}
+${links ? `Voici des liens ou sources supplémentaires à intégrer de manière pertinente dans l'article ou dans la section sources : "${links}"` : ''}
 
 Ton article doit être structuré, engageant et prêt à être publié sur un média en ligne.
 
@@ -34,6 +42,22 @@ IMPORTANT: Tu dois renvoyer la réponse **UNIQUEMENT** sous la forme d'un objet 
 }
 `;
 
+  const promptParts = [prompt];
+
+  // Ajouter les fichiers (images/pdf) s'ils existent
+  for (const file of files) {
+    if (file && file.size > 0) {
+      const buffer = await file.arrayBuffer();
+      const base64 = Buffer.from(buffer).toString('base64');
+      promptParts.push({
+        inlineData: {
+          data: base64,
+          mimeType: file.type
+        }
+      });
+    }
+  }
+
   try {
     const modelsToTry = ['gemini-flash-latest', 'gemini-2.5-flash', 'gemini-3.5-flash', 'gemini-2.0-flash'];
     let lastError;
@@ -41,7 +65,7 @@ IMPORTANT: Tu dois renvoyer la réponse **UNIQUEMENT** sous la forme d'un objet 
     for (const modelName of modelsToTry) {
       try {
         const currentModel = genAI.getGenerativeModel({ model: modelName });
-        const result = await currentModel.generateContent(prompt);
+        const result = await currentModel.generateContent(promptParts);
         let text = result.response.text();
         
         text = text.replace(/^```json/i, '').replace(/^```/i, '').replace(/```$/i, '').trim();

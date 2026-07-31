@@ -120,3 +120,43 @@ export async function updateFlashInfo(id, newContent) {
 
   return { success: true };
 }
+
+export async function generateFlashInfo(subject) {
+  const profile = await getUserProfile();
+  if (!profile || (profile.role !== 'admin' && profile.role !== 'author')) {
+    throw new Error('Non autorisé');
+  }
+
+  const { GoogleGenerativeAI } = await import('@google/generative-ai');
+  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+  const prompt = `
+Tu es un rédacteur d'une chaîne d'information en continu. Rédige un flash info court et percutant (1 à 2 phrases maximum, environ 100-150 caractères) à partir du sujet suivant : "${subject}"
+
+Le style doit être factuel, concis, et adapté à un bandeau défilant de breaking news.
+
+IMPORTANT: Renvoie **UNIQUEMENT** le texte du flash info, sans guillemets, sans préfixe "FLASH :" ni "Breaking :". Juste le texte brut.
+`;
+
+  try {
+    const modelsToTry = ['gemini-flash-latest', 'gemini-2.5-flash', 'gemini-3.5-flash', 'gemini-2.0-flash'];
+    let lastError;
+
+    for (const modelName of modelsToTry) {
+      try {
+        const currentModel = genAI.getGenerativeModel({ model: modelName });
+        const result = await currentModel.generateContent(prompt);
+        const text = result.response.text().trim();
+        return { success: true, data: text };
+      } catch (err) {
+        lastError = err;
+        if (!err.message.includes("503") && !err.message.includes("429")) {
+          throw err;
+        }
+      }
+    }
+    throw lastError;
+  } catch (error) {
+    return { success: false, error: error.message || "Erreur IA." };
+  }
+}

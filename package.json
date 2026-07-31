@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@google-analytics/data": "^6.1.0",
     "@google/generative-ai": "^0.24.1",
     "@supabase/ssr": "^0.12.4",
     "@supabase/supabase-js": "^2.111.0",
@@ -18,7 +19,9 @@
     "pg": "^8.22.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
+    "react-pageflip": "^2.0.3",
     "react-quill-new": "^3.8.3",
+    "recharts": "^3.10.1",
     "slugify": "^1.6.9"
   },
   "devDependencies": {

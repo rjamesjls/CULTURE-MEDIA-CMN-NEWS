@@ -14,7 +14,7 @@ export async function POST(req) {
       return new Response(JSON.stringify({ error: "Le prompt est requis." }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
-    const modelsToTry = ['gemini-flash-latest', 'gemini-1.5-flash', 'gemini-2.5-flash'];
+    const modelsToTry = ['gemini-1.5-flash-latest', 'gemini-flash-latest', 'gemini-2.5-flash'];
     let lastError;
 
     for (const modelName of modelsToTry) {
@@ -29,7 +29,7 @@ export async function POST(req) {
       } catch (err) {
         lastError = err;
         console.error(`Erreur avec ${modelName}:`, err.message);
-        if (!err.message.includes("503") && !err.message.includes("429")) {
+        if (!err.message.includes("503") && !err.message.includes("429") && !err.message.includes("404")) {
           throw err;
         }
       }

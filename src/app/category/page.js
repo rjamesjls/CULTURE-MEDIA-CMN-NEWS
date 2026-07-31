@@ -74,7 +74,7 @@ export default async function CategoryPage({ searchParams }) {
             {articles && articles.map(article => (
               <article key={article.id} className="card article-card">
                 <div className="card-image-wrapper">
-                  <img src={article.image_url} alt={article.title} className="card-image" loading="lazy" style={{ height: '200px', objectFit: 'cover' }} />
+                  <img src={article.image_url || 'https://images.unsplash.com/photo-1620287341056-49a2f1ab2fdc?q=80&w=600&auto=format&fit=crop'} alt={article.title} className="card-image" loading="lazy" style={{ height: '200px', objectFit: 'cover' }} />
                   <span className="badge card-badge">{article.category}</span>
                 </div>
                 <div className="card-body">

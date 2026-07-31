@@ -127,3 +127,25 @@ export async function deleteCategory(id) {
   revalidatePath('/admin/categories');
   return { success: true };
 }
+
+export async function toggleArticleStatus(id, currentStatus) {
+  const { getUserProfile } = await import('@/utils/supabase/auth');
+  const { createClient } = await import('@/utils/supabase/server');
+  
+  const profile = await getUserProfile();
+  if (!profile) throw new Error("Non autorisé");
+
+  const newStatus = currentStatus === 'published' ? 'draft' : 'published';
+  const supabaseServer = await createClient();
+  
+  const { error } = await supabaseServer
+    .from('articles')
+    .update({ status: newStatus })
+    .eq('id', id);
+    
+  if (error) throw new Error("Erreur lors de la mise à jour du statut");
+  
+  revalidatePath('/admin/articles');
+  revalidatePath('/');
+  return newStatus;
+}

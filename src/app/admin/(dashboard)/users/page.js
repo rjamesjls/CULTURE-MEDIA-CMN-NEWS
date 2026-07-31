@@ -22,14 +22,14 @@ export default async function UsersPage() {
         <h1 className="admin-title">Gestion des utilisateurs</h1>
       </div>
 
-      <div style={{ overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '20px' }}>
+      <div className="admin-table-container" style={{ marginTop: '20px' }}>
+        <table className="admin-table">
           <thead>
-            <tr style={{ backgroundColor: '#f9fafb', borderBottom: '2px solid #e5e7eb' }}>
-              <th style={{ padding: '12px', textAlign: 'left' }}>Email</th>
-              <th style={{ padding: '12px', textAlign: 'left' }}>Rôle</th>
-              <th style={{ padding: '12px', textAlign: 'left' }}>Statut</th>
-              <th style={{ padding: '12px', textAlign: 'left' }}>Actions</th>
+            <tr>
+              <th>Email</th>
+              <th>Rôle</th>
+              <th>Statut</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>

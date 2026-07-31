@@ -8,8 +8,13 @@ export default function TickerClock() {
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
-      // On affiche l'heure au format HH:MM (ex: 14:30)
-      setTime(now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }));
+      const dateOpts = { day: 'numeric', month: 'short', year: 'numeric' };
+      const timeOpts = { hour: '2-digit', minute: '2-digit', second: '2-digit' };
+      
+      const dateStr = now.toLocaleDateString('fr-FR', dateOpts);
+      const timeStr = now.toLocaleTimeString('fr-FR', timeOpts);
+      
+      setTime(`${dateStr} - ${timeStr}`);
     };
     
     updateTime();

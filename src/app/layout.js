@@ -1,6 +1,7 @@
 import './globals.css';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import NewsletterPopup from '@/components/NewsletterPopup';
 
 export const metadata = {
   title: 'Culture Média News',
@@ -18,6 +19,7 @@ export default function RootLayout({ children }) {
         <Header />
         <main>{children}</main>
         <Footer />
+        <NewsletterPopup />
         {/* Scripts globaux */}
         <script src="/js/main.js" defer></script>
         <script src="/js/carousel.js" defer></script>

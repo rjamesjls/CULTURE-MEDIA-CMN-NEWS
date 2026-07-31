@@ -55,6 +55,7 @@ export default async function Footer() {
               <a href="/about" className="footer-link">Qui sommes-nous</a>
               <a href="/contact" className="footer-link">Contact</a>
               <a href="/all-articles" className="footer-link">Tous les articles</a>
+              <Link href="/pro" className="footer-link" style={{ color: 'var(--color-primary)', fontWeight: 'bold' }}>⭐ Portail des Entreprises (PRO)</Link>
             </div>
           </div>
 

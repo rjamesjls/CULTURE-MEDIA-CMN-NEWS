@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import DeleteButton from './DeleteButton';
+import ToggleStatusButton from './ToggleStatusButton';
 import { LayoutGrid, List, Search } from 'lucide-react';
 
 export default function ArticleList({ initialArticles, categories }) {
@@ -79,18 +80,18 @@ export default function ArticleList({ initialArticles, categories }) {
 
       {/* Affichage Vue Grille */}
       {view === 'grid' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '24px' }}>
           {filteredArticles.map((article) => (
-            <div key={article.id} style={{ border: '1px solid #e5e7eb', borderRadius: '8px', overflow: 'hidden', backgroundColor: '#fff', display: 'flex', flexDirection: 'column' }}>
-              <div style={{ height: '160px', backgroundColor: '#f3f4f6', backgroundImage: article.image_url ? `url(${article.image_url})` : 'none', backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
+            <div key={article.id} className="article-grid-card">
+              <div style={{ height: '180px', backgroundColor: '#f3f4f6', backgroundImage: article.image_url ? `url(${article.image_url})` : 'none', backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
                 {!article.image_url && <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#9ca3af' }}>Sans image</div>}
                 
                 {article.status === 'draft' ? (
-                  <span style={{ position: 'absolute', top: '10px', left: '10px', backgroundColor: '#fef3c7', color: '#92400e', padding: '2px 8px', fontSize: '12px', borderRadius: '4px', fontWeight: 'bold' }}>
-                    BROUILLON
+                  <span className="admin-badge badge-yellow" style={{ position: 'absolute', top: '12px', left: '12px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+                    Brouillon
                   </span>
                 ) : (
-                  <span style={{ position: 'absolute', top: '10px', left: '10px', backgroundColor: 'rgba(0,0,0,0.7)', color: 'white', padding: '2px 8px', fontSize: '12px', borderRadius: '4px' }}>
+                  <span className="admin-badge badge-blue" style={{ position: 'absolute', top: '12px', left: '12px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
                     {article.category}
                   </span>
                 )}
@@ -106,18 +107,27 @@ export default function ArticleList({ initialArticles, categories }) {
                     <span style={{ fontSize: '12px', color: '#6b7280' }}>{new Date(article.pub_date).toLocaleDateString('fr-FR')}</span>
                     <span style={{ fontSize: '11px', color: '#9ca3af' }}>{article.author}</span>
                   </div>
-                  <div style={{ display: 'flex', gap: '5px' }}>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <Link 
+                      href={`/admin/articles/${article.id}/insights`}
+                      className="btn-icon" 
+                      title="Statistiques (Insights)" 
+                      style={{ padding: '6px', backgroundColor: '#eff6ff', color: '#2563eb' }}
+                    >
+                      <i className="fas fa-chart-bar"></i>
+                    </Link>
                     <Link 
                       href={`/admin/articles/${article.id}/instagram`}
                       className="btn-icon" 
                       title="Créer Post Instagram" 
-                      style={{ padding: '4px 8px', backgroundColor: '#fdf4ff', color: '#c026d3', border: '1px solid #f0abfc' }}
+                      style={{ padding: '6px', backgroundColor: '#fdf4ff', color: '#c026d3' }}
                     >
                       <i className="fab fa-instagram"></i>
                     </Link>
-                    <Link href={`/admin/articles/edit/${article.id}`} className="btn-icon btn-edit" title="Modifier" style={{ padding: '4px 8px' }}>
+                    <Link href={`/admin/articles/edit/${article.id}`} className="btn-icon btn-edit" title="Modifier" style={{ padding: '6px' }}>
                       <i className="fas fa-pen"></i>
                     </Link>
+                    <ToggleStatusButton id={article.id} currentStatus={article.status} />
                     <DeleteButton id={article.id} />
                   </div>
                 </div>
@@ -150,15 +160,23 @@ export default function ArticleList({ initialArticles, categories }) {
                   </td>
                   <td>
                     {article.status === 'draft' ? (
-                      <span className="badge" style={{ backgroundColor: '#fef3c7', color: '#92400e', padding: '2px 8px', fontSize: '12px', borderRadius: '4px', fontWeight: 'bold' }}>Brouillon</span>
+                      <span className="admin-badge badge-yellow">Brouillon</span>
                     ) : (
-                      <span className="badge" style={{ backgroundColor: '#d1fae5', color: '#065f46', padding: '2px 8px', fontSize: '12px', borderRadius: '4px' }}>Publié</span>
+                      <span className="admin-badge badge-green">Publié</span>
                     )}
                   </td>
                   <td>{article.author}</td>
                   <td>{new Date(article.pub_date).toLocaleDateString('fr-FR')}</td>
                   <td>
                     <div className="admin-actions" style={{ justifyContent: 'flex-end', display: 'flex', gap: '5px' }}>
+                      <Link 
+                        href={`/admin/articles/${article.id}/insights`}
+                        className="btn-icon" 
+                        title="Statistiques (Insights)" 
+                        style={{ padding: '4px 8px', backgroundColor: '#eff6ff', color: '#2563eb', border: '1px solid #bfdbfe' }}
+                      >
+                        <i className="fas fa-chart-bar"></i>
+                      </Link>
                       <Link 
                         href={`/admin/articles/${article.id}/instagram`}
                         className="btn-icon" 
@@ -170,6 +188,7 @@ export default function ArticleList({ initialArticles, categories }) {
                       <Link href={`/admin/articles/edit/${article.id}`} className="btn-icon btn-edit" title="Modifier">
                         <i className="fas fa-pen"></i>
                       </Link>
+                      <ToggleStatusButton id={article.id} currentStatus={article.status} />
                       <DeleteButton id={article.id} />
                     </div>
                   </td>

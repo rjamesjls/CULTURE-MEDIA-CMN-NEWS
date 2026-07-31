@@ -17,6 +17,18 @@ export default function AIGeneratorClient() {
     if (prefillSubject) {
       setSubject(prefillSubject);
     }
+    
+    const ideaId = searchParams.get('idea_id');
+    if (ideaId) {
+      import('../ideas/actions').then(({ getIdeaById }) => {
+        getIdeaById(ideaId).then(idea => {
+          if (idea) {
+            setSubject(idea.title);
+            setContext(idea.description || '');
+          }
+        });
+      });
+    }
   }, [searchParams]);
   
   // Etat de génération
@@ -45,7 +57,11 @@ export default function AIGeneratorClient() {
     setErrorMsg('');
     
     try {
-      const res = await generateArticleDraft(subject, context);
+      const formData = new FormData();
+      formData.append('subject', subject);
+      if (context) formData.append('context', context);
+
+      const res = await generateArticleDraft(formData);
       if (res.success) {
         setDraft(res.data);
       } else {

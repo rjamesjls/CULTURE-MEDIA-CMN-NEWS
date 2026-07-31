@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getFlashInfos, addFlashInfo, toggleFlashInfoActive, deleteFlashInfo, updateFlashInfo } from './actions';
+import { getFlashInfos, addFlashInfo, toggleFlashInfoActive, deleteFlashInfo, updateFlashInfo, generateFlashInfo } from './actions';
 import { useRouter } from 'next/navigation';
+import SpeechButton from '@/components/SpeechButton';
 
 export default function FlashInfosPage() {
   const router = useRouter();
@@ -11,6 +12,11 @@ export default function FlashInfosPage() {
   const [newFlash, setNewFlash] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+
+  // AI states
+  const [aiSubject, setAiSubject] = useState('');
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
+  const [aiError, setAiError] = useState('');
 
   // Pour l'édition en ligne
   const [editingId, setEditingId] = useState(null);
@@ -42,11 +48,29 @@ export default function FlashInfosPage() {
     const res = await addFlashInfo(newFlash);
     if (res.success) {
       setNewFlash('');
-      fetchFlashes(); // refresh list
+      fetchFlashes();
     } else {
       setErrorMsg(res.error);
     }
     setIsSubmitting(false);
+  };
+
+  const handleGenerateAI = async () => {
+    if (!aiSubject.trim()) {
+      setAiError("Décrivez le sujet du flash info.");
+      return;
+    }
+    setIsGeneratingAI(true);
+    setAiError('');
+
+    const res = await generateFlashInfo(aiSubject);
+    if (res.success) {
+      setNewFlash(res.data);
+      setAiSubject('');
+    } else {
+      setAiError(res.error);
+    }
+    setIsGeneratingAI(false);
   };
 
   const handleToggle = async (id, currentStatus) => {
@@ -68,9 +92,14 @@ export default function FlashInfosPage() {
     }
   };
 
-  const handleGenerateArticle = (content) => {
-    // Redirige vers le générateur IA en passant le contenu du flash en paramètre d'URL
-    router.push(`/admin/ai-generator?subject=${encodeURIComponent(content)}`);
+  const handleConvertToArticle = (content) => {
+    const aiDraft = {
+      title: '',
+      description: '',
+      aiContext: `Voici un flash info diffusé sur notre bandeau d'actualités. Rédige un article complet et détaillé à partir de ce flash :\n\n"${content}"`,
+    };
+    sessionStorage.setItem('ai_draft', JSON.stringify(aiDraft));
+    router.push('/admin/articles/new');
   };
 
   const startEditing = (flash) => {
@@ -117,19 +146,61 @@ export default function FlashInfosPage() {
         </div>
       )}
 
+      {/* Bloc IA */}
+      <div style={{ backgroundColor: '#fdf4ff', border: '1px solid #f0abfc', borderRadius: '10px', padding: '20px', marginBottom: '20px' }}>
+        <h3 style={{ margin: '0 0 12px 0', color: '#a21caf', fontSize: '15px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <i className="fas fa-magic"></i> Générer un flash info avec l'IA
+        </h3>
+        {aiError && (
+          <div style={{ padding: '8px 12px', backgroundColor: '#fee2e2', color: '#b91c1c', borderRadius: '4px', marginBottom: '10px', fontSize: '13px' }}>
+            {aiError}
+          </div>
+        )}
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <div style={{ flex: 1, position: 'relative' }}>
+            <input
+              type="text"
+              className="admin-form-control"
+              style={{ margin: 0, borderColor: '#e879f9', paddingRight: '45px' }}
+              placeholder="Décrivez le sujet (ex: Manifestation à Paris, Résultats élections municipales...)"
+              value={aiSubject}
+              onChange={e => setAiSubject(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleGenerateAI(); } }}
+            />
+            <div style={{ position: 'absolute', top: '50%', right: '8px', transform: 'translateY(-50%)' }}>
+              <SpeechButton onTranscript={(text) => setAiSubject(prev => prev ? prev + ' ' + text : text)} />
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={handleGenerateAI}
+            disabled={isGeneratingAI}
+            className="admin-btn"
+            style={{ backgroundColor: '#a21caf', color: '#fff', whiteSpace: 'nowrap', opacity: isGeneratingAI ? 0.7 : 1 }}
+          >
+            {isGeneratingAI ? <><i className="fas fa-spinner fa-spin"></i> Génération...</> : <><i className="fas fa-magic"></i> Générer</>}
+          </button>
+        </div>
+      </div>
+
       {/* Formulaire d'ajout */}
       <form onSubmit={handleAdd} style={{ backgroundColor: '#f9fafb', padding: '20px', borderRadius: '8px', border: '1px solid #e5e7eb', marginBottom: '30px' }}>
         <h3 style={{ fontSize: '18px', marginBottom: '15px' }}>Diffuser une nouvelle Flash Info</h3>
         <div style={{ display: 'flex', gap: '10px' }}>
-          <input 
-            type="text" 
-            className="admin-form-control" 
-            style={{ flex: 1, margin: 0 }}
-            placeholder="Ex: Alerte Météo : Vigilance rouge sur 5 départements du Sud-Est à partir de 18h..."
-            value={newFlash}
-            onChange={e => setNewFlash(e.target.value)}
-            required
-          />
+          <div style={{ flex: 1, position: 'relative' }}>
+            <input 
+              type="text" 
+              className="admin-form-control" 
+              style={{ margin: 0, paddingRight: '45px' }}
+              placeholder="Ex: Alerte Météo : Vigilance rouge sur 5 départements du Sud-Est à partir de 18h..."
+              value={newFlash}
+              onChange={e => setNewFlash(e.target.value)}
+              required
+            />
+            <div style={{ position: 'absolute', top: '50%', right: '8px', transform: 'translateY(-50%)' }}>
+              <SpeechButton onTranscript={(text) => setNewFlash(prev => prev ? prev + ' ' + text : text)} />
+            </div>
+          </div>
           <button 
             type="submit" 
             className="admin-btn admin-btn-primary"
@@ -227,11 +298,11 @@ export default function FlashInfosPage() {
                         </button>
                         <button 
                           className="admin-btn"
-                          style={{ fontSize: '12px', padding: '4px 8px', backgroundColor: '#eff6ff', color: '#1e40af', border: '1px solid #bfdbfe' }}
-                          onClick={() => handleGenerateArticle(flash.content)}
-                          title="Créer un article complet via l'IA"
+                          style={{ fontSize: '12px', padding: '4px 8px', backgroundColor: '#fdf4ff', color: '#a21caf', border: '1px solid #f0abfc' }}
+                          onClick={() => handleConvertToArticle(flash.content)}
+                          title="Convertir en article complet"
                         >
-                          <i className="fas fa-magic"></i> Générer Article
+                          <i className="fas fa-newspaper"></i> → Article
                         </button>
                         <button 
                           className="admin-btn-icon" 

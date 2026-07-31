@@ -9,7 +9,7 @@ async function applyMigration() {
     await client.connect();
     console.log('Connected to DB');
     
-    const sql = fs.readFileSync('./supabase/migrations/20260730000000_add_drafts_authors_newsletter.sql', 'utf8');
+    const sql = fs.readFileSync('./supabase/migrations/add_social_features.sql', 'utf8');
     await client.query(sql);
     
     console.log('Migration applied successfully');

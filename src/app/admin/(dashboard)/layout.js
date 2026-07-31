@@ -80,6 +80,9 @@ export default async function AdminLayout({ children }) {
           <Link href="/admin" className="admin-nav-link">
             <i className="fas fa-chart-line"></i> Dashboard
           </Link>
+          <Link href="/admin/ideas" className="admin-nav-link">
+            <i className="fas fa-lightbulb"></i> Idées de contenu
+          </Link>
           <Link href="/admin/articles" className="admin-nav-link">
             <i className="fas fa-newspaper"></i> Articles
           </Link>
@@ -90,6 +93,22 @@ export default async function AdminLayout({ children }) {
 
           <Link href="/admin/ai-generator" className="admin-nav-link">
             <i className="fas fa-robot"></i> Générateur IA
+          </Link>
+
+          <Link href="/admin/instagram" className="admin-nav-link" style={{ background: 'linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)', color: 'white', fontWeight: 'bold' }}>
+            <i className="fab fa-instagram"></i> Posts Instagram
+          </Link>
+
+          <Link href="/admin/interviews" className="admin-nav-link">
+            <i className="fas fa-microphone-alt"></i> Interviews
+          </Link>
+
+          <Link href="/admin/companies" className="admin-nav-link">
+            <i className="fas fa-building"></i> Entreprises PRO
+          </Link>
+          
+          <Link href="/admin/magazines" className="admin-nav-link" style={{ background: 'linear-gradient(45deg, #10b981 0%, #059669 100%)', color: 'white', fontWeight: 'bold' }}>
+            <i className="fas fa-book-open"></i> Magazines
           </Link>
           
           {isAdmin && (
@@ -108,6 +127,12 @@ export default async function AdminLayout({ children }) {
               </Link>
               <Link href="/admin/newsletter" className="admin-nav-link">
                 <i className="fas fa-envelope"></i> Newsletter
+              </Link>
+              <Link href="/admin/messages" className="admin-nav-link">
+                <i className="fas fa-envelope-open-text"></i> Messages
+              </Link>
+              <Link href="/admin/comments" className="admin-nav-link">
+                <i className="fas fa-comments"></i> Commentaires
               </Link>
               <Link href="/admin/users" className="admin-nav-link">
                 <i className="fas fa-users"></i> Utilisateurs

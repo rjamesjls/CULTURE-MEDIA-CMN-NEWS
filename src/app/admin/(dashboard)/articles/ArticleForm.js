@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { saveArticle } from '../../actions';
+import { generateArticleDraft } from '../ai-generator/actions';
+import SpeechButton from '@/components/SpeechButton';
 import 'react-quill-new/dist/quill.snow.css';
 
 const CustomEditor = dynamic(() => import('../../../../components/CustomEditor'), {
@@ -12,6 +14,7 @@ const CustomEditor = dynamic(() => import('../../../../components/CustomEditor')
 
 export default function ArticleForm({ initialData = null, categories = [] }) {
   const router = useRouter();
+  const imageInputRef = useRef(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -23,15 +26,76 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
   const [imageUrl, setImageUrl] = useState(initialData?.image_url || '');
   const [content, setContent] = useState(initialData?.content || '');
   
+  // AI Generation States
+  const [aiPanelOpen, setAiPanelOpen] = useState(false);
+  const [aiSubject, setAiSubject] = useState('');
+  const [aiContext, setAiContext] = useState('');
+  const [aiLinks, setAiLinks] = useState('');
+  const [aiFiles, setAiFiles] = useState([]);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [aiError, setAiError] = useState('');
+
+  const handleGenerateAI = async () => {
+    if (!aiSubject.trim()) {
+      setAiError("Veuillez entrer un sujet.");
+      return;
+    }
+    
+    // Anti-écrasement
+    if (content.trim() || title.trim() || description.trim()) {
+      if (!window.confirm("Attention : Générer un article va remplacer le titre, la description et le contenu actuels de votre formulaire. Voulez-vous continuer ?")) {
+        return;
+      }
+    }
+
+    setIsGenerating(true);
+    setAiError('');
+
+    try {
+      const formData = new FormData();
+      formData.append('subject', aiSubject);
+      if (aiContext) formData.append('context', aiContext);
+      if (aiLinks) formData.append('links', aiLinks);
+      
+      aiFiles.forEach(file => {
+        formData.append('files', file);
+      });
+
+      const result = await generateArticleDraft(formData);
+      
+      if (result.success && result.data) {
+        setTitle(result.data.title || '');
+        setDescription(result.data.description || '');
+        setContent(result.data.content || '');
+        setAiPanelOpen(false); // Fermer le panneau après succès
+      } else {
+        setAiError(result.error || "Erreur lors de la génération.");
+      }
+    } catch (err) {
+      setAiError("Une erreur inattendue est survenue.");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+  
   useEffect(() => {
     if (!initialData) {
       const aiDraftJson = sessionStorage.getItem('ai_draft');
       if (aiDraftJson) {
         try {
           const parsed = JSON.parse(aiDraftJson);
-          if (parsed.title) setTitle(parsed.title);
+          
+          // Case 1: Regular AI draft (title, desc, content)
+          if (parsed.title && !parsed.aiContext) setTitle(parsed.title);
           if (parsed.description) setDescription(parsed.description);
           if (parsed.content) setContent(parsed.content);
+          
+          // Case 2: Interview to Article context
+          if (parsed.aiContext) {
+            setAiSubject(parsed.title || "Interview");
+            setAiContext(parsed.aiContext);
+            setAiPanelOpen(true);
+          }
           
           // Clean up so it doesn't stay forever
           sessionStorage.removeItem('ai_draft');
@@ -42,8 +106,7 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
     }
   }, [initialData]);
   
-  // To track which button was clicked
-  const [submitStatus, setSubmitStatus] = useState('published');
+  // We will extract the status directly from the submitter button
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -52,7 +115,8 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
 
     const formData = new FormData(e.target);
     formData.append('content', content);
-    formData.append('status', submitStatus);
+    const status = e.nativeEvent?.submitter?.value || 'published';
+    formData.set('status', status);
 
     if (initialData?.id) {
       formData.append('id', initialData.id);
@@ -70,9 +134,141 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
   return (
     <div style={{ display: 'flex', gap: '30px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
       
-      {/* Colonne Formulaire */}
       <div style={{ flex: '1 1 500px' }}>
         <form onSubmit={handleSubmit} className="admin-form-container" style={{ margin: 0 }}>
+          
+          {/* --- BLOC IA INTÉGRÉ --- */}
+          <div style={{ marginBottom: '25px', backgroundColor: '#fdf4ff', border: '1px solid #f0abfc', borderRadius: '8px', padding: '15px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }} onClick={() => setAiPanelOpen(!aiPanelOpen)}>
+              <h4 style={{ margin: 0, color: '#a21caf', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '15px' }}>
+                <i className="fas fa-magic"></i> Générer l'article avec l'IA
+              </h4>
+              <i className={`fas fa-chevron-${aiPanelOpen ? 'up' : 'down'}`} style={{ color: '#c026d3' }}></i>
+            </div>
+            
+            {aiPanelOpen && (
+              <div style={{ marginTop: '15px', borderTop: '1px solid #f5d0fe', paddingTop: '15px' }}>
+                {aiError && (
+                  <div style={{ padding: '10px', backgroundColor: '#fee2e2', color: '#b91c1c', borderRadius: '4px', marginBottom: '10px', fontSize: '13px' }}>
+                    {aiError}
+                  </div>
+                )}
+                <div className="admin-form-group">
+                  <label className="admin-form-label" style={{ color: '#86198f', fontSize: '13px' }}>Sujet de l'article *</label>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <input type="text" className="admin-form-control" value={aiSubject} onChange={(e) => setAiSubject(e.target.value)} placeholder="Ex: L'histoire du Château de Versailles" style={{ borderColor: '#e879f9', flex: 1 }} />
+                    <SpeechButton onTranscript={(text) => setAiSubject(prev => prev ? prev + ' ' + text : text)} />
+                  </div>
+                </div>
+                <div className="admin-form-row">
+                  <div className="admin-form-group">
+                    <label className="admin-form-label" style={{ color: '#86198f', fontSize: '13px' }}>Contexte (Optionnel)</label>
+                    <div style={{ position: 'relative' }}>
+                      <textarea className="admin-form-control" value={aiContext} onChange={(e) => setAiContext(e.target.value)} placeholder="Ex: Adopte un ton formel..." rows="2" style={{ borderColor: '#e879f9', paddingRight: '50px' }}></textarea>
+                      <div style={{ position: 'absolute', top: '6px', right: '6px' }}>
+                        <SpeechButton onTranscript={(text) => setAiContext(prev => prev ? prev + ' ' + text : text)} />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="admin-form-group">
+                    <label className="admin-form-label" style={{ color: '#86198f', fontSize: '13px' }}>Liens à inclure (Optionnel)</label>
+                    <textarea className="admin-form-control" value={aiLinks} onChange={(e) => setAiLinks(e.target.value)} placeholder="Ex: https://wikipedia.org/..." rows="2" style={{ borderColor: '#e879f9' }}></textarea>
+                  </div>
+                </div>
+                <div className="admin-form-group">
+                  <label className="admin-form-label" style={{ color: '#86198f', fontSize: '13px' }}>Photos ou PDF (Optionnel)</label>
+                  <div 
+                    onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      const droppedFiles = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/') || f.type === 'application/pdf');
+                      if (droppedFiles.length > 0) setAiFiles(prev => [...prev, ...droppedFiles]);
+                    }}
+                    onPaste={(e) => {
+                      const items = e.clipboardData?.items;
+                      if (!items) return;
+                      const newFiles = [];
+                      for (let i = 0; i < items.length; i++) {
+                        if (items[i].kind === 'file') {
+                          const file = items[i].getAsFile();
+                          if (file && (file.type.startsWith('image/') || file.type === 'application/pdf')) {
+                            newFiles.push(file);
+                          }
+                        }
+                      }
+                      if (newFiles.length > 0) setAiFiles(prev => [...prev, ...newFiles]);
+                    }}
+                    style={{ 
+                      border: '2px dashed #e879f9', 
+                      borderRadius: '8px', 
+                      padding: '20px', 
+                      textAlign: 'center',
+                      backgroundColor: '#fdf4ff',
+                      cursor: 'pointer',
+                      position: 'relative',
+                      outline: 'none'
+                    }}
+                    tabIndex="0"
+                    onClick={() => document.getElementById('ai-file-upload').click()}
+                  >
+                    <input 
+                      id="ai-file-upload"
+                      type="file" 
+                      multiple 
+                      accept="image/*,application/pdf"
+                      style={{ display: 'none' }}
+                      onChange={(e) => {
+                        if (e.target.files.length > 0) {
+                          setAiFiles(prev => [...prev, ...Array.from(e.target.files)]);
+                        }
+                      }} 
+                    />
+                    <i className="fas fa-cloud-upload-alt" style={{ fontSize: '24px', color: '#c026d3', marginBottom: '10px' }}></i>
+                    <div style={{ color: '#86198f', fontSize: '14px', fontWeight: '500' }}>
+                      Cliquez, glissez-déposez ou collez (Ctrl+V) vos fichiers ici
+                    </div>
+                    <small style={{ color: '#a21caf', fontSize: '12px' }}>Images et PDF acceptés</small>
+                  </div>
+                  
+                  {aiFiles.length > 0 && (
+                    <div style={{ marginTop: '10px', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                      {aiFiles.map((file, idx) => (
+                        <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '5px', backgroundColor: '#fae8ff', color: '#86198f', padding: '4px 10px', borderRadius: '15px', fontSize: '12px', border: '1px solid #f0abfc' }}>
+                          <i className={file.type.includes('pdf') ? "fas fa-file-pdf" : "fas fa-image"}></i>
+                          <span style={{ maxWidth: '150px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{file.name}</span>
+                          <i 
+                            className="fas fa-times" 
+                            style={{ cursor: 'pointer', marginLeft: '5px' }}
+                            onClick={() => setAiFiles(aiFiles.filter((_, i) => i !== idx))}
+                          ></i>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <button 
+                  type="button" 
+                  onClick={handleGenerateAI}
+                  disabled={isGenerating}
+                  className="admin-btn"
+                  style={{ backgroundColor: '#a21caf', color: '#fff', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', opacity: isGenerating ? 0.7 : 1 }}
+                >
+                  {isGenerating ? (
+                    <>
+                      <i className="fas fa-spinner fa-spin"></i> Génération en cours (10 à 30s)...
+                    </>
+                  ) : (
+                    <>
+                      <i className="fas fa-magic"></i> Lancer la génération
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
+          {/* --- FIN BLOC IA --- */}
+
           {errorMsg && (
             <div style={{ padding: '15px', backgroundColor: '#fee2e2', color: '#b91c1c', borderRadius: '6px', marginBottom: '20px' }}>
               {errorMsg}
@@ -122,21 +318,79 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
 
           <div className="admin-form-row">
             <div className="admin-form-group">
-              <label className="admin-form-label">Image (Upload optionnel)</label>
-              <input 
-                type="file" 
-                name="image_file" 
-                accept="image/*"
-                className="admin-form-control"
-                style={{ padding: '7px' }}
-                onChange={(e) => {
-                  if (e.target.files && e.target.files[0]) {
+              <label className="admin-form-label">Image de couverture (Upload optionnel)</label>
+              <div 
+                onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  const file = Array.from(e.dataTransfer.files).find(f => f.type.startsWith('image/'));
+                  if (file) {
+                    if (imageInputRef.current) {
+                      const dt = new DataTransfer();
+                      dt.items.add(file);
+                      imageInputRef.current.files = dt.files;
+                    }
                     const reader = new FileReader();
-                    reader.onload = (e) => setImageUrl(e.target.result);
-                    reader.readAsDataURL(e.target.files[0]);
+                    reader.onload = (ev) => setImageUrl(ev.target.result);
+                    reader.readAsDataURL(file);
                   }
                 }}
-              />
+                onPaste={(e) => {
+                  const items = e.clipboardData?.items;
+                  if (!items) return;
+                  for (let i = 0; i < items.length; i++) {
+                    if (items[i].kind === 'file') {
+                      const file = items[i].getAsFile();
+                      if (file && file.type.startsWith('image/')) {
+                        if (imageInputRef.current) {
+                          const dt = new DataTransfer();
+                          dt.items.add(file);
+                          imageInputRef.current.files = dt.files;
+                        }
+                        const reader = new FileReader();
+                        reader.onload = (ev) => setImageUrl(ev.target.result);
+                        reader.readAsDataURL(file);
+                        break;
+                      }
+                    }
+                  }
+                }}
+                style={{ 
+                  border: '2px dashed #d1d5db', 
+                  borderRadius: '8px', 
+                  padding: '20px', 
+                  textAlign: 'center',
+                  backgroundColor: '#f9fafb',
+                  cursor: 'pointer',
+                  position: 'relative',
+                  outline: 'none',
+                  transition: 'border-color 0.2s'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--color-primary)'}
+                onMouseLeave={(e) => e.currentTarget.style.borderColor = '#d1d5db'}
+                tabIndex="0"
+                onClick={() => imageInputRef.current?.click()}
+              >
+                <input 
+                  ref={imageInputRef}
+                  type="file" 
+                  name="image_file" 
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      const reader = new FileReader();
+                      reader.onload = (ev) => setImageUrl(ev.target.result);
+                      reader.readAsDataURL(e.target.files[0]);
+                    }
+                  }}
+                />
+                <i className="fas fa-image" style={{ fontSize: '24px', color: '#9ca3af', marginBottom: '10px' }}></i>
+                <div style={{ color: '#4b5563', fontSize: '14px', fontWeight: '500' }}>
+                  Cliquez, glissez-déposez ou collez (Ctrl+V) votre image ici
+                </div>
+              </div>
             </div>
 
             <div className="admin-form-group">
@@ -176,20 +430,22 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
           <div style={{ display: 'flex', gap: '15px', marginTop: '20px', borderTop: '1px solid #e5e7eb', paddingTop: '20px', flexWrap: 'wrap' }}>
             <button 
               type="submit" 
+              name="status"
+              value="published"
               className="admin-btn admin-btn-primary" 
               disabled={isSubmitting}
-              onClick={() => setSubmitStatus('published')}
             >
-              {isSubmitting && submitStatus === 'published' ? 'Enregistrement...' : 'Publier'}
+              {isSubmitting ? 'Enregistrement...' : 'Publier'}
             </button>
             <button 
               type="submit" 
+              name="status"
+              value="draft"
               className="admin-btn" 
               style={{ backgroundColor: '#fef3c7', color: '#92400e', border: '1px solid #fde68a' }}
               disabled={isSubmitting}
-              onClick={() => setSubmitStatus('draft')}
             >
-              {isSubmitting && submitStatus === 'draft' ? 'Enregistrement...' : 'Enregistrer le brouillon'}
+              {isSubmitting ? 'Enregistrement...' : (initialData?.status === 'published' ? 'Repasser en brouillon' : 'Enregistrer le brouillon')}
             </button>
             <button type="button" onClick={() => router.push('/admin/articles')} className="admin-btn" style={{ backgroundColor: '#e5e7eb', color: '#374151', marginLeft: 'auto' }}>
               Annuler

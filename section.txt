@@ -1,0 +1,100 @@
+            {/* Section Publication Meta */}
+            <div style={{ marginBottom: "20px", paddingBottom: "20px", borderBottom: "1px solid #e5e7eb", display: "flex", flexDirection: "column", gap: "10px" }}>
+              <div style={{ fontWeight: "600", fontSize: "14px", color: "#374151" }}>Publier sur les réseaux (Meta)</div>
+              
+              <div style={{ marginBottom: "10px" }}>
+                <label style={{ display: "block", fontSize: "13px", marginBottom: "5px", color: "#4b5563" }}>
+                  Ordre du Carrousel :
+                </label>
+                <select 
+                  value={carouselOrder} 
+                  onChange={(e) => setCarouselOrder(e.target.value)}
+                  style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #d1d5db", fontSize: "13px" }}
+                >
+                  <option value="fr-first">Image FR en premier, puis BSH</option>
+                  <option value="bsh-first">Image BSH en premier, puis FR</option>
+                </select>
+              </div>
+
+              <div style={{ marginBottom: "10px" }}>
+                <label style={{ display: "block", fontSize: "13px", marginBottom: "5px", color: "#4b5563" }}>
+                  Taguer sur l'image (Instagram) :
+                </label>
+                <input
+                  type="text"
+                  value={instagramTags}
+                  onChange={(e) => setInstagramTags(e.target.value)}
+                  placeholder="Ex: @culturemediacmn, @autrecompte"
+                  style={{
+                    width: "100%",
+                    padding: "8px",
+                    borderRadius: "4px",
+                    border: "1px solid #d1d5db",
+                    fontSize: "13px",
+                  }}
+                />
+                <span style={{ fontSize: "11px", color: "#6b7280" }}>Séparer par des virgules. Attention aux fautes !</span>
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "5px" }}>
+                <label style={{ display: "block", fontSize: "13px", color: "#4b5563" }}>
+                  Légende du post :
+                </label>
+                <button
+                  onClick={handleGenerateCaption}
+                  disabled={isGeneratingCaption}
+                  style={{
+                    background: "none",
+                    border: "1px solid #d8b4fe",
+                    borderRadius: "4px",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "5px",
+                    backgroundColor: "#f3e8ff",
+                    color: "#7e22ce",
+                    padding: "4px 8px",
+                    fontSize: "11px"
+                  }}
+                >
+                  {isGeneratingCaption ? (
+                    <i className="fas fa-spinner fa-spin"></i>
+                  ) : (
+                    <i className="fas fa-magic"></i>
+                  )}{" "}
+                  Générer la légende (IA)
+                </button>
+              </div>
+
+              <textarea
+                value={publishCaption}
+                onChange={(e) => setPublishCaption(e.target.value)}
+                placeholder="Rédigez votre légende ici (hashtags, mentions...)"
+                rows={12}
+                style={{
+                  width: "100%",
+                  padding: "8px",
+                  borderRadius: "4px",
+                  border: "1px solid #d1d5db",
+                  fontSize: "13px",
+                  resize: "vertical",
+                }}
+              />
+              
+              <button
+                onClick={handlePublish}
+                disabled={isPublishing || isSaving}
+                className="admin-btn"
+                style={{ 
+                  width: "100%", 
+                  padding: "10px", 
+                  background: "linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)",
+                  color: "white", 
+                  border: "none",
+                  fontWeight: "bold"
+                }}
+              >
+                {isPublishing ? <i className="fas fa-spinner fa-spin"></i> : <i className="fab fa-instagram"></i>}
+                {" "}Publier le Carrousel (FR & BSH)
+              </button>
+            </div>
