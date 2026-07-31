@@ -22,7 +22,8 @@
     "react-pageflip": "^2.0.3",
     "react-quill-new": "^3.8.3",
     "recharts": "^3.10.1",
-    "slugify": "^1.6.9"
+    "slugify": "^1.6.9",
+    "stripe": "^22.4.0"
   },
   "devDependencies": {
     "eslint": "^9",
