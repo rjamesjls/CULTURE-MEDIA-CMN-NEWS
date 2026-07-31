@@ -2515,17 +2515,20 @@ body.theme-alternate .reading-progress {
     height: 40px;
     font-size: 11px; /* Légèrement plus petit sur mobile */
     padding: 0 10px;
+    order: 1;
   }
   .flash-ticker-clock {
     height: 40px;
     padding: 0 10px;
     font-size: 12px;
+    order: 2;
   }
   .flash-ticker-content {
     flex: 0 0 100%;
     height: 35px;
     background: rgba(0, 0, 0, 0.25); /* Fond légèrement plus sombre pour bien le distinguer */
     border-top: 1px solid rgba(255, 255, 255, 0.15);
+    order: 3;
   }
   .flash-ticker-item {
     font-size: 13px;
