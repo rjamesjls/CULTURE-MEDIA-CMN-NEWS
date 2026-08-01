@@ -106,7 +106,7 @@ export default async function Home() {
 
             <div className="featured-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '30px' }}>
               {error && <p>Erreur lors du chargement des articles.</p>}
-              {articles && articles.slice(3, 9).map(article => (
+              {articles && articles.slice(0, 6).map(article => (
                 <article key={article.id} className="card article-card" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
                   <div className="card-image-wrapper">
                     <img src={article.image_url || 'https://images.unsplash.com/photo-1620287341056-49a2f1ab2fdc?q=80&w=600&auto=format&fit=crop'} alt={article.title} className="card-image" loading="lazy" style={{ height: '200px', objectFit: 'cover', width: '100%' }} />
