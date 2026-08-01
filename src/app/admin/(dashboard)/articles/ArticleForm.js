@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic';
 import { saveArticle } from '../../actions';
 import { generateArticleDraft } from '../ai-generator/actions';
 import SpeechButton from '@/components/SpeechButton';
+import TextToSpeechButton from '@/components/TextToSpeechButton';
 import 'react-quill-new/dist/quill.snow.css';
 
 const CustomEditor = dynamic(() => import('../../../../components/CustomEditor'), {
@@ -456,9 +457,12 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
 
       {/* Colonne Prévisualisation */}
       <div style={{ flex: '1 1 400px', backgroundColor: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '20px', position: 'sticky', top: '20px' }}>
-        <h3 style={{ fontSize: '14px', textTransform: 'uppercase', color: '#6b7280', marginBottom: '20px', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <i className="fas fa-eye"></i> Prévisualisation en direct
-        </h3>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+          <h3 style={{ fontSize: '14px', textTransform: 'uppercase', color: '#6b7280', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+            <i className="fas fa-eye"></i> Prévisualisation
+          </h3>
+          <TextToSpeechButton title={title || "Titre"} content={description + " " + content} />
+        </div>
         
         <div style={{ backgroundColor: '#fff', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
           {/* Image */}

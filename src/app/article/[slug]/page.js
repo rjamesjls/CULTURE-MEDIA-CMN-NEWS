@@ -4,6 +4,7 @@ import Link from 'next/link';
 import ArticleInteractions from '@/components/ArticleInteractions';
 import ArticleComments from '@/components/ArticleComments';
 import ViewTracker from '@/components/ViewTracker';
+import TextToSpeechButton from '@/components/TextToSpeechButton';
 
 export const revalidate = 60; // Revalidate every minute
 
@@ -100,13 +101,16 @@ export default async function ArticlePage({ params }) {
           <h1 className="article-title" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)', marginTop: '15px', fontFamily: 'var(--font-heading)', lineHeight: '1.2' }}>
             {article.title}
           </h1>
-          <div className="article-meta" style={{ display: 'flex', gap: '20px', color: 'var(--color-gray-500)', marginTop: '20px', paddingBottom: '20px', borderBottom: '1px solid var(--color-gray-200)' }}>
-            <span className="author">
-              <i className="far fa-user"></i> {article.author || 'La Rédaction'}
-            </span>
-            <time dateTime={article.pub_date}>
-              <i className="far fa-calendar"></i> {new Date(article.pub_date).toLocaleDateString('fr-FR')}
-            </time>
+          <div className="article-meta" style={{ display: 'flex', gap: '20px', color: 'var(--color-gray-500)', marginTop: '20px', paddingBottom: '20px', borderBottom: '1px solid var(--color-gray-200)', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+              <span className="author">
+                <i className="far fa-user"></i> {article.author || 'La Rédaction'}
+              </span>
+              <time dateTime={article.pub_date}>
+                <i className="far fa-calendar"></i> {new Date(article.pub_date).toLocaleDateString('fr-FR')}
+              </time>
+            </div>
+            <TextToSpeechButton title={article.title} content={article.description + " " + article.content} />
           </div>
         </header>
 
