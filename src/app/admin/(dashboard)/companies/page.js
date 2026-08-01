@@ -27,6 +27,17 @@ export default function AdminCompanies() {
     fetchCompanies();
   };
 
+  const handleDelete = async (id, name) => {
+    if (window.confirm(`Êtes-vous sûr de vouloir supprimer l'entreprise "${name}" ? Cette action est irréversible.`)) {
+      const { error } = await supabase.from('companies').delete().eq('id', id);
+      if (error) {
+        alert('Erreur lors de la suppression : ' + error.message);
+      } else {
+        fetchCompanies();
+      }
+    }
+  };
+
   if (loading) return <div>Chargement des entreprises...</div>;
 
   return (
@@ -78,12 +89,18 @@ export default function AdminCompanies() {
                         {company.status}
                       </span>
                     </td>
-                    <td>
+                    <td style={{ display: 'flex', gap: '10px' }}>
                       <button 
-                        className={`btn btn-sm btn-${company.status === 'active' ? 'outline-danger' : 'outline-success'}`}
+                        className={`btn btn-sm btn-${company.status === 'active' ? 'outline-warning' : 'outline-success'}`}
                         onClick={() => toggleStatus(company.id, company.status)}
                       >
                         {company.status === 'active' ? 'Suspendre' : 'Activer'}
+                      </button>
+                      <button 
+                        className="btn btn-sm btn-outline-danger"
+                        onClick={() => handleDelete(company.id, company.name)}
+                      >
+                        Supprimer
                       </button>
                     </td>
                   </tr>
