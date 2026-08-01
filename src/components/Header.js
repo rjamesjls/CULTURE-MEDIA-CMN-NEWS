@@ -17,7 +17,20 @@ export default async function Header() {
         <FlashTicker />
         <div className="header-container">
           <Link href="/" className="logo-link" style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none' }}>
-            <img src="/assets/logo.png" alt="Culture Média News" className="header-logo" />
+            <img 
+              src="/assets/logo.png" 
+              alt="Culture Média News" 
+              className="header-logo" 
+              style={{ 
+                borderRadius: '50%', 
+                border: '2px solid rgba(255, 255, 255, 0.8)', 
+                objectFit: 'cover',
+                backgroundColor: '#fff',
+                width: '45px',
+                height: '45px',
+                padding: '2px'
+              }} 
+            />
             <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <span style={{ 
                 fontFamily: 'var(--font-heading)', 
