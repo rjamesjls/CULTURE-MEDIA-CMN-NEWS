@@ -278,28 +278,33 @@ export default function InstagramGenerator({ article, recentArticles = [] }) {
     setErrorMsg("");
     setSuccessMsg("");
     try {
-      const promptFr = `Résume cet article en une version très courte (2 à 3 phrases maximum) allant à l'essentiel pour un post Instagram. 
-Tu dois absolument mettre en gras (avec la balise HTML <strong>) les points clés ou les mots importants.
+      const promptFr = `Génère un titre très court et percutant ET résume cet article en une version très courte (2 à 3 phrases maximum) allant à l'essentiel pour un post Instagram. 
+Tu dois absolument mettre en gras (avec la balise HTML <strong>) les points clés ou les mots importants dans le résumé. 
+INTERDICTION D'UTILISER DU MARKDOWN (aucun astérisque **). Utilise UNIQUEMENT la balise <strong> pour le gras.
 De plus, extrais le nom de la source d'origine de l'article (ex: Le Monde, AFP, L'Equipe, etc.). Si aucune source n'est identifiable de manière évidente, utilise "Culture Media News".
 Tu DOIS renvoyer UNIQUEMENT un objet JSON valide avec cette structure exacte (sans bloc markdown):
 {
+  "title": "Le titre très court et percutant",
   "hook": "Le résumé avec les balises <strong>...",
   "source": "Nom de la source"
 }
 
-Titre: ${article.title}
+Titre original: ${article.title}
 Contenu: ${article.content || ''}`;
 
-      const promptBsh = `Traduis et résume cet article en langue Bushingue (Créole) en une version très courte (2 à 3 phrases maximum) allant à l'essentiel pour un post Instagram.
-Tu dois absolument mettre en gras (avec la balise HTML <strong>) les points clés ou les mots importants.
+      const promptBsh = `Traduis LE TITRE ET LE RÉSUMÉ de cet article en langue Bushingue (Créole) en une version très courte (2 à 3 phrases maximum) allant à l'essentiel pour un post Instagram.
+IMPORTANT: NE RENVOIE QUE LA VERSION TRADUITE EN BUSHINGUE. N'inclus SURTOUT PAS la version française.
+Tu dois absolument mettre en gras (avec la balise HTML <strong>) les points clés ou les mots importants dans le résumé.
+INTERDICTION D'UTILISER DU MARKDOWN (aucun astérisque **). Utilise UNIQUEMENT la balise <strong> pour le gras.
 De plus, extrais le nom de la source d'origine de l'article (ex: Le Monde, AFP, L'Equipe, etc.). Si aucune source n'est identifiable de manière évidente, utilise "Culture Media News".
 Tu DOIS renvoyer UNIQUEMENT un objet JSON valide avec cette structure exacte (sans bloc markdown):
 {
-  "hook": "Le résumé avec les balises <strong>...",
+  "title": "Le titre traduit en Bushingue",
+  "hook": "Le résumé traduit avec les balises <strong>...",
   "source": "Nom de la source"
 }
 
-Titre: ${article.title}
+Titre original: ${article.title}
 Contenu: ${article.content || ''}`;
       
       const res = await fetch("/api/ai/suggest-titles", {
@@ -316,7 +321,7 @@ Contenu: ${article.content || ''}`;
         try {
           parsed = JSON.parse(data.hook);
         } catch(e) {
-          parsed = { hook: data.hook, source: "Culture Media News" };
+          parsed = { hook: data.hook, source: "Culture Media News", title: article.title };
         }
 
         const htmlHook = parsed.hook.startsWith("<") 
@@ -325,6 +330,9 @@ Contenu: ${article.content || ''}`;
         
         // On met à jour directement le state global pour que ça s'affiche
         updateData(`body_${lang}`, htmlHook);
+        if (parsed.title) {
+          updateData(`title_${lang}`, parsed.title);
+        }
         if (parsed.source) {
           updateData("source", parsed.source);
         }
