@@ -17,7 +17,7 @@ export async function getNewsSources() {
       .order('created_at', { ascending: false });
 
     if (error) {
-      if (error.code === '42P01' || error.code === 'PGRST204') {
+      if (error.code === '42P01' || error.code === 'PGRST204' || error.code === 'PGRST205') {
         // Relation does not exist (table not created yet)
         return { success: false, data: [], error: 'TABLE_NOT_FOUND' };
       }
