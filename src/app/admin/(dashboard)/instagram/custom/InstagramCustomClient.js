@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import * as htmlToImage from 'html-to-image';
 import Link from 'next/link';
-import imglyRemoveBackground from '@imgly/background-removal';
+import { removeBackground } from '@imgly/background-removal';
 
 const createDefaultPage = () => ({
   id: Date.now() + Math.random(),
@@ -79,7 +79,7 @@ export default function InstagramCustomClient() {
     setIsProcessingBg(true);
     setBgProgress(0);
     try {
-      const blob = await imglyRemoveBackground(activePage.bgImage, {
+      const blob = await removeBackground(activePage.bgImage, {
         progress: (key, current, total) => {
           if (total && current <= total) {
             setBgProgress(Math.round((current / total) * 100));
