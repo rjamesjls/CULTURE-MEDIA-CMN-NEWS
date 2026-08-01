@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import * as htmlToImage from 'html-to-image';
 import Link from 'next/link';
+import imglyRemoveBackground from '@imgly/background-removal';
 
 const createDefaultPage = () => ({
   id: Date.now() + Math.random(),
@@ -25,6 +26,8 @@ export default function InstagramCustomClient() {
   const [pages, setPages] = useState([createDefaultPage()]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isProcessingBg, setIsProcessingBg] = useState(false);
+  const [bgProgress, setBgProgress] = useState(0);
   
   // Create refs for each page to allow downloading all at once
   // Since we only render the active page in the DOM for preview, 
@@ -68,6 +71,29 @@ export default function InstagramCustomClient() {
     if (file) {
       const url = URL.createObjectURL(file);
       updateActivePage('bgImage', url);
+    }
+  };
+
+  const handleRemoveBg = async () => {
+    if (!activePage.bgImage) return;
+    setIsProcessingBg(true);
+    setBgProgress(0);
+    try {
+      const blob = await imglyRemoveBackground(activePage.bgImage, {
+        progress: (key, current, total) => {
+          if (total && current <= total) {
+            setBgProgress(Math.round((current / total) * 100));
+          }
+        }
+      });
+      const url = URL.createObjectURL(blob);
+      updateActivePage('bgImage', url);
+    } catch (error) {
+      console.error('Background removal failed', error);
+      alert("Erreur lors du détourage de l'image.");
+    } finally {
+      setIsProcessingBg(false);
+      setBgProgress(0);
     }
   };
 
@@ -339,7 +365,18 @@ export default function InstagramCustomClient() {
 
             <div style={{ gridColumn: '1 / -1' }}>
               <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '8px', fontSize: '14px' }}>Image de fond</label>
-              <input type="file" accept="image/*" onChange={handleImageUpload} style={{ width: '100%', padding: '10px', background: '#F8FAFC', borderRadius: '8px', border: '1px dashed #CBD5E1' }} />
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <input type="file" accept="image/*" onChange={handleImageUpload} style={{ flex: 1, padding: '10px', background: '#F8FAFC', borderRadius: '8px', border: '1px dashed #CBD5E1' }} />
+                {activePage.bgImage && (
+                  <button 
+                    onClick={handleRemoveBg}
+                    disabled={isProcessingBg}
+                    style={{ padding: '10px 15px', background: isProcessingBg ? '#94A3B8' : '#10B981', color: '#FFF', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: isProcessingBg ? 'not-allowed' : 'pointer', minWidth: '180px' }}
+                  >
+                    {isProcessingBg ? (bgProgress > 0 ? `Détourage... ${bgProgress}%` : 'Détourage...') : '🪄 Détourer (IA)'}
+                  </button>
+                )}
+              </div>
             </div>
 
             {activePage.template === 't2' && (
