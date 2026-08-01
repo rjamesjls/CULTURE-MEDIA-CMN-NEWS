@@ -41,40 +41,48 @@ async function scrapeUrls(urlsString) {
 }
 
 export async function generateArticleDraft(formData) {
-  const profile = await getUserProfile();
-  if (!profile || (profile.role !== 'admin' && profile.role !== 'author')) {
-    throw new Error('Non autorisé');
-  }
-
-  const subject = formData.get('subject');
-  const context = formData.get('context') || '';
-  const links = formData.get('links') || '';
-  const imageUrlsJson = formData.get('imageUrls') || '[]';
-  const imageUrls = JSON.parse(imageUrlsJson);
-  const referenceArticleId = formData.get('referenceArticleId');
-
-  if (!subject) throw new Error("Le sujet est requis.");
-
-  let referenceContent = '';
-  if (referenceArticleId) {
-    const supabase = await createClient();
-    const { data: refArticle } = await supabase
-      .from('articles')
-      .select('title, content')
-      .eq('id', referenceArticleId)
-      .single();
-    
-    if (refArticle) {
-      referenceContent = `\nVoici l'article de référence dont tu dois t'inspirer (titre : "${refArticle.title}"). Utilise les informations de cet article de référence pour t'aider à rédiger le nouveau contenu ou pour garder une continuité éditoriale :\n${refArticle.content}\n`;
+  try {
+    const profile = await getUserProfile();
+    if (!profile || (profile.role !== 'admin' && profile.role !== 'author')) {
+      return { success: false, error: 'Non autorisé' };
     }
-  }
 
-  let scrapedContent = '';
-  if (links) {
-    scrapedContent = await scrapeUrls(links);
-  }
+    const subject = formData.get('subject');
+    const context = formData.get('context') || '';
+    const links = formData.get('links') || '';
+    const imageUrlsJson = formData.get('imageUrls') || '[]';
+    
+    let imageUrls = [];
+    try {
+      imageUrls = JSON.parse(imageUrlsJson);
+    } catch(e) {
+      console.warn("Could not parse imageUrls", e);
+    }
+    
+    const referenceArticleId = formData.get('referenceArticleId');
 
-  let prompt = `
+    if (!subject) return { success: false, error: "Le sujet est requis." };
+
+    let referenceContent = '';
+    if (referenceArticleId) {
+      const supabase = await createClient();
+      const { data: refArticle } = await supabase
+        .from('articles')
+        .select('title, content')
+        .eq('id', referenceArticleId)
+        .single();
+      
+      if (refArticle) {
+        referenceContent = `\nVoici l'article de référence dont tu dois t'inspirer (titre : "${refArticle.title}"). Utilise les informations de cet article de référence pour t'aider à rédiger le nouveau contenu ou pour garder une continuité éditoriale :\n${refArticle.content}\n`;
+      }
+    }
+
+    let scrapedContent = '';
+    if (links) {
+      scrapedContent = await scrapeUrls(links);
+    }
+
+    let prompt = `
 Tu es un journaliste professionnel expert et rigoureux. Écris un article complet et formaté en HTML sur le sujet suivant: "${subject}".
 ${context ? `Prends en compte ce contexte supplémentaire: "${context}"` : ''}
 ${referenceContent}
@@ -94,22 +102,7 @@ IMPORTANT: Tu dois renvoyer la réponse **UNIQUEMENT** sous la forme d'un objet 
   "content": "Le contenu complet de l'article formaté en HTML (utilise <h2>, <p>, <strong>, etc., incluant la section Sources à la fin. N'utilise pas <h1> ni <html> ou <body>)."
 }
 `;
-
-  const promptParts = [prompt];
-
-  // Ajouter les fichiers (images/pdf) s'ils existent
-  for (const file of files) {
-    if (file && file.size > 0) {
-      const buffer = await file.arrayBuffer();
-      const base64 = Buffer.from(buffer).toString('base64');
-      promptParts.push({
-        inlineData: {
-          data: base64,
-          mimeType: file.type
-        }
-      });
-    }
-  }
+    const promptParts = [prompt];
 
   try {
     const modelsToTry = ['gemini-flash-latest', 'gemini-2.5-flash', 'gemini-3.5-flash', 'gemini-2.0-flash'];
@@ -138,13 +131,18 @@ IMPORTANT: Tu dois renvoyer la réponse **UNIQUEMENT** sous la forme d'un objet 
     console.error('Erreur Gemini:', error);
     return { success: false, error: error.message || "Une erreur s'est produite avec l'IA." };
   }
+  } catch (error) {
+    console.error('Erreur Action:', error);
+    return { success: false, error: error.message || "Une erreur inattendue est survenue." };
+  }
 }
 
 export async function adjustArticleDraft(previousData, instruction) {
-  const profile = await getUserProfile();
-  if (!profile || (profile.role !== 'admin' && profile.role !== 'author')) {
-    throw new Error('Non autorisé');
-  }
+  try {
+    const profile = await getUserProfile();
+    if (!profile || (profile.role !== 'admin' && profile.role !== 'author')) {
+      return { success: false, error: 'Non autorisé' };
+    }
 
   const prompt = `
 Tu es un journaliste professionnel expert. J'ai un brouillon d'article et je veux que tu l'ajustes selon cette instruction: "${instruction}"
@@ -190,16 +188,21 @@ IMPORTANT: Tu dois renvoyer la réponse **UNIQUEMENT** sous la forme d'un objet 
     }
     throw lastError;
   } catch (error) {
-    console.error('Erreur Gemini:', error);
+    console.error('Erreur adjustArticleDraft:', error);
     return { success: false, error: error.message || "Une erreur s'est produite avec l'IA." };
+  }
+  } catch (error) {
+    console.error('Erreur Action:', error);
+    return { success: false, error: error.message || "Une erreur inattendue est survenue." };
   }
 }
 
 export async function suggestTitles(content) {
-  const profile = await getUserProfile();
-  if (!profile || (profile.role !== 'admin' && profile.role !== 'author')) {
-    throw new Error('Non autorisé');
-  }
+  try {
+    const profile = await getUserProfile();
+    if (!profile || (profile.role !== 'admin' && profile.role !== 'author')) {
+      return { success: false, error: 'Non autorisé' };
+    }
 
   const prompt = `
 Tu es un rédacteur en chef expert. 
@@ -241,7 +244,11 @@ Exemple attendu :
     }
     throw lastError;
   } catch (error) {
-    console.error('Erreur Gemini:', error);
+    console.error('Erreur suggestTitles:', error);
     return { success: false, error: error.message || "Une erreur s'est produite avec l'IA." };
+  }
+  } catch (error) {
+    console.error('Erreur Action:', error);
+    return { success: false, error: error.message || "Une erreur inattendue est survenue." };
   }
 }
