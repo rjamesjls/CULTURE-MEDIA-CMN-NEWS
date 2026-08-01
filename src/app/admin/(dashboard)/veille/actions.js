@@ -5,69 +5,81 @@ import { getUserProfile } from '@/utils/supabase/auth';
 import Parser from 'rss-parser';
 
 export async function getNewsSources() {
-  const supabase = await createClient();
-  const profile = await getUserProfile();
-  
-  if (!profile) throw new Error("Non autorisé");
+  try {
+    const supabase = await createClient();
+    const profile = await getUserProfile();
+    
+    if (!profile) return { success: false, error: "Non autorisé" };
 
-  const { data, error } = await supabase
-    .from('news_sources')
-    .select('*')
-    .order('created_at', { ascending: false });
+    const { data, error } = await supabase
+      .from('news_sources')
+      .select('*')
+      .order('created_at', { ascending: false });
 
-  if (error) {
-    if (error.code === '42P01') {
-      // Relation does not exist (table not created yet)
-      return { success: false, data: [], error: 'TABLE_NOT_FOUND' };
+    if (error) {
+      if (error.code === '42P01' || error.code === 'PGRST204') {
+        // Relation does not exist (table not created yet)
+        return { success: false, data: [], error: 'TABLE_NOT_FOUND' };
+      }
+      return { success: false, error: `Erreur Supabase (${error.code}): ${error.message}` };
     }
-    throw new Error(error.message);
-  }
 
-  return { success: true, data };
+    return { success: true, data };
+  } catch (err) {
+    return { success: false, error: `Erreur inattendue: ${err.message}` };
+  }
 }
 
 export async function addNewsSource(name, url) {
-  const supabase = await createClient();
-  const profile = await getUserProfile();
-  
-  if (!profile) throw new Error("Non autorisé");
-
-  // Basic URL validation
   try {
-    new URL(url);
-  } catch (e) {
-    return { success: false, error: "L'URL fournie n'est pas valide." };
+    const supabase = await createClient();
+    const profile = await getUserProfile();
+    
+    if (!profile) return { success: false, error: "Non autorisé" };
+
+    // Basic URL validation
+    try {
+      new URL(url);
+    } catch (e) {
+      return { success: false, error: "L'URL fournie n'est pas valide." };
+    }
+
+    const { data, error } = await supabase
+      .from('news_sources')
+      .insert([{ name, url, user_id: profile.id }])
+      .select()
+      .single();
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, data };
+  } catch (err) {
+    return { success: false, error: `Erreur inattendue: ${err.message}` };
   }
-
-  const { data, error } = await supabase
-    .from('news_sources')
-    .insert([{ name, url, user_id: profile.id }])
-    .select()
-    .single();
-
-  if (error) {
-    return { success: false, error: error.message };
-  }
-
-  return { success: true, data };
 }
 
 export async function deleteNewsSource(id) {
-  const supabase = await createClient();
-  const profile = await getUserProfile();
-  
-  if (!profile) throw new Error("Non autorisé");
+  try {
+    const supabase = await createClient();
+    const profile = await getUserProfile();
+    
+    if (!profile) return { success: false, error: "Non autorisé" };
 
-  const { error } = await supabase
-    .from('news_sources')
-    .delete()
-    .eq('id', id);
+    const { error } = await supabase
+      .from('news_sources')
+      .delete()
+      .eq('id', id);
 
-  if (error) {
-    return { success: false, error: error.message };
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: `Erreur inattendue: ${err.message}` };
   }
-
-  return { success: true };
 }
 
 export async function fetchRSSFeeds(sources) {
