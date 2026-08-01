@@ -47,7 +47,7 @@ export async function saveProRegistration(formData) {
     contact_last_name: contactLastName,
     contact_role: contactRole,
     tier: 'free',
-    status: 'pending' // Maybe pending verification? Or active? Wait, the list filters 'active'. Let's set it to 'active' for now.
+    status: 'active' 
   };
 
   const { error } = await supabase.from('companies').insert(payload);
