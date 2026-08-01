@@ -230,18 +230,60 @@ export default function AIGeneratorClient({ articles = [] }) {
             </p>
           </div>
 
-          <div className="admin-form-group">
+          <div 
+            className="admin-form-group" 
+            onPaste={(e) => {
+              const items = e.clipboardData?.items;
+              if (!items) return;
+              const pastedFiles = [];
+              for (let i = 0; i < items.length; i++) {
+                if (items[i].type.indexOf('image') !== -1) {
+                  const file = items[i].getAsFile();
+                  // S'assurer que le fichier a un nom correct
+                  const newFile = new File([file], `Image_collee_${Date.now()}_${i}.png`, { type: file.type });
+                  pastedFiles.push(newFile);
+                }
+              }
+              if (pastedFiles.length > 0) {
+                e.preventDefault();
+                setFiles(prev => [...Array.from(prev || []), ...pastedFiles]);
+              }
+            }}
+          >
             <label className="admin-form-label"><i className="fas fa-image" style={{marginRight: '8px', color: '#6b7280'}}></i>Photos à intégrer (Optionnel)</label>
-            <input 
-              type="file" 
-              className="admin-form-control" 
-              multiple
-              accept="image/*"
-              onChange={e => setFiles(e.target.files)}
-              style={{ padding: '8px' }}
-            />
+            <div style={{ padding: '15px', border: '2px dashed #d1d5db', borderRadius: '8px', backgroundColor: '#f9fafb', textAlign: 'center' }}>
+              <input 
+                type="file" 
+                className="admin-form-control" 
+                multiple
+                accept="image/*"
+                onChange={e => setFiles(prev => [...Array.from(prev || []), ...Array.from(e.target.files)])}
+                style={{ marginBottom: '10px' }}
+              />
+              <p style={{ fontSize: '13px', color: '#6b7280', margin: 0 }}>
+                Vous pouvez aussi faire <strong>Ctrl+V / Cmd+V</strong> ici pour coller une image directement.
+              </p>
+            </div>
+            {files && files.length > 0 && (
+              <div style={{ marginTop: '10px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                {Array.from(files).map((file, i) => (
+                  <div key={i} style={{ backgroundColor: '#e5e7eb', padding: '6px 12px', borderRadius: '20px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '8px', color: '#374151' }}>
+                    <i className="fas fa-file-image" style={{ color: '#8b5cf6' }}></i>
+                    {file.name}
+                    <button 
+                      type="button" 
+                      onClick={() => setFiles(prev => Array.from(prev).filter((_, idx) => idx !== i))} 
+                      style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: '#ef4444', padding: 0 }}
+                      title="Retirer"
+                    >
+                      <i className="fas fa-times-circle"></i>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
             <p style={{ fontSize: '12px', color: '#6b7280', marginTop: '5px' }}>
-              Sélectionnez les images que vous souhaitez voir apparaître dans l'article généré. L'IA les placera automatiquement aux bons endroits.
+              Sélectionnez ou collez les images que vous souhaitez voir apparaître dans l'article généré. L'IA les placera automatiquement aux bons endroits.
             </p>
           </div>
 
