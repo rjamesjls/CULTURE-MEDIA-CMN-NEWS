@@ -130,7 +130,7 @@ export default async function ArticlePage({ params }) {
           ⚠️ MODE APERÇU : Cet article est un brouillon et n'est pas visible par le public.
         </div>
       )}
-      <div className="article-layout-wrapper" style={{ maxWidth: '1400px', margin: '140px auto 40px auto', padding: '0 20px', display: 'flex', gap: '40px', alignItems: 'flex-start' }}>
+      <div className="article-layout-wrapper" style={{ maxWidth: '1400px', padding: '0 20px', display: 'flex', gap: '40px', alignItems: 'flex-start' }}>
         <ViewTracker articleId={article.id} />
         
         {/* Left Sidebar: Latest Articles */}
@@ -222,6 +222,7 @@ export default async function ArticlePage({ params }) {
         /* Mobile First Layout */
         .article-layout-wrapper {
           flex-direction: column;
+          margin: 100px auto 40px auto;
         }
         
         .article-container {
@@ -253,6 +254,7 @@ export default async function ArticlePage({ params }) {
         @media (min-width: 1024px) {
           .article-layout-wrapper {
             flex-direction: row;
+            margin: 140px auto 40px auto;
           }
           
           .article-container {
