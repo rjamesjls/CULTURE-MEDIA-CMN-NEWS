@@ -5,8 +5,31 @@ import NewsletterPopup from '@/components/NewsletterPopup';
 import Script from 'next/script';
 
 export const metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'https://www.culturemedia.news'), // Remplacez par le vrai nom de domaine
   title: 'Culture Média News',
   description: 'Le premier site dédié à l\'information et à la culture',
+  keywords: ['Actualité', 'Culture', 'Information', 'Média', 'News', 'Web'],
+  openGraph: {
+    title: 'Culture Média News',
+    description: 'Le premier site dédié à l\'information et à la culture',
+    url: '/',
+    siteName: 'Culture Média News',
+    images: [
+      {
+        url: '/icon.png', // Fallback global image
+        width: 800,
+        height: 600,
+      },
+    ],
+    locale: 'fr_FR',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Culture Média News',
+    description: 'Le premier site dédié à l\'information et à la culture',
+    images: ['/icon.png'],
+  },
 };
 
 export default function RootLayout({ children }) {

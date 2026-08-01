@@ -14,15 +14,42 @@ export async function generateMetadata({ params }) {
   const slug = resolvedParams.slug;
   const { data: article } = await supabase
     .from('articles')
-    .select('title, description')
+    .select('title, description, image_url, category_id, categories(name)')
     .eq('slug', slug)
     .single();
 
   if (!article) return { title: 'Article non trouvé' };
 
+  const categoryName = article.categories?.name || 'Actualité';
+  const ogImage = article.image_url || '/icon.png';
+
   return {
     title: `${article.title} | Culture Média News`,
-    description: article.description
+    description: article.description,
+    keywords: [categoryName, 'Culture Média News', 'Actualité'],
+    openGraph: {
+      title: article.title,
+      description: article.description,
+      url: `/article/${slug}`,
+      type: 'article',
+      publishedTime: article.pub_date,
+      authors: ['Culture Média News'],
+      section: categoryName,
+      images: [
+        {
+          url: ogImage,
+          width: 1200,
+          height: 630,
+          alt: article.title,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: article.title,
+      description: article.description,
+      images: [ogImage],
+    },
   };
 }
 
@@ -76,8 +103,28 @@ export default async function ArticlePage({ params }) {
     .order('likes_count', { ascending: false })
     .limit(4);
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'NewsArticle',
+    headline: article.title,
+    image: [
+      article.image_url || 'https://www.culturemedia.news/icon.png' // Remplacer par la vraie URL en prod
+    ],
+    datePublished: article.pub_date,
+    dateModified: article.updated_at || article.pub_date,
+    author: [{
+      '@type': 'Organization',
+      name: 'Culture Média News',
+      url: 'https://www.culturemedia.news'
+    }]
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {isPreviewMode && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9999, backgroundColor: '#fef08a', color: '#854d0e', padding: '10px', textAlign: 'center', fontWeight: 'bold', fontSize: '14px', borderBottom: '2px solid #eab308' }}>
           ⚠️ MODE APERÇU : Cet article est un brouillon et n'est pas visible par le public.
