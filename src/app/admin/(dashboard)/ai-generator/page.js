@@ -1,7 +1,25 @@
 import { Suspense } from 'react';
 import AIGeneratorClient from './AIGeneratorClient';
+import { createClient } from '@/utils/supabase/server';
+import { getUserProfile } from '@/utils/supabase/auth';
 
-export default function AIGeneratorPage() {
+export const revalidate = 0;
+
+export default async function AIGeneratorPage() {
+  const supabase = await createClient();
+  const profile = await getUserProfile();
+
+  let query = supabase
+    .from('articles')
+    .select('id, title, status, pub_date')
+    .order('pub_date', { ascending: false });
+
+  if (profile && profile.role === 'author') {
+    query = query.eq('user_id', profile.id);
+  }
+
+  const { data: articles } = await query;
+
   return (
     <div className="admin-content-card">
       <div className="admin-header">
@@ -12,7 +30,7 @@ export default function AIGeneratorPage() {
       </p>
 
       <Suspense fallback={<div>Chargement de l'assistant IA...</div>}>
-        <AIGeneratorClient />
+        <AIGeneratorClient articles={articles || []} />
       </Suspense>
     </div>
   );

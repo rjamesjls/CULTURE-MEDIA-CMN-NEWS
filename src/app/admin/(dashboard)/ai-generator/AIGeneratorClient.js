@@ -4,13 +4,14 @@ import { useState, useEffect } from 'react';
 import { generateArticleDraft, adjustArticleDraft, suggestTitles } from './actions';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function AIGeneratorClient() {
+export default function AIGeneratorClient({ articles = [] }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   
   // Etape 1: Brief
   const [subject, setSubject] = useState('');
   const [context, setContext] = useState('');
+  const [referenceArticleId, setReferenceArticleId] = useState('');
 
   useEffect(() => {
     const prefillSubject = searchParams.get('subject');
@@ -60,6 +61,7 @@ export default function AIGeneratorClient() {
       const formData = new FormData();
       formData.append('subject', subject);
       if (context) formData.append('context', context);
+      if (referenceArticleId) formData.append('referenceArticleId', referenceArticleId);
 
       const res = await generateArticleDraft(formData);
       if (res.success) {
@@ -177,6 +179,27 @@ export default function AIGeneratorClient() {
               onChange={e => setContext(e.target.value)}
             ></textarea>
           </div>
+
+          {articles && articles.length > 0 && (
+            <div className="admin-form-group">
+              <label className="admin-form-label">S'inspirer d'un article existant (Optionnel)</label>
+              <select 
+                className="admin-form-control" 
+                value={referenceArticleId}
+                onChange={e => setReferenceArticleId(e.target.value)}
+              >
+                <option value="">-- Aucun article de référence --</option>
+                {articles.map(article => (
+                  <option key={article.id} value={article.id}>
+                    {article.title} {article.status === 'draft' ? '(Brouillon)' : ''}
+                  </option>
+                ))}
+              </select>
+              <p style={{ fontSize: '12px', color: '#6b7280', marginTop: '5px' }}>
+                L'IA lira le contenu de cet article et s'en servira de base ou de contexte pour rédiger le nouveau.
+              </p>
+            </div>
+          )}
 
           <button 
             type="submit" 

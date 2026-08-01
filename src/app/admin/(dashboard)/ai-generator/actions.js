@@ -2,6 +2,7 @@
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { getUserProfile } from '@/utils/supabase/auth';
+import { createClient } from '@/utils/supabase/server';
 
 const apiKey = process.env.GEMINI_API_KEY;
 const genAI = new GoogleGenerativeAI(apiKey);
@@ -21,12 +22,28 @@ export async function generateArticleDraft(formData) {
   const context = formData.get('context') || '';
   const links = formData.get('links') || '';
   const files = formData.getAll('files') || [];
+  const referenceArticleId = formData.get('referenceArticleId');
 
   if (!subject) throw new Error("Le sujet est requis.");
+
+  let referenceContent = '';
+  if (referenceArticleId) {
+    const supabase = await createClient();
+    const { data: refArticle } = await supabase
+      .from('articles')
+      .select('title, content')
+      .eq('id', referenceArticleId)
+      .single();
+    
+    if (refArticle) {
+      referenceContent = `\nVoici l'article de référence dont tu dois t'inspirer (titre : "${refArticle.title}"). Utilise les informations de cet article de référence pour t'aider à rédiger le nouveau contenu ou pour garder une continuité éditoriale :\n${refArticle.content}\n`;
+    }
+  }
 
   let prompt = `
 Tu es un journaliste professionnel expert et rigoureux. Écris un article complet et formaté en HTML sur le sujet suivant: "${subject}".
 ${context ? `Prends en compte ce contexte supplémentaire: "${context}"` : ''}
+${referenceContent}
 ${links ? `Voici des liens ou sources supplémentaires à intégrer de manière pertinente dans l'article ou dans la section sources : "${links}"` : ''}
 
 Ton article doit être structuré, engageant et prêt à être publié sur un média en ligne.
