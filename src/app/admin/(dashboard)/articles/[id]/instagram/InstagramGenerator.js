@@ -52,9 +52,9 @@ export default function InstagramGenerator({ article, recentArticles = [] }) {
     };
   }, [isDraggingLeft, isDraggingRight]);
 
-  const [carouselOrder, setCarouselOrder] = useState("fr-first");
-  const [instagramTags, setInstagramTags] = useState("");
-  const [publishCaption, setPublishCaption] = useState("");
+  const [carouselOrder, setCarouselOrder] = useState(article.instagram_state?.carouselOrder || "fr-first");
+  const [instagramTags, setInstagramTags] = useState(article.instagram_state?.instagramTags || "");
+  const [publishCaption, setPublishCaption] = useState(article.instagram_state?.publishCaption || "");
   const [isGeneratingCaption, setIsGeneratingCaption] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
 
@@ -186,17 +186,20 @@ export default function InstagramGenerator({ article, recentArticles = [] }) {
   };
 
   // État indépendant pour CHAQUE template
-  const [templateData, setTemplateData] = useState({
-    "template-1": { ...initialTemplateState },
-    "template-2": { ...initialTemplateState },
-    "template-3": { ...initialTemplateState, logoTheme: "black" },
-    "template-4": { ...initialTemplateState },
-    "template-5": { ...initialTemplateState },
+  const [templateData, setTemplateData] = useState(() => {
+    if (article.instagram_state?.templateData) return article.instagram_state.templateData;
+    return {
+      "template-1": { ...initialTemplateState },
+      "template-2": { ...initialTemplateState },
+      "template-3": { ...initialTemplateState, logoTheme: "black" },
+      "template-4": { ...initialTemplateState },
+      "template-5": { ...initialTemplateState },
+    };
   });
 
-  const [activeLang, setActiveLang] = useState("fr"); // "fr" ou "bsh"
-  const [selectedTemplateFr, setSelectedTemplateFr] = useState("template-2"); // default to Editorial Bleu
-  const [selectedTemplateBsh, setSelectedTemplateBsh] = useState("template-3"); // default to Editorial Blanc
+  const [activeLang, setActiveLang] = useState(article.instagram_state?.activeLang || "fr"); // "fr" ou "bsh"
+  const [selectedTemplateFr, setSelectedTemplateFr] = useState(article.instagram_state?.selectedTemplateFr || "template-2"); // default to Editorial Bleu
+  const [selectedTemplateBsh, setSelectedTemplateBsh] = useState(article.instagram_state?.selectedTemplateBsh || "template-3"); // default to Editorial Blanc
 
   // Utilisation du proxy d'image personnalisé pour éviter les problèmes CORS et de configuration Next.js
   const proxiedImageUrl = article.image_url
@@ -210,6 +213,25 @@ export default function InstagramGenerator({ article, recentArticles = [] }) {
   const activeTemplate = activeLang === "fr" ? selectedTemplateFr : selectedTemplateBsh;
   const currentData = templateData[activeTemplate];
   const activeColors = colorThemes[currentData.themeColor] || colorThemes.red;
+
+  // Auto-save
+  useEffect(() => {
+    const stateToSave = {
+      templateData,
+      carouselOrder,
+      instagramTags,
+      publishCaption,
+      activeLang,
+      selectedTemplateFr,
+      selectedTemplateBsh
+    };
+    
+    const timeoutId = setTimeout(() => {
+      saveInstagramState(article.id, stateToSave);
+    }, 1500); // 1.5s debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [templateData, carouselOrder, instagramTags, publishCaption, activeLang, selectedTemplateFr, selectedTemplateBsh, article.id]);
 
   const updateData = (field, value) => {
     // Fields that represent content should be synchronized across all templates
