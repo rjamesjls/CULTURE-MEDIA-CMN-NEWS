@@ -4,6 +4,8 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { getUserProfile } from '@/utils/supabase/auth';
 import { createClient } from '@/utils/supabase/server';
 
+import * as cheerio from 'cheerio';
+
 const apiKey = process.env.GEMINI_API_KEY;
 const genAI = new GoogleGenerativeAI(apiKey);
 
@@ -11,6 +13,32 @@ const genAI = new GoogleGenerativeAI(apiKey);
 const model = genAI.getGenerativeModel({
   model: 'gemini-flash-latest',
 });
+
+async function scrapeUrls(urlsString) {
+  if (!urlsString) return '';
+  const urls = urlsString.split(',').map(u => u.trim()).filter(u => u.startsWith('http'));
+  if (urls.length === 0) return '';
+
+  let scrapedText = '';
+  for (const url of urls) {
+    try {
+      const res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' } });
+      if (!res.ok) continue;
+      const html = await res.text();
+      const $ = cheerio.load(html);
+      
+      // Enlever le superflu
+      $('script, style, nav, footer, header, aside, .ad, .advertisement').remove();
+      
+      const text = $('body').text().replace(/\s+/g, ' ').trim();
+      // On prend max 4000 caractères par URL pour ne pas exploser le token limit
+      scrapedText += `\n\n--- Source Extraite: ${url} ---\n${text.substring(0, 4000)}`;
+    } catch (e) {
+      console.error("Scraping error for", url, e);
+    }
+  }
+  return scrapedText;
+}
 
 export async function generateArticleDraft(formData) {
   const profile = await getUserProfile();
@@ -21,7 +49,8 @@ export async function generateArticleDraft(formData) {
   const subject = formData.get('subject');
   const context = formData.get('context') || '';
   const links = formData.get('links') || '';
-  const files = formData.getAll('files') || [];
+  const imageUrlsJson = formData.get('imageUrls') || '[]';
+  const imageUrls = JSON.parse(imageUrlsJson);
   const referenceArticleId = formData.get('referenceArticleId');
 
   if (!subject) throw new Error("Le sujet est requis.");
@@ -40,16 +69,23 @@ export async function generateArticleDraft(formData) {
     }
   }
 
+  let scrapedContent = '';
+  if (links) {
+    scrapedContent = await scrapeUrls(links);
+  }
+
   let prompt = `
 Tu es un journaliste professionnel expert et rigoureux. Écris un article complet et formaté en HTML sur le sujet suivant: "${subject}".
 ${context ? `Prends en compte ce contexte supplémentaire: "${context}"` : ''}
 ${referenceContent}
-${links ? `Voici des liens ou sources supplémentaires à intégrer de manière pertinente dans l'article ou dans la section sources : "${links}"` : ''}
+${scrapedContent ? `Voici le contenu extrait d'URL(s) source(s) que tu DOIS lire, analyser, et utiliser comme base pour rédiger l'article : ${scrapedContent}\n\n` : ''}
+${imageUrls.length > 0 ? `Voici une liste d'URLs d'images que tu DOIS OBLIGATOIREMENT insérer de manière esthétique et pertinente dans le corps de ton article HTML. Utilise exactement ces URLs dans la syntaxe HTML suivante: <figure style="margin: 20px 0;"><img src="URL_DE_L_IMAGE" alt="description pertinente de l'image" style="width: 100%; border-radius: 8px;"/><figcaption style="text-align:center; color:#6b7280; font-size:14px; margin-top:8px;">Description de la photo</figcaption></figure> : ${imageUrls.join(', ')}\n\n` : ''}
 
 Ton article doit être structuré, engageant et prêt à être publié sur un média en ligne.
 
 CONSIGNE CRITIQUE : Tu DOIS citer tes sources et elles doivent être réelles et vérifiables. 
-À la fin du contenu HTML de l'article, ajoute une section "<h2>Sources</h2>" contenant une liste à puces (<ul><li>) des sources fiables et vérifiables (avec des liens hypertexte réels <a href="..."> si possible) qui corroborent les faits de cet article. N'invente AUCUNE source et AUCUN faux lien. Si tu n'as pas de lien précis, cite au moins les noms réels des journaux, agences de presse ou institutions liés au sujet.
+À la fin du contenu HTML de l'article, ajoute une section "<h2>Sources</h2>" contenant une liste à puces (<ul><li>) des sources fiables et vérifiables (avec des liens hypertexte réels <a href="..."> si possible) qui corroborent les faits de cet article.
+
 
 IMPORTANT: Tu dois renvoyer la réponse **UNIQUEMENT** sous la forme d'un objet JSON valide, sans balises Markdown comme \`\`\`json, avec exactement cette structure:
 {

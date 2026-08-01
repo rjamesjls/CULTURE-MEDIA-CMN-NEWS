@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { generateArticleDraft, adjustArticleDraft, suggestTitles } from './actions';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { createClient } from '@/utils/supabase/client';
 
 export default function AIGeneratorClient({ articles = [] }) {
   const router = useRouter();
@@ -11,6 +12,8 @@ export default function AIGeneratorClient({ articles = [] }) {
   // Etape 1: Brief
   const [subject, setSubject] = useState('');
   const [context, setContext] = useState('');
+  const [links, setLinks] = useState('');
+  const [files, setFiles] = useState([]);
   const [referenceArticleId, setReferenceArticleId] = useState('');
 
   useEffect(() => {
@@ -62,6 +65,39 @@ export default function AIGeneratorClient({ articles = [] }) {
       formData.append('subject', subject);
       if (context) formData.append('context', context);
       if (referenceArticleId) formData.append('referenceArticleId', referenceArticleId);
+      if (links) formData.append('links', links);
+
+      let uploadedImageUrls = [];
+      if (files && files.length > 0) {
+        const supabase = createClient();
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          const fileExt = file.name.split('.').pop();
+          const fileName = `ai_upload_${Date.now()}_${i}.${fileExt}`;
+          
+          const { data, error } = await supabase.storage
+            .from('media')
+            .upload(`ai_uploads/${fileName}`, file, {
+              cacheControl: '3600',
+              upsert: false
+            });
+
+          if (error) {
+            console.error('Erreur upload image:', error);
+            throw new Error(`Échec de l'envoi de l'image ${file.name}`);
+          }
+          
+          const { data: urlData } = supabase.storage
+            .from('media')
+            .getPublicUrl(`ai_uploads/${fileName}`);
+            
+          if (urlData && urlData.publicUrl) {
+            uploadedImageUrls.push(urlData.publicUrl);
+          }
+        }
+      }
+      
+      formData.append('imageUrls', JSON.stringify(uploadedImageUrls));
 
       const res = await generateArticleDraft(formData);
       if (res.success) {
@@ -178,6 +214,35 @@ export default function AIGeneratorClient({ articles = [] }) {
               value={context}
               onChange={e => setContext(e.target.value)}
             ></textarea>
+          </div>
+
+          <div className="admin-form-group">
+            <label className="admin-form-label"><i className="fas fa-link" style={{marginRight: '8px', color: '#6b7280'}}></i>Sources ou liens web (Optionnel)</label>
+            <input 
+              type="text" 
+              className="admin-form-control" 
+              placeholder="Ex: https://www.lemonde.fr/article1, https://www.lefigaro.fr/article2"
+              value={links}
+              onChange={e => setLinks(e.target.value)}
+            />
+            <p style={{ fontSize: '12px', color: '#6b7280', marginTop: '5px' }}>
+              Séparez les liens par des virgules. L'IA ira lire le contenu de ces pages pour rédiger l'article.
+            </p>
+          </div>
+
+          <div className="admin-form-group">
+            <label className="admin-form-label"><i className="fas fa-image" style={{marginRight: '8px', color: '#6b7280'}}></i>Photos à intégrer (Optionnel)</label>
+            <input 
+              type="file" 
+              className="admin-form-control" 
+              multiple
+              accept="image/*"
+              onChange={e => setFiles(e.target.files)}
+              style={{ padding: '8px' }}
+            />
+            <p style={{ fontSize: '12px', color: '#6b7280', marginTop: '5px' }}>
+              Sélectionnez les images que vous souhaitez voir apparaître dans l'article généré. L'IA les placera automatiquement aux bons endroits.
+            </p>
           </div>
 
           {articles && articles.length > 0 && (
