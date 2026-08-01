@@ -153,12 +153,12 @@ export default async function CompanyProfile({ params }) {
             </p>
             
             {isPremium && (
-              <button style={{ width: '100%', padding: '16px', background: 'var(--color-primary, #D32F2F)', color: '#FFF', border: 'none', borderRadius: '12px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', marginBottom: '15px', transition: 'transform 0.2s', boxShadow: '0 8px 20px rgba(211,47,47,0.3)' }} onMouseOver={e => e.currentTarget.style.transform = 'translateY(-2px)'} onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}>
+              <button style={{ width: '100%', padding: '16px', background: 'var(--color-primary, #D32F2F)', color: '#FFF', border: 'none', borderRadius: '12px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', marginBottom: '15px', transition: 'transform 0.2s', boxShadow: '0 8px 20px rgba(211,47,47,0.3)' }}>
                 📅 Réserver en ligne
               </button>
             )}
 
-            <a href={`mailto:${company.contact_email}`} style={{ display: 'block', width: '100%', padding: '16px', background: isPremium ? 'rgba(255,255,255,0.1)' : '#F1F5F9', color: isPremium ? '#FFF' : '#0F172A', textDecoration: 'none', borderRadius: '12px', fontSize: '16px', fontWeight: 'bold', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background = isPremium ? 'rgba(255,255,255,0.2)' : '#E2E8F0'} onMouseOut={e => e.currentTarget.style.background = isPremium ? 'rgba(255,255,255,0.1)' : '#F1F5F9'}>
+            <a href={`mailto:${company.contact_email}`} style={{ display: 'block', width: '100%', padding: '16px', background: isPremium ? 'rgba(255,255,255,0.1)' : '#F1F5F9', color: isPremium ? '#FFF' : '#0F172A', textDecoration: 'none', borderRadius: '12px', fontSize: '16px', fontWeight: 'bold', transition: 'background 0.2s' }}>
               ✉️ Envoyer un message
             </a>
           </div>
@@ -217,22 +217,22 @@ export default async function CompanyProfile({ params }) {
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {isPremium && company.website_url && (
-                  <a href={company.website_url} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '12px 15px', background: '#F8FAFC', borderRadius: '12px', textDecoration: 'none', color: '#0F172A', fontWeight: '600', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.backgroundColor = '#F1F5F9'} onMouseOut={e => e.currentTarget.style.backgroundColor = '#F8FAFC'}>
+                  <a href={company.website_url} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '12px 15px', background: '#F8FAFC', borderRadius: '12px', textDecoration: 'none', color: '#0F172A', fontWeight: '600', transition: 'background 0.2s' }}>
                     <span style={{ fontSize: '20px' }}>🌐</span> Site Web Officiel
                   </a>
                 )}
                 {social.linkedin && (
-                  <a href={social.linkedin} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '12px 15px', background: '#F8FAFC', borderRadius: '12px', textDecoration: 'none', color: '#0F172A', fontWeight: '600', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.backgroundColor = '#F1F5F9'} onMouseOut={e => e.currentTarget.style.backgroundColor = '#F8FAFC'}>
+                  <a href={social.linkedin} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '12px 15px', background: '#F8FAFC', borderRadius: '12px', textDecoration: 'none', color: '#0F172A', fontWeight: '600', transition: 'background 0.2s' }}>
                     <span style={{ fontSize: '20px' }}>💼</span> LinkedIn
                   </a>
                 )}
                 {isPremium && social.instagram && (
-                  <a href={social.instagram} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '12px 15px', background: '#F8FAFC', borderRadius: '12px', textDecoration: 'none', color: '#0F172A', fontWeight: '600', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.backgroundColor = '#F1F5F9'} onMouseOut={e => e.currentTarget.style.backgroundColor = '#F8FAFC'}>
+                  <a href={social.instagram} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '12px 15px', background: '#F8FAFC', borderRadius: '12px', textDecoration: 'none', color: '#0F172A', fontWeight: '600', transition: 'background 0.2s' }}>
                     <span style={{ fontSize: '20px' }}>📸</span> Instagram
                   </a>
                 )}
                 {isPremium && social.facebook && (
-                  <a href={social.facebook} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '12px 15px', background: '#F8FAFC', borderRadius: '12px', textDecoration: 'none', color: '#0F172A', fontWeight: '600', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.backgroundColor = '#F1F5F9'} onMouseOut={e => e.currentTarget.style.backgroundColor = '#F8FAFC'}>
+                  <a href={social.facebook} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '12px 15px', background: '#F8FAFC', borderRadius: '12px', textDecoration: 'none', color: '#0F172A', fontWeight: '600', transition: 'background 0.2s' }}>
                     <span style={{ fontSize: '20px' }}>👥</span> Facebook
                   </a>
                 )}
