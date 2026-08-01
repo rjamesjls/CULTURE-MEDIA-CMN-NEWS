@@ -7,14 +7,38 @@ export default function ArticleInteractions({ articleId, initialLikes = 0 }) {
   const [likes, setLikes] = useState(initialLikes);
   const [hasLiked, setHasLiked] = useState(false);
   const [isLiking, setIsLiking] = useState(false);
+  
+  const [user, setUser] = useState(null);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [isBookmarking, setIsBookmarking] = useState(false);
   const [shareFeedback, setShareFeedback] = useState('');
 
-  // Vérifier dans le localStorage si l'utilisateur a déjà liké
+  // Initialisation
   useEffect(() => {
+    // Check likes
     const likedArticles = JSON.parse(localStorage.getItem('cmn_liked_articles') || '[]');
     if (likedArticles.includes(articleId)) {
       setHasLiked(true);
     }
+    
+    // Check auth and bookmarks
+    const checkAuthAndBookmark = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setUser(session.user);
+        const { data } = await supabase
+          .from('bookmarks')
+          .select('id')
+          .eq('user_id', session.user.id)
+          .eq('article_id', articleId)
+          .single();
+        
+        if (data) {
+          setIsBookmarked(true);
+        }
+      }
+    };
+    checkAuthAndBookmark();
   }, [articleId]);
 
   const handleLike = async () => {
@@ -47,6 +71,47 @@ export default function ArticleInteractions({ articleId, initialLikes = 0 }) {
       console.error(err);
     } finally {
       setIsLiking(false);
+    }
+  };
+
+  const handleBookmark = async () => {
+    if (!user) {
+      alert("Veuillez vous connecter ou créer un compte pour sauvegarder cet article.");
+      window.location.href = '/auth/login';
+      return;
+    }
+
+    if (isBookmarking) return;
+    setIsBookmarking(true);
+
+    try {
+      if (isBookmarked) {
+        // Remove bookmark
+        const { error } = await supabase
+          .from('bookmarks')
+          .delete()
+          .match({ user_id: user.id, article_id: articleId });
+        
+        if (!error) {
+          setIsBookmarked(false);
+          setShareFeedback('Retiré des favoris');
+        }
+      } else {
+        // Add bookmark
+        const { error } = await supabase
+          .from('bookmarks')
+          .insert({ user_id: user.id, article_id: articleId });
+        
+        if (!error) {
+          setIsBookmarked(true);
+          setShareFeedback('Ajouté aux favoris !');
+        }
+      }
+      setTimeout(() => setShareFeedback(''), 3000);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsBookmarking(false);
     }
   };
 
@@ -91,7 +156,7 @@ export default function ArticleInteractions({ articleId, initialLikes = 0 }) {
       marginTop: '40px',
       marginBottom: '40px'
     }}>
-      <div style={{ display: 'flex', gap: '15px' }}>
+      <div style={{ display: 'flex', gap: '15px', position: 'relative' }}>
         <button 
           onClick={handleLike}
           disabled={hasLiked || isLiking}
@@ -124,6 +189,42 @@ export default function ArticleInteractions({ articleId, initialLikes = 0 }) {
           <i className={hasLiked ? 'fas fa-heart' : 'far fa-heart'} style={{ fontSize: '18px' }}></i>
           {likes} {likes > 1 ? 'J\'aimes' : 'J\'aime'}
         </button>
+        
+        <button 
+          onClick={handleBookmark}
+          disabled={isBookmarking}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            backgroundColor: isBookmarked ? '#e0e7ff' : '#f3f4f6',
+            color: isBookmarked ? '#4f46e5' : '#4b5563',
+            border: 'none',
+            padding: '10px 20px',
+            borderRadius: '25px',
+            cursor: 'pointer',
+            fontWeight: '600',
+            fontSize: '15px',
+            transition: 'all 0.2s',
+            boxShadow: isBookmarked ? '0 2px 10px rgba(79, 70, 229, 0.2)' : 'none'
+          }}
+          onMouseOver={(e) => {
+            if (!isBookmarked) e.currentTarget.style.backgroundColor = '#e5e7eb';
+          }}
+          onMouseOut={(e) => {
+            if (!isBookmarked) e.currentTarget.style.backgroundColor = '#f3f4f6';
+          }}
+          title={user ? (isBookmarked ? "Retirer des favoris" : "Sauvegarder cet article") : "Connectez-vous pour sauvegarder"}
+        >
+          <i className={isBookmarked ? 'fas fa-bookmark' : 'far fa-bookmark'} style={{ fontSize: '18px' }}></i>
+          Sauvegarder
+        </button>
+        
+        {shareFeedback && (shareFeedback.includes('favoris') || shareFeedback.includes('Retiré')) && (
+          <span style={{ position: 'absolute', bottom: '110%', left: '80%', transform: 'translateX(-50%)', backgroundColor: '#374151', color: 'white', fontSize: '12px', padding: '4px 8px', borderRadius: '4px', whiteSpace: 'nowrap', zIndex: 10 }}>
+            {shareFeedback}
+          </span>
+        )}
       </div>
 
       <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
@@ -161,8 +262,8 @@ export default function ArticleInteractions({ articleId, initialLikes = 0 }) {
           >
             <i className="fas fa-link"></i>
           </button>
-          {shareFeedback && (
-            <span style={{ position: 'absolute', bottom: '110%', left: '50%', transform: 'translateX(-50%)', backgroundColor: '#374151', color: 'white', fontSize: '12px', padding: '4px 8px', borderRadius: '4px', whiteSpace: 'nowrap' }}>
+          {shareFeedback && shareFeedback.includes('copié') && (
+            <span style={{ position: 'absolute', bottom: '110%', left: '50%', transform: 'translateX(-50%)', backgroundColor: '#374151', color: 'white', fontSize: '12px', padding: '4px 8px', borderRadius: '4px', whiteSpace: 'nowrap', zIndex: 10 }}>
               {shareFeedback}
             </span>
           )}

@@ -4,7 +4,12 @@ import { supabase } from '@/lib/supabase';
 import FlashTicker from './FlashTicker';
 import SubscribeButton from './SubscribeButton';
 
+import { createClient } from '@/utils/supabase/server';
+
 export default async function Header() {
+  const supabaseClient = await createClient();
+  const { data: { user } } = await supabaseClient.auth.getUser();
+
   const { data: menus } = await supabase
     .from('menus')
     .select('*')
@@ -76,6 +81,18 @@ export default async function Header() {
             }}>
               Espace PRO
             </Link>
+
+            {user ? (
+              <Link href="/profile" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fff', textDecoration: 'none', fontSize: '14px', fontWeight: '600' }}>
+                <i className="fas fa-user-circle" style={{ fontSize: '18px' }}></i>
+                <span>Profil</span>
+              </Link>
+            ) : (
+              <Link href="/auth/login" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fff', textDecoration: 'none', fontSize: '14px', fontWeight: '600' }}>
+                <i className="fas fa-sign-in-alt"></i>
+                <span>Connexion</span>
+              </Link>
+            )}
 
             <SubscribeButton />
           </nav>
