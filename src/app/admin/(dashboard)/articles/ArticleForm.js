@@ -604,6 +604,7 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
             
             {/* Content (HTML) */}
             <div 
+              id="article-content"
               style={{ fontSize: '15px', lineHeight: '1.6', color: '#111827', borderTop: '1px solid #e5e7eb', paddingTop: '20px' }}
               dangerouslySetInnerHTML={{ __html: content || '<p style="color:#9ca3af;">Le contenu de votre article apparaîtra ici...</p>' }}
             />

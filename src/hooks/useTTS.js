@@ -6,30 +6,76 @@ export default function useTTS() {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [isSupported, setIsSupported] = useState(true);
-  const utteranceRef = useRef(null);
+  
+  // Track current highlighted element
+  const currentHighlightedEl = useRef(null);
 
   useEffect(() => {
     if (typeof window === 'undefined' || !window.speechSynthesis) {
       setIsSupported(false);
       return;
     }
-
-    // Cancel any ongoing speech when component unmounts
     return () => {
-      window.speechSynthesis.cancel();
+      stop();
     };
   }, []);
 
-  const stripHtml = (html) => {
-    if (typeof window === 'undefined') return html;
-    const doc = new DOMParser().parseFromString(html, 'text/html');
-    return doc.body.textContent || "";
+  const removeHighlight = () => {
+    if (currentHighlightedEl.current) {
+      currentHighlightedEl.current.classList.remove('tts-highlight');
+      currentHighlightedEl.current = null;
+    }
   };
 
-  const play = (title, htmlContent) => {
+  const createUtterance = (text, elementToHighlight = null) => {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'fr-FR';
+    
+    const voices = window.speechSynthesis.getVoices();
+    const frVoices = voices.filter(v => v.lang.startsWith('fr'));
+    if (frVoices.length > 0) {
+      const premiumVoice = frVoices.find(v => v.name.includes('Premium') || v.name.includes('Google') || v.name.includes('Siri'));
+      utterance.voice = premiumVoice || frVoices[0];
+    }
+
+    utterance.onstart = () => {
+      removeHighlight();
+      setIsSpeaking(true);
+      setIsPaused(false);
+      if (elementToHighlight) {
+        elementToHighlight.classList.add('tts-highlight');
+        currentHighlightedEl.current = elementToHighlight;
+        
+        // Scroll to the element smoothly, keeping it roughly in the middle
+        const rect = elementToHighlight.getBoundingClientRect();
+        const isInViewport = rect.top >= 0 && rect.bottom <= window.innerHeight;
+        if (!isInViewport) {
+          elementToHighlight.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+    };
+
+    utterance.onend = () => {
+      removeHighlight();
+      // Si la file d'attente est vide, c'est la fin globale
+      if (!window.speechSynthesis.pending && !window.speechSynthesis.speaking) {
+        setIsSpeaking(false);
+        setIsPaused(false);
+      }
+    };
+
+    utterance.onerror = (e) => {
+      removeHighlight();
+      setIsSpeaking(false);
+      setIsPaused(false);
+    };
+
+    return utterance;
+  };
+
+  const play = (title, rawContent) => {
     if (!isSupported) return;
 
-    // If already paused, just resume
     if (isPaused) {
       window.speechSynthesis.resume();
       setIsPaused(false);
@@ -37,43 +83,45 @@ export default function useTTS() {
       return;
     }
 
-    // Clean previous
-    window.speechSynthesis.cancel();
+    stop();
 
-    // Prepare text
-    const cleanContent = stripHtml(htmlContent);
-    const fullText = `${title}. \n\n ${cleanContent}`;
-
-    const utterance = new SpeechSynthesisUtterance(fullText);
-    utterance.lang = 'fr-FR'; // Default to French
-    
-    // Attempt to find a natural-sounding French voice if available
-    const voices = window.speechSynthesis.getVoices();
-    const frVoices = voices.filter(v => v.lang.startsWith('fr'));
-    if (frVoices.length > 0) {
-      // Prefer Google or Apple premium voices if available
-      const premiumVoice = frVoices.find(v => v.name.includes('Premium') || v.name.includes('Google') || v.name.includes('Siri'));
-      utterance.voice = premiumVoice || frVoices[0];
+    // 1. Lire le titre
+    if (title) {
+      window.speechSynthesis.speak(createUtterance(title + "."));
     }
 
-    utterance.onstart = () => {
-      setIsSpeaking(true);
-      setIsPaused(false);
-    };
-
-    utterance.onend = () => {
-      setIsSpeaking(false);
-      setIsPaused(false);
-    };
-
-    utterance.onerror = (e) => {
-      console.error('TTS Error:', e);
-      setIsSpeaking(false);
-      setIsPaused(false);
-    };
-
-    utteranceRef.current = utterance;
-    window.speechSynthesis.speak(utterance);
+    // 2. Chercher le conteneur de contenu
+    const contentContainer = document.getElementById('article-content');
+    
+    if (contentContainer) {
+      // Si on a un conteneur, on lit par bloc (p, h1-h6, li, blockquote)
+      const blocks = contentContainer.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, blockquote');
+      
+      if (blocks.length > 0) {
+        blocks.forEach((block) => {
+          const text = block.textContent.trim();
+          if (text) {
+            window.speechSynthesis.speak(createUtterance(text, block));
+          }
+        });
+      } else {
+        // Fallback si pas de balises structurantes
+        const cleanText = contentContainer.textContent.trim();
+        if (cleanText) {
+          window.speechSynthesis.speak(createUtterance(cleanText, contentContainer));
+        }
+      }
+    } else {
+      // Fallback si pas d'ID trouvé
+      const doc = new DOMParser().parseFromString(rawContent, 'text/html');
+      const cleanText = doc.body.textContent || "";
+      if (cleanText) {
+        window.speechSynthesis.speak(createUtterance(cleanText));
+      }
+    }
+    
+    setIsSpeaking(true);
+    setIsPaused(false);
   };
 
   const pause = () => {
@@ -86,6 +134,7 @@ export default function useTTS() {
   const stop = () => {
     if (!isSupported) return;
     window.speechSynthesis.cancel();
+    removeHighlight();
     setIsSpeaking(false);
     setIsPaused(false);
   };

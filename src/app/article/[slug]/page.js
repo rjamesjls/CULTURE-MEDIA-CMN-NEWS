@@ -135,7 +135,7 @@ export default async function ArticlePage({ params }) {
           <img src={article.image_url || 'https://images.unsplash.com/photo-1620287341056-49a2f1ab2fdc?q=80&w=800&auto=format&fit=crop'} alt={article.title} style={{ width: '100%', borderRadius: '12px' }} />
         </div>
 
-        <div className="article-body" style={{ fontSize: '1.15rem', lineHeight: '1.8', color: '#374151' }}>
+        <div className="article-body" id="article-content" style={{ fontSize: '1.15rem', lineHeight: '1.8', color: '#374151' }}>
           <div dangerouslySetInnerHTML={{ __html: article.content ? article.content.replace(/&nbsp;/g, ' ') : '' }} />
         </div>
 
@@ -245,6 +245,15 @@ export default async function ArticlePage({ params }) {
         }
         .sidebar-article:hover .hover-color {
           color: var(--color-primary);
+        }
+
+        /* TTS Highlight */
+        .tts-highlight {
+          background-color: #fef08a; /* yellow-200 */
+          border-radius: 4px;
+          padding: 2px 4px;
+          margin: -2px -4px;
+          transition: background-color 0.3s ease;
         }
       `}</style>
     </div>
