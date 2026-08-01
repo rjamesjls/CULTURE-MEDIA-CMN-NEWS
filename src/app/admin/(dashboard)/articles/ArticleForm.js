@@ -35,6 +35,10 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
   const [aiFiles, setAiFiles] = useState([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [aiError, setAiError] = useState('');
+  
+  // Image Generation States
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [isSearchingPhoto, setIsSearchingPhoto] = useState(false);
 
   // AI Editor Assistant States
   const [aiEditInstruction, setAiEditInstruction] = useState('');
@@ -110,6 +114,45 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
       setAiError("Une erreur inattendue est survenue.");
     } finally {
       setIsGenerating(false);
+    }
+  };
+  
+  const handleGenerateImageAI = () => {
+    if (!title) {
+      alert("Veuillez d'abord définir un titre d'article pour générer l'image.");
+      return;
+    }
+    setIsGeneratingImage(true);
+    // Pollinations generates instantly without API Key!
+    const prompt = `Professional high quality realistic cover photo for an article titled: ${title}. ${category ? `Category: ${category}.` : ''} High resolution, cinematic lighting, masterpiece, photorealistic, no text.`;
+    const seed = Math.floor(Math.random() * 1000000);
+    const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?nologo=1&seed=${seed}&width=1200&height=630`;
+    setImageUrl(url);
+    setIsGeneratingImage(false);
+  };
+
+  const handleSearchPhoto = async () => {
+    if (!title) {
+      alert("Veuillez d'abord définir un titre d'article pour chercher une photo.");
+      return;
+    }
+    setIsSearchingPhoto(true);
+    try {
+      // Extrait les mots-clés du titre (max 3-4 mots pour une meilleure recherche)
+      const keywords = title.replace(/[^\w\s]/gi, '').split(' ').filter(w => w.length > 3).slice(0, 3).join(' ');
+      const query = category ? `${category} ${keywords}` : keywords;
+      
+      const res = await fetch(`/api/unsplash/search?query=${encodeURIComponent(query)}`);
+      const data = await res.json();
+      if (res.ok && data.url) {
+        setImageUrl(data.url);
+      } else {
+        alert(data.error || "Aucune image trouvée ou clé API manquante.");
+      }
+    } catch (e) {
+      alert("Erreur lors de la recherche de photo.");
+    } finally {
+      setIsSearchingPhoto(false);
     }
   };
   
@@ -438,6 +481,26 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
                 onChange={(e) => setImageUrl(e.target.value)}
                 placeholder="https://..."
               />
+              <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
+                <button 
+                  type="button" 
+                  onClick={handleGenerateImageAI}
+                  disabled={isGeneratingImage}
+                  className="admin-btn"
+                  style={{ flex: 1, backgroundColor: '#a21caf', color: '#fff', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', fontSize: '13px' }}
+                >
+                  <i className="fas fa-magic"></i> {isGeneratingImage ? 'Génération...' : 'Créer via IA (Gratuit)'}
+                </button>
+                <button 
+                  type="button" 
+                  onClick={handleSearchPhoto}
+                  disabled={isSearchingPhoto}
+                  className="admin-btn"
+                  style={{ flex: 1, backgroundColor: '#0284c7', color: '#fff', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', fontSize: '13px' }}
+                >
+                  <i className="fas fa-camera"></i> {isSearchingPhoto ? 'Recherche...' : 'Chercher Photo (Unsplash)'}
+                </button>
+              </div>
             </div>
           </div>
 
