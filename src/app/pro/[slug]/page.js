@@ -4,7 +4,8 @@ import { notFound } from 'next/navigation';
 
 export async function generateMetadata({ params }) {
   const supabase = await createClient();
-  const { data: company } = await supabase.from('companies').select('*').eq('slug', params.slug).single();
+  const { slug } = await params;
+  const { data: company } = await supabase.from('companies').select('*').eq('slug', slug).single();
   
   if (!company) return { title: 'Entreprise introuvable' };
   
@@ -16,11 +17,12 @@ export async function generateMetadata({ params }) {
 
 export default async function CompanyProfile({ params }) {
   const supabase = await createClient();
+  const { slug } = await params;
   
   const { data: company, error } = await supabase
     .from('companies')
     .select('*')
-    .eq('slug', params.slug)
+    .eq('slug', slug)
     .single();
 
   if (error || !company) {
