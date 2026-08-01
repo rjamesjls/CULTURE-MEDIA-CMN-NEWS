@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { saveArticle } from '../../actions';
-import { generateArticleDraft } from '../ai-generator/actions';
+import { generateArticleDraft, adjustArticleDraft } from '../ai-generator/actions';
 import SpeechButton from '@/components/SpeechButton';
 import TextToSpeechButton from '@/components/TextToSpeechButton';
 import 'react-quill-new/dist/quill.snow.css';
@@ -35,6 +35,40 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
   const [aiFiles, setAiFiles] = useState([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [aiError, setAiError] = useState('');
+
+  // AI Editor Assistant States
+  const [aiEditInstruction, setAiEditInstruction] = useState('');
+  const [isAiEditing, setIsAiEditing] = useState(false);
+  const [aiEditError, setAiEditError] = useState('');
+  const [aiEditPanelOpen, setAiEditPanelOpen] = useState(false);
+
+  const handleAiEdit = async () => {
+    if (!aiEditInstruction.trim()) {
+      setAiEditError("Veuillez donner une instruction à l'IA (ex: Rallonge ce texte).");
+      return;
+    }
+    setIsAiEditing(true);
+    setAiEditError('');
+    
+    try {
+      const currentData = { title, description, content };
+      const result = await adjustArticleDraft(currentData, aiEditInstruction);
+      
+      if (result.success && result.data) {
+        if (result.data.title) setTitle(result.data.title);
+        if (result.data.description) setDescription(result.data.description);
+        if (result.data.content) setContent(result.data.content);
+        setAiEditInstruction('');
+        setAiEditPanelOpen(false); // On ferme après succès
+      } else {
+        setAiEditError(result.error || "Erreur lors de la modification.");
+      }
+    } catch (err) {
+      setAiEditError("Une erreur inattendue est survenue.");
+    } finally {
+      setIsAiEditing(false);
+    }
+  };
 
   const handleGenerateAI = async () => {
     if (!aiSubject.trim()) {
@@ -419,7 +453,7 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
             ></textarea>
           </div>
 
-          <div className="admin-form-group" style={{ marginBottom: '60px' }}>
+          <div className="admin-form-group" style={{ marginBottom: '20px' }}>
             <label className="admin-form-label">Contenu de l'article</label>
             <CustomEditor 
               value={content} 
@@ -427,6 +461,60 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
               style={{ height: '300px' }}
             />
           </div>
+
+          {/* --- ASSISTANT IA MODIFICATION --- */}
+          <div style={{ marginBottom: '40px', backgroundColor: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '8px', padding: '15px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }} onClick={() => setAiEditPanelOpen(!aiEditPanelOpen)}>
+              <h4 style={{ margin: 0, color: '#1d4ed8', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '15px' }}>
+                <i className="fas fa-robot"></i> Assistant IA : Modifier cet article
+              </h4>
+              <i className={`fas fa-chevron-${aiEditPanelOpen ? 'up' : 'down'}`} style={{ color: '#2563eb' }}></i>
+            </div>
+            
+            {aiEditPanelOpen && (
+              <div style={{ marginTop: '15px', borderTop: '1px solid #dbeafe', paddingTop: '15px' }}>
+                <p style={{ fontSize: '13px', color: '#1e40af', marginBottom: '10px' }}>
+                  L'IA va lire votre brouillon actuel et le réécrire selon vos consignes.
+                </p>
+                {aiEditError && (
+                  <div style={{ padding: '10px', backgroundColor: '#fee2e2', color: '#b91c1c', borderRadius: '4px', marginBottom: '10px', fontSize: '13px' }}>
+                    {aiEditError}
+                  </div>
+                )}
+                <div className="admin-form-group">
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <input 
+                      type="text" 
+                      className="admin-form-control" 
+                      value={aiEditInstruction} 
+                      onChange={(e) => setAiEditInstruction(e.target.value)} 
+                      placeholder="Ex: Rallonge le texte, ajoute un paragraphe sur la culture locale..." 
+                      style={{ borderColor: '#93c5fd', flex: 1 }} 
+                    />
+                    <SpeechButton onTranscript={(text) => setAiEditInstruction(prev => prev ? prev + ' ' + text : text)} />
+                  </div>
+                </div>
+                <button 
+                  type="button" 
+                  onClick={handleAiEdit}
+                  disabled={isAiEditing}
+                  className="admin-btn"
+                  style={{ backgroundColor: '#1d4ed8', color: '#fff', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', opacity: isAiEditing ? 0.7 : 1 }}
+                >
+                  {isAiEditing ? (
+                    <>
+                      <i className="fas fa-spinner fa-spin"></i> Modification en cours (10 à 20s)...
+                    </>
+                  ) : (
+                    <>
+                      <i className="fas fa-magic"></i> Appliquer la modification
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
+          {/* --- FIN ASSISTANT IA MODIFICATION --- */}
 
           <div style={{ display: 'flex', gap: '15px', marginTop: '20px', borderTop: '1px solid #e5e7eb', paddingTop: '20px', flexWrap: 'wrap' }}>
             <button 
@@ -461,7 +549,30 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
           <h3 style={{ fontSize: '14px', textTransform: 'uppercase', color: '#6b7280', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
             <i className="fas fa-eye"></i> Prévisualisation
           </h3>
-          <TextToSpeechButton title={title || "Titre"} content={description + " " + content} />
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            {initialData?.slug ? (
+              <a 
+                href={`/article/${initialData.slug}`} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="admin-btn" 
+                style={{ backgroundColor: '#10b981', color: 'white', padding: '6px 12px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px', textDecoration: 'none' }}
+                title="Voir la vraie page du site avec cet article"
+              >
+                <i className="fas fa-external-link-alt"></i> Aperçu complet
+              </a>
+            ) : (
+              <button 
+                type="button"
+                onClick={() => alert("Veuillez d'abord enregistrer l'article (Brouillon ou Publier) pour pouvoir afficher l'aperçu grandeur nature sur le site.")}
+                className="admin-btn" 
+                style={{ backgroundColor: '#d1d5db', color: '#4b5563', padding: '6px 12px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}
+              >
+                <i className="fas fa-external-link-alt"></i> Aperçu complet
+              </button>
+            )}
+            <TextToSpeechButton title={title || "Titre"} content={description + " " + content} />
+          </div>
         </div>
         
         <div style={{ backgroundColor: '#fff', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>

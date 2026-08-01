@@ -5,6 +5,7 @@ import ArticleInteractions from '@/components/ArticleInteractions';
 import ArticleComments from '@/components/ArticleComments';
 import ViewTracker from '@/components/ViewTracker';
 import TextToSpeechButton from '@/components/TextToSpeechButton';
+import { getUserProfile } from '@/utils/supabase/auth';
 
 export const revalidate = 60; // Revalidate every minute
 
@@ -39,6 +40,16 @@ export default async function ArticlePage({ params }) {
     notFound();
   }
 
+  // Si c'est un brouillon, on vérifie que l'utilisateur est admin ou auteur
+  let isPreviewMode = false;
+  if (article.status === 'draft') {
+    const profile = await getUserProfile();
+    if (!profile || (profile.role !== 'admin' && profile.role !== 'author')) {
+      notFound(); // On simule que l'article n'existe pas pour le grand public
+    }
+    isPreviewMode = true;
+  }
+
   // Fetch comments (approved only)
   const { data: comments } = await supabase
     .from('comments')
@@ -66,10 +77,16 @@ export default async function ArticlePage({ params }) {
     .limit(4);
 
   return (
-    <div className="article-layout-wrapper" style={{ maxWidth: '1400px', margin: '140px auto 40px auto', padding: '0 20px', display: 'flex', gap: '40px', alignItems: 'flex-start' }}>
-      <ViewTracker articleId={article.id} />
-      
-      {/* Left Sidebar: Latest Articles */}
+    <>
+      {isPreviewMode && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9999, backgroundColor: '#fef08a', color: '#854d0e', padding: '10px', textAlign: 'center', fontWeight: 'bold', fontSize: '14px', borderBottom: '2px solid #eab308' }}>
+          ⚠️ MODE APERÇU : Cet article est un brouillon et n'est pas visible par le public.
+        </div>
+      )}
+      <div className="article-layout-wrapper" style={{ maxWidth: '1400px', margin: '140px auto 40px auto', padding: '0 20px', display: 'flex', gap: '40px', alignItems: 'flex-start' }}>
+        <ViewTracker articleId={article.id} />
+        
+        {/* Left Sidebar: Latest Articles */}
       <aside className="sidebar-latest" style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '20px', position: 'sticky', top: '100px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
           <div style={{ width: '4px', height: '24px', backgroundColor: 'var(--color-primary)' }}></div>
@@ -231,5 +248,6 @@ export default async function ArticlePage({ params }) {
         }
       `}</style>
     </div>
+    </>
   );
 }
