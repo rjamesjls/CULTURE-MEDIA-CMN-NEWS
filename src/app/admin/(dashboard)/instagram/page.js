@@ -18,6 +18,9 @@ export default async function InstagramDashboardPage() {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h1 style={{ fontFamily: 'var(--font-heading)' }}>Création de Posts Instagram</h1>
+        <Link href="/admin/instagram/custom" className="admin-btn admin-btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', fontWeight: 'bold' }}>
+          <i className="fas fa-magic"></i> Info Courte Libre (1080x1350)
+        </Link>
       </div>
 
       <div style={{ background: '#FFF', padding: '20px', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
