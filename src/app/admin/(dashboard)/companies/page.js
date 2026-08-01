@@ -1,10 +1,13 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { createClient } from '@/utils/supabase/client';
+import { deleteCompany } from './actions';
 
 export default function AdminCompanies() {
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [companyToDelete, setCompanyToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const supabase = createClient();
 
   useEffect(() => {
@@ -27,15 +30,20 @@ export default function AdminCompanies() {
     fetchCompanies();
   };
 
-  const handleDelete = async (id, name) => {
-    if (window.confirm(`Êtes-vous sûr de vouloir supprimer l'entreprise "${name}" ? Cette action est irréversible.`)) {
-      const { error } = await supabase.from('companies').delete().eq('id', id);
-      if (error) {
-        alert('Erreur lors de la suppression : ' + error.message);
-      } else {
-        fetchCompanies();
-      }
+  const handleDeleteClick = (company) => {
+    setCompanyToDelete(company);
+  };
+
+  const confirmDelete = async () => {
+    setIsDeleting(true);
+    const result = await deleteCompany(companyToDelete.id);
+    if (result.error) {
+      alert('Erreur lors de la suppression : ' + result.error);
+    } else {
+      fetchCompanies();
     }
+    setIsDeleting(false);
+    setCompanyToDelete(null);
   };
 
   if (loading) return <div>Chargement des entreprises...</div>;
@@ -98,7 +106,7 @@ export default function AdminCompanies() {
                       </button>
                       <button 
                         className="btn btn-sm btn-outline-danger"
-                        onClick={() => handleDelete(company.id, company.name)}
+                        onClick={() => handleDeleteClick(company)}
                       >
                         Supprimer
                       </button>
@@ -115,6 +123,36 @@ export default function AdminCompanies() {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {companyToDelete && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1050 }}>
+          <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '12px', maxWidth: '400px', width: '90%', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}>
+            <h3 style={{ marginTop: 0, marginBottom: '15px', color: '#0F172A', fontWeight: '800', fontSize: '20px' }}>Confirmer la suppression</h3>
+            <p style={{ color: '#475569', marginBottom: '25px', lineHeight: '1.5', fontSize: '15px' }}>
+              Êtes-vous sûr de vouloir supprimer définitivement l'entreprise <strong>{companyToDelete.name}</strong> ? Cette action est irréversible et supprimera le compte pro de cet utilisateur.
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button 
+                className="btn btn-light" 
+                onClick={() => setCompanyToDelete(null)} 
+                disabled={isDeleting}
+                style={{ fontWeight: '600' }}
+              >
+                Annuler
+              </button>
+              <button 
+                className="btn btn-danger" 
+                onClick={confirmDelete} 
+                disabled={isDeleting}
+                style={{ fontWeight: '600', backgroundColor: 'var(--color-primary, #D32F2F)' }}
+              >
+                {isDeleting ? 'Suppression...' : 'Oui, supprimer'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
