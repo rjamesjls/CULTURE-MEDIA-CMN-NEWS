@@ -13,6 +13,12 @@ export default function ProDashboard() {
     siret: '',
     contact_email: '',
     contact_phone: '',
+    address: '',
+    industry: '',
+    business_type: '',
+    contact_first_name: '',
+    contact_last_name: '',
+    contact_role: '',
     website_url: '',
     facebook: '',
     instagram: '',
@@ -45,6 +51,12 @@ export default function ProDashboard() {
           ...data,
           contact_email: data.contact_email || '',
           contact_phone: data.contact_phone || '',
+          address: data.address || '',
+          industry: data.industry || '',
+          business_type: data.business_type || '',
+          contact_first_name: data.contact_first_name || '',
+          contact_last_name: data.contact_last_name || '',
+          contact_role: data.contact_role || '',
           facebook: social.facebook || '',
           instagram: social.instagram || '',
           linkedin: social.linkedin || ''
@@ -74,6 +86,12 @@ export default function ProDashboard() {
       siret: company.siret,
       contact_email: company.contact_email,
       contact_phone: company.contact_phone,
+      address: company.address,
+      industry: company.industry,
+      business_type: company.business_type,
+      contact_first_name: company.contact_first_name,
+      contact_last_name: company.contact_last_name,
+      contact_role: company.contact_role,
       description: company.description,
       website_url: company.website_url,
       social_links: {
@@ -174,16 +192,56 @@ export default function ProDashboard() {
               <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Nom de l'entreprise *</label>
               <input type="text" name="name" value={company.name} onChange={handleChange} required style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #CBD5E1' }} />
             </div>
-            
-            <div>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Email de contact *</label>
-              <input type="email" name="contact_email" value={company.contact_email} onChange={handleChange} required style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #CBD5E1' }} />
+
+            <div style={{ display: 'flex', gap: '15px' }}>
+              <div style={{ flex: 1 }}>
+                <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Prénom du contact</label>
+                <input type="text" name="contact_first_name" value={company.contact_first_name} onChange={handleChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #CBD5E1' }} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Nom du contact</label>
+                <input type="text" name="contact_last_name" value={company.contact_last_name} onChange={handleChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #CBD5E1' }} />
+              </div>
             </div>
 
             <div>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Numéro de téléphone *</label>
-              <input type="tel" name="contact_phone" value={company.contact_phone} onChange={handleChange} required style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #CBD5E1' }} />
+              <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Fonction du contact</label>
+              <input type="text" name="contact_role" value={company.contact_role} onChange={handleChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #CBD5E1' }} />
             </div>
+            
+            <div style={{ display: 'flex', gap: '15px' }}>
+              <div style={{ flex: 1 }}>
+                <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Email de l'entreprise *</label>
+                <input type="email" name="contact_email" value={company.contact_email} onChange={handleChange} required style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #CBD5E1' }} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Numéro de téléphone *</label>
+                <input type="tel" name="contact_phone" value={company.contact_phone} onChange={handleChange} required style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #CBD5E1' }} />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '15px' }}>
+              <div style={{ flex: 1 }}>
+                <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Secteur d'activité</label>
+                <input type="text" name="industry" value={company.industry} onChange={handleChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #CBD5E1' }} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Type d'activité</label>
+                <select name="business_type" value={company.business_type} onChange={handleChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #CBD5E1', backgroundColor: '#fff' }}>
+                  <option value="">Sélectionnez</option>
+                  <option value="Produits">Produits</option>
+                  <option value="Services">Services</option>
+                  <option value="Les deux">Les deux</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Adresse complète</label>
+              <input type="text" name="address" value={company.address} onChange={handleChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #CBD5E1' }} />
+            </div>
+            
+
 
             <div>
               <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Numéro de SIRET</label>

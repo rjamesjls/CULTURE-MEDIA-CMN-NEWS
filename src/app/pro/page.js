@@ -26,7 +26,7 @@ export default async function ProDirectory() {
         <p style={{ fontSize: '18px', color: '#64748B', maxWidth: '600px', margin: '20px auto' }}>
           Découvrez les entreprises qui nous font confiance. Rejoignez le réseau Culture Média News dès aujourd'hui.
         </p>
-        <Link href="/pro/dashboard">
+        <Link href="/pro/register">
           <button style={{ 
             background: '#0F172A', color: 'white', padding: '12px 30px', 
             borderRadius: '30px', fontWeight: 'bold', fontSize: '16px', border: 'none', cursor: 'pointer',
