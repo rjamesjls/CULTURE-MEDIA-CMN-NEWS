@@ -251,29 +251,61 @@ export default function InstagramGenerator({ article, recentArticles = [] }) {
     return html;
   };
 
-  const generateAIHook = async () => {
+  const generateAIHook = async (lang = activeLang) => {
     setIsGenerating(true);
     setErrorMsg("");
     setSuccessMsg("");
     try {
-      const promptFr = `Résume cet article en une version très courte (2 à 3 phrases maximum) allant à l'essentiel pour un post Instagram.\n\nTitre: ${article.title}\n\nContenu: ${article.content || ''}`;
-      const promptBsh = `Traduis et résume cet article en langue Bushingue (Créole) en une version très courte (2 à 3 phrases maximum) allant à l'essentiel pour un post Instagram.\n\nTitre: ${article.title}\n\nContenu: ${article.content || ''}`;
+      const promptFr = `Résume cet article en une version très courte (2 à 3 phrases maximum) allant à l'essentiel pour un post Instagram. 
+Tu dois absolument mettre en gras (avec la balise HTML <strong>) les points clés ou les mots importants.
+De plus, extrais le nom de la source d'origine de l'article (ex: Le Monde, AFP, L'Equipe, etc.). Si aucune source n'est identifiable de manière évidente, utilise "Culture Media News".
+Tu DOIS renvoyer UNIQUEMENT un objet JSON valide avec cette structure exacte (sans bloc markdown):
+{
+  "hook": "Le résumé avec les balises <strong>...",
+  "source": "Nom de la source"
+}
+
+Titre: ${article.title}
+Contenu: ${article.content || ''}`;
+
+      const promptBsh = `Traduis et résume cet article en langue Bushingue (Créole) en une version très courte (2 à 3 phrases maximum) allant à l'essentiel pour un post Instagram.
+Tu dois absolument mettre en gras (avec la balise HTML <strong>) les points clés ou les mots importants.
+De plus, extrais le nom de la source d'origine de l'article (ex: Le Monde, AFP, L'Equipe, etc.). Si aucune source n'est identifiable de manière évidente, utilise "Culture Media News".
+Tu DOIS renvoyer UNIQUEMENT un objet JSON valide avec cette structure exacte (sans bloc markdown):
+{
+  "hook": "Le résumé avec les balises <strong>...",
+  "source": "Nom de la source"
+}
+
+Titre: ${article.title}
+Contenu: ${article.content || ''}`;
       
       const res = await fetch("/api/ai/suggest-titles", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          prompt: activeLang === "fr" ? promptFr : promptBsh,
+          prompt: lang === "fr" ? promptFr : promptBsh,
         }),
       });
       const data = await res.json();
+      
       if (data.hook) {
-        // Formater en HTML (paragraphe) pour le rendu immédiat dans Quill et le template
-        const htmlHook = data.hook.startsWith("<") 
-          ? data.hook 
-          : `<p>${data.hook.replace(/\n/g, '<br/>')}</p>`;
+        let parsed;
+        try {
+          parsed = JSON.parse(data.hook);
+        } catch(e) {
+          parsed = { hook: data.hook, source: "Culture Media News" };
+        }
+
+        const htmlHook = parsed.hook.startsWith("<") 
+          ? parsed.hook 
+          : `<p>${parsed.hook.replace(/\n/g, '<br/>')}</p>`;
         
-        updateData(`body_${activeLang}`, htmlHook);
+        // On met à jour directement le state global pour que ça s'affiche
+        updateData(`body_${lang}`, htmlHook);
+        if (parsed.source) {
+          updateData("source", parsed.source);
+        }
         forceEditorRemount();
       }
     } catch (err) {
@@ -281,6 +313,15 @@ export default function InstagramGenerator({ article, recentArticles = [] }) {
     }
     setIsGenerating(false);
   };
+
+  // Auto-génération au chargement du composant
+  useEffect(() => {
+    // Si le corps est le texte tronqué par défaut (qui finit par "...")
+    if (currentData[`body_${activeLang}`].endsWith("...")) {
+      generateAIHook(activeLang);
+    }
+  }, [activeLang]); // re-run if they switch lang and it's not generated
+
 
   const handleDownload = async (lang) => {
     const ref = lang === "fr" ? postRefFr : postRefBsh;
@@ -489,14 +530,17 @@ export default function InstagramGenerator({ article, recentArticles = [] }) {
         <div
           style={{
             color: "#fff",
-            fontSize: "32px",
+            fontSize: "24px",
             fontWeight: "900",
             display: "flex",
             flexDirection: "column",
+            textTransform: "uppercase",
+            maxWidth: "350px",
+            wordBreak: "break-word",
+            lineHeight: "1.2"
           }}
         >
-          <span style={{ fontSize: "18px" }}>CULTURE</span>
-          <span>MEDIA NEWS</span>
+          <span>{currentData.source}</span>
         </div>
         <div
           style={{
@@ -1543,7 +1587,7 @@ export default function InstagramGenerator({ article, recentArticles = [] }) {
               textTransform: "uppercase",
             }}
           >
-            CULTURE MEDIA NEWS
+            {currentData.source}
           </div>
           <div
             style={{ color: "#64748b", fontSize: "20px", marginTop: "10px" }}
@@ -1624,6 +1668,21 @@ export default function InstagramGenerator({ article, recentArticles = [] }) {
   return (
     <>
       <style>{`
+        /* Styles pour Instagram Post (wrap, points clés en jaune et très gras) */
+        .insta-body {
+          word-break: break-word;
+          overflow-wrap: break-word;
+          white-space: pre-wrap !important;
+        }
+        .insta-body strong {
+          color: #facc15 !important;
+          font-weight: 900 !important;
+        }
+        .insta-title {
+          word-break: break-word;
+          overflow-wrap: break-word;
+        }
+
         /* Masquer la sidebar, le header et les autres éléments du layout admin */
         .admin-sidebar { display: none !important; }
         .admin-header { display: none !important; }
