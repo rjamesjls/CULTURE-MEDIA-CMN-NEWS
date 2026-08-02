@@ -579,7 +579,7 @@ Contenu: ${article.content || ''}`;
           }}
         />
         <div
-          className="insta-body"
+          className={`insta-body ${lang}`}
           style={{
             color: "#fff",
             fontSize: "30px",
@@ -894,7 +894,7 @@ Contenu: ${article.content || ''}`;
           }}
         />
         <div
-          className="insta-body"
+          className={`insta-body ${lang}`}
           style={{
             color: "#fff",
             fontSize: "30px",
@@ -1190,7 +1190,7 @@ Contenu: ${article.content || ''}`;
           }}
         />
         <div
-          className="insta-body"
+          className={`insta-body ${lang}`}
           style={{
             color: "#1e3a8a",
             fontSize: "30px",
@@ -1465,7 +1465,7 @@ Contenu: ${article.content || ''}`;
           }}
         />
         <div
-          className="insta-body"
+          className={`insta-body ${lang}`}
           style={{
             color: "#374151",
             fontSize: "30px",
@@ -1726,7 +1726,7 @@ Contenu: ${article.content || ''}`;
           }}
         />
         <div
-          className="insta-body"
+          className={`insta-body ${lang}`}
           style={{
             color: "#cbd5e1",
             fontSize: "30px",
@@ -1754,8 +1754,13 @@ Contenu: ${article.content || ''}`;
           white-space: pre-wrap !important;
         }
         .insta-body strong {
-          color: #facc15 !important;
           font-weight: 900 !important;
+        }
+        .insta-body.fr strong {
+          color: #facc15 !important;
+        }
+        .insta-body.bsh strong {
+          color: #1e3a8a !important; /* Bleu foncé */
         }
         .insta-title {
           word-break: break-word;
