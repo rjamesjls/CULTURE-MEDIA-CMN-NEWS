@@ -1963,7 +1963,7 @@ Contenu: ${article.content || ''}`;
                 ) : (
                   <i className="fas fa-magic"></i>
                 )}{" "}
-                {activeLang === "fr" ? "Générer le résumé" : "Traduire & Résumer"}
+                {activeLang === "fr" ? "Générer Titre & Résumé (IA)" : "Générer Titre & Résumé BSH (IA)"}
               </button>
             </div>
             <div
