@@ -333,15 +333,6 @@ Tu DOIS renvoyer UNIQUEMENT un objet JSON valide avec cette structure exacte (sa
 
 Titre original: ${article.title}
 Contenu: ${article.content || ''}`;
-Tu DOIS renvoyer UNIQUEMENT un objet JSON valide avec cette structure exacte (sans bloc markdown):
-{
-  "title": "Le titre très court et percutant",
-  "hook": "Le résumé avec les balises <strong>...",
-  "source": "Nom de la source"
-}
-
-Titre original: ${article.title}
-Contenu: ${article.content || ''}`;
 
       const promptBsh = `Traduis LE RÉSUMÉ de cet article en langue Bushinengé (langues de Guyane/Suriname comme le Ndyuka, Aluku, Pamaka ou Sranan Tongo) en une version très courte (2 à 3 phrases maximum) allant à l'essentiel pour un post Instagram.
 IMPORTANT: NE TRADUIS SURTOUT PAS EN CRÉOLE HAÏTIEN, NI CRÉOLE ANTILLAIS.
@@ -397,7 +388,9 @@ Contenu: ${article.content || ''}`;
       }
     } catch (err) {
       setErrorMsg("Erreur lors de la génération de l'accroche.");
-    setIsGenerating(false);
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   // Auto-génération au chargement du composant
