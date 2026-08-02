@@ -35,7 +35,8 @@ export async function generateTitles(article, lang = 'fr') {
     
     Formatte la réponse UNIQUEMENT en tableau JSON valide de strings, sans markdown, sans autre texte. Exemple: ["Titre 1", "Titre 2", "Titre 3"]`;
 
-    const promptBsh = `Génère 3 propositions de titres très courts, percutants et accrocheurs en langue Bushingue (Créole) pour un post Instagram. 
+    const promptBsh = `Génère 3 propositions de titres très courts, percutants et accrocheurs en langue Bushinengé (langues des Bushinengés de Guyane, par exemple Ndyuka, Aluku, Pamaka, ou Sranan Tongo) pour un post Instagram. 
+    IMPORTANT : NE TRADUIS SURTOUT PAS EN CRÉOLE HAÏTIEN NI EN CRÉOLE ANTILLAIS. Utilise uniquement les dialectes Bushinengé de Guyane/Suriname.
     Voici l'article d'origine (en français) :
     Titre : ${article.title}
     Contenu : ${article.content}
@@ -82,7 +83,7 @@ export async function generateCaption(article) {
 La légende DOIT inclure DEUX versions du texte dans le même post :
 1. D'abord le texte en Français (engageant, avec des emojis)
 2. Ensuite un petit séparateur (ex: "---")
-3. Ensuite la traduction du texte en langue Bushingue (Créole)
+3. Ensuite la traduction du texte en langue Bushinengé (langues de Guyane/Suriname comme le Ndyuka, Aluku, Pamaka ou Sranan Tongo). IMPORTANT: PAS DE CRÉOLE HAÏTIEN, NI CRÉOLE ANTILLAIS.
 4. À la fin, ajoute 5 à 10 hashtags pertinents en rapport avec l'article.
 
 Voici l'article :
