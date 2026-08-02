@@ -273,15 +273,66 @@ export default function InstagramGenerator({ article, recentArticles = [] }) {
     return html;
   };
 
-  const generateAIHook = async (lang = activeLang) => {
+  const generateAITitle = async () => {
     setIsGenerating(true);
     setErrorMsg("");
     setSuccessMsg("");
     try {
-      const promptFr = `Génère un titre très court et percutant ET résume cet article en une version très courte (2 à 3 phrases maximum) allant à l'essentiel pour un post Instagram. 
+      const promptFr = `Génère 1 seul titre très court, percutant et accrocheur pour un post Instagram. 
+Voici l'article d'origine :
+Titre : ${article.title}
+Contenu : ${article.content || ''}
+      
+Formatte la réponse UNIQUEMENT en string, sans markdown, sans autre texte.`;
+
+      const promptBsh = `Génère 1 seul titre très court, percutant et accrocheur en langue Bushinengé (langues de Guyane/Suriname comme le Ndyuka, Aluku, Pamaka ou Sranan Tongo) pour un post Instagram. 
+IMPORTANT: NE TRADUIS SURTOUT PAS EN CRÉOLE HAÏTIEN, NI CRÉOLE ANTILLAIS.
+Voici l'article d'origine (en français) :
+Titre : ${article.title}
+Contenu : ${article.content || ''}
+      
+Formatte la réponse UNIQUEMENT en string, sans markdown, sans autre texte.`;
+
+      const res = await fetch("/api/ai/suggest-titles", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt: activeLang === "fr" ? promptFr : promptBsh,
+        }),
+      });
+      const data = await res.json();
+      
+      if (data.hook) {
+        updateData(`title_${activeLang}`, data.hook);
+        setSuccessMsg("Titre généré avec succès !");
+      } else {
+        setErrorMsg(data.error || "Erreur inconnue");
+      }
+    } catch (err) {
+      console.error(err);
+      setErrorMsg("Une erreur est survenue lors de la génération du titre.");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const generateAIHook = async () => {
+    setIsGenerating(true);
+    setErrorMsg("");
+    setSuccessMsg("");
+    try {
+      const promptFr = `Résume cet article en une version très courte (2 à 3 phrases maximum) allant à l'essentiel pour un post Instagram. 
 Tu dois absolument mettre en gras (avec la balise HTML <strong>) les points clés ou les mots importants dans le résumé. 
 INTERDICTION D'UTILISER DU MARKDOWN (aucun astérisque **). Utilise UNIQUEMENT la balise <strong> pour le gras.
 De plus, extrais le nom de la source d'origine de l'article (ex: Le Monde, AFP, L'Equipe, etc.). Si aucune source n'est identifiable de manière évidente, utilise "Culture Media News".
+Tu DOIS renvoyer UNIQUEMENT un objet JSON valide avec cette structure exacte (sans bloc markdown):
+{
+  "hook": "Le résumé avec les balises <strong>...",
+  "source": "Nom de la source"
+}
+
+Titre original: ${article.title}
+Contenu: ${article.content || ''}`;
 Tu DOIS renvoyer UNIQUEMENT un objet JSON valide avec cette structure exacte (sans bloc markdown):
 {
   "title": "Le titre très court et percutant",
@@ -292,7 +343,7 @@ Tu DOIS renvoyer UNIQUEMENT un objet JSON valide avec cette structure exacte (sa
 Titre original: ${article.title}
 Contenu: ${article.content || ''}`;
 
-      const promptBsh = `Traduis LE TITRE ET LE RÉSUMÉ de cet article en langue Bushinengé (langues de Guyane/Suriname comme le Ndyuka, Aluku, Pamaka ou Sranan Tongo) en une version très courte (2 à 3 phrases maximum) allant à l'essentiel pour un post Instagram.
+      const promptBsh = `Traduis LE RÉSUMÉ de cet article en langue Bushinengé (langues de Guyane/Suriname comme le Ndyuka, Aluku, Pamaka ou Sranan Tongo) en une version très courte (2 à 3 phrases maximum) allant à l'essentiel pour un post Instagram.
 IMPORTANT: NE TRADUIS SURTOUT PAS EN CRÉOLE HAÏTIEN, NI CRÉOLE ANTILLAIS.
 IMPORTANT: NE RENVOIE QUE LA VERSION TRADUITE EN BUSHINENGÉ. N'inclus SURTOUT PAS la version française.
 Tu dois absolument mettre en gras (avec la balise HTML <strong>) les points clés ou les mots importants dans le résumé.
@@ -300,7 +351,6 @@ INTERDICTION D'UTILISER DU MARKDOWN (aucun astérisque **). Utilise UNIQUEMENT l
 De plus, extrais le nom de la source d'origine de l'article (ex: Le Monde, AFP, L'Equipe, etc.). Si aucune source n'est identifiable de manière évidente, utilise "Culture Media News".
 Tu DOIS renvoyer UNIQUEMENT un objet JSON valide avec cette structure exacte (sans bloc markdown):
 {
-  "title": "Le titre traduit en Bushinengé",
   "hook": "Le résumé traduit avec les balises <strong>...",
   "source": "Nom de la source"
 }
@@ -312,7 +362,7 @@ Contenu: ${article.content || ''}`;
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          prompt: lang === "fr" ? promptFr : promptBsh,
+          prompt: activeLang === "fr" ? promptFr : promptBsh,
         }),
       });
       const data = await res.json();
@@ -328,7 +378,7 @@ Contenu: ${article.content || ''}`;
           }
           parsed = JSON.parse(cleaned);
         } catch(e) {
-          parsed = { hook: data.hook, source: "Culture Media News", title: article.title };
+          parsed = { hook: data.hook, source: "Culture Media News" };
         }
 
         const htmlHook = parsed.hook.startsWith("<") 
@@ -336,18 +386,17 @@ Contenu: ${article.content || ''}`;
           : `<p>${parsed.hook.replace(/\n/g, '<br/>')}</p>`;
         
         // On met à jour directement le state global pour que ça s'affiche
-        updateData(`body_${lang}`, htmlHook);
-        if (parsed.title) {
-          updateData(`title_${lang}`, parsed.title);
-        }
+        updateData(`body_${activeLang}`, htmlHook);
         if (parsed.source) {
           updateData("source", parsed.source);
         }
+        setSuccessMsg("Résumé généré avec succès !");
         forceEditorRemount();
+      } else {
+        setErrorMsg(data.error || "Erreur lors de la génération de l'accroche.");
       }
     } catch (err) {
       setErrorMsg("Erreur lors de la génération de l'accroche.");
-    }
     setIsGenerating(false);
   };
 
@@ -1906,15 +1955,41 @@ Contenu: ${article.content || ''}`;
             </div>
 
             <div style={{ marginBottom: "20px" }}>
-              <label
-                style={{
-                  display: "block",
-                  fontWeight: "bold",
-                  marginBottom: "8px",
-                }}
-              >
-                2. Titre (Gros texte) ({activeLang === "fr" ? "FR" : "BSH"}) :
-              </label>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                <label
+                  style={{
+                    display: "block",
+                    fontWeight: "bold",
+                    margin: 0,
+                  }}
+                >
+                  2. Titre (Gros texte) ({activeLang === "fr" ? "FR" : "BSH"}) :
+                </label>
+                <button
+                  onClick={generateAITitle}
+                  disabled={isGenerating}
+                  style={{
+                    background: "none",
+                    border: "1px solid #d8b4fe",
+                    borderRadius: "4px",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "5px",
+                    backgroundColor: "#f3e8ff",
+                    color: "#7e22ce",
+                    padding: "4px 8px",
+                    fontSize: "12px"
+                  }}
+                >
+                  {isGenerating ? (
+                    <i className="fas fa-spinner fa-spin"></i>
+                  ) : (
+                    <i className="fas fa-magic"></i>
+                  )}{" "}
+                  {activeLang === "fr" ? "Générer Titre" : "Générer Titre BSH"}
+                </button>
+              </div>
               <div style={{ backgroundColor: "#fff", border: "1px solid #d1d5db", borderRadius: "6px" }}>
                 <CustomEditor
                   value={currentData[`title_${activeLang}`]}
@@ -1963,7 +2038,7 @@ Contenu: ${article.content || ''}`;
                 ) : (
                   <i className="fas fa-magic"></i>
                 )}{" "}
-                {activeLang === "fr" ? "Générer Titre & Résumé (IA)" : "Générer Titre & Résumé BSH (IA)"}
+                {activeLang === "fr" ? "Générer Résumé" : "Générer Résumé BSH"}
               </button>
             </div>
             <div
