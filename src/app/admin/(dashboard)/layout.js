@@ -115,6 +115,10 @@ export default async function AdminLayout({ children }) {
             <i className="fas fa-book-open"></i> Magazines
           </Link>
           
+          <Link href="/admin/widgets" className="admin-nav-link">
+            <i className="fas fa-project-diagram"></i> Outils externes
+          </Link>
+          
           {isAdmin && (
             <>
               <Link href="/admin/categories" className="admin-nav-link">
