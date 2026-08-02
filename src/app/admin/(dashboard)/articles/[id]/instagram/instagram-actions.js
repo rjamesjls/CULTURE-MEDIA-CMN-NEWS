@@ -54,7 +54,11 @@ export async function generateTitles(article, lang = 'fr') {
         const result = await currentModel.generateContent(prompt);
         let text = result.response.text();
         text = text.replace(/```json/g, '').replace(/```/g, '').trim();
-
+        const start = text.indexOf('[');
+        const end = text.lastIndexOf(']');
+        if (start !== -1 && end !== -1) {
+            text = text.substring(start, end + 1);
+        }
         const titles = JSON.parse(text);
         return { success: true, titles };
       } catch (err) {

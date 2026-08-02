@@ -292,14 +292,15 @@ Tu DOIS renvoyer UNIQUEMENT un objet JSON valide avec cette structure exacte (sa
 Titre original: ${article.title}
 Contenu: ${article.content || ''}`;
 
-      const promptBsh = `Traduis LE TITRE ET LE RÉSUMÉ de cet article en langue Bushingue (Créole) en une version très courte (2 à 3 phrases maximum) allant à l'essentiel pour un post Instagram.
-IMPORTANT: NE RENVOIE QUE LA VERSION TRADUITE EN BUSHINGUE. N'inclus SURTOUT PAS la version française.
+      const promptBsh = `Traduis LE TITRE ET LE RÉSUMÉ de cet article en langue Bushinengé (langues de Guyane/Suriname comme le Ndyuka, Aluku, Pamaka ou Sranan Tongo) en une version très courte (2 à 3 phrases maximum) allant à l'essentiel pour un post Instagram.
+IMPORTANT: NE TRADUIS SURTOUT PAS EN CRÉOLE HAÏTIEN, NI CRÉOLE ANTILLAIS.
+IMPORTANT: NE RENVOIE QUE LA VERSION TRADUITE EN BUSHINENGÉ. N'inclus SURTOUT PAS la version française.
 Tu dois absolument mettre en gras (avec la balise HTML <strong>) les points clés ou les mots importants dans le résumé.
 INTERDICTION D'UTILISER DU MARKDOWN (aucun astérisque **). Utilise UNIQUEMENT la balise <strong> pour le gras.
 De plus, extrais le nom de la source d'origine de l'article (ex: Le Monde, AFP, L'Equipe, etc.). Si aucune source n'est identifiable de manière évidente, utilise "Culture Media News".
 Tu DOIS renvoyer UNIQUEMENT un objet JSON valide avec cette structure exacte (sans bloc markdown):
 {
-  "title": "Le titre traduit en Bushingue",
+  "title": "Le titre traduit en Bushinengé",
   "hook": "Le résumé traduit avec les balises <strong>...",
   "source": "Nom de la source"
 }
@@ -319,7 +320,13 @@ Contenu: ${article.content || ''}`;
       if (data.hook) {
         let parsed;
         try {
-          parsed = JSON.parse(data.hook);
+          let cleaned = data.hook.replace(/```json/gi, '').replace(/```/g, '').trim();
+          const start = cleaned.indexOf('{');
+          const end = cleaned.lastIndexOf('}');
+          if (start !== -1 && end !== -1) {
+             cleaned = cleaned.substring(start, end + 1);
+          }
+          parsed = JSON.parse(cleaned);
         } catch(e) {
           parsed = { hook: data.hook, source: "Culture Media News", title: article.title };
         }
