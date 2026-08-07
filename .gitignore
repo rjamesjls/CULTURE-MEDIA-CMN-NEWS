@@ -1,4 +1,13 @@
 scratch/
+
+# Electron desktop app dependencies (ne pas pousser)
+desktop-app/node_modules/
+desktop-app/.next/
+
+# Dossiers temporaires reels
+.tmp-reels/
+public/temp-reels/
+
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
