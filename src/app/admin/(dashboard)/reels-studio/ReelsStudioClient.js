@@ -276,6 +276,10 @@ export default function ReelsStudioClient() {
           Reels Studio
         </h1>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+          {/* Bouton Connecter TikTok */}
+          <a href="/api/auth/tiktok" style={{ padding: '10px 18px', borderRadius: '8px', border: '1px solid #e5e7eb', background: '#fff', color: '#111827', fontWeight: 'bold', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+            <i className="fab fa-tiktok" style={{ color: '#000' }}></i> Connecter TikTok
+          </a>
           {/* Bouton Générer */}
           <button onClick={handleGenerate} disabled={isGenerating} style={{ padding: '10px 18px', borderRadius: '8px', border: 'none', background: isGenerating ? '#6b7280' : '#10b981', color: '#fff', fontWeight: 'bold', cursor: isGenerating ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '8px', position: 'relative', overflow: 'hidden', minWidth: '180px', justifyContent: 'center' }}>
             {isGenerating && (

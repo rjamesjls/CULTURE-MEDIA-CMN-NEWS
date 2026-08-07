@@ -67,10 +67,10 @@ async function publishToInstagram(videoBlob, caption) {
   return { id: pubData.id };
 }
 
-async function publishToTikTok(videoBlob, caption) {
+async function publishToTikTok(videoBlob, caption, cookieAccessToken) {
   const clientKey = process.env.TIKTOK_CLIENT_KEY;
   const clientSecret = process.env.TIKTOK_CLIENT_SECRET;
-  const accessToken = process.env.TIKTOK_ACCESS_TOKEN; // Token obtenu via OAuth
+  const accessToken = process.env.TIKTOK_ACCESS_TOKEN || cookieAccessToken; // Token obtenu via OAuth
 
   if (!clientKey || !clientSecret) {
     throw new Error(
@@ -135,6 +135,8 @@ async function publishToTikTok(videoBlob, caption) {
   return { publish_id };
 }
 
+import { cookies } from 'next/headers';
+
 export async function POST(req) {
   try {
     const formData = await req.formData();
@@ -152,7 +154,9 @@ export async function POST(req) {
     if (platform === 'instagram') {
       result = await publishToInstagram(videoBlob, caption);
     } else if (platform === 'tiktok') {
-      result = await publishToTikTok(videoBlob, caption);
+      const cookieStore = cookies();
+      const tiktokAccessToken = cookieStore.get('tiktok_access_token')?.value;
+      result = await publishToTikTok(videoBlob, caption, tiktokAccessToken);
     } else {
       return NextResponse.json({ error: `Plateforme inconnue: ${platform}` }, { status: 400 });
     }
