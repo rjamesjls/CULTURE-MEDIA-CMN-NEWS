@@ -8,9 +8,9 @@ export const metadata = {
 export default function PrivacyPage() {
   const lastUpdated = '8 août 2025';
   const companyName = 'Culture Média News (CMN)';
-  const companyEmail = 'contact@culturemedia.news';
-  const websiteUrl = 'https://culturemedia.news';
-  const dpoEmail = 'dpo@culturemedia.news';
+  const companyEmail = 'contact@culturemedianews.fr';
+  const websiteUrl = 'https://culturemedianews.fr';
+  const dpoEmail = 'dpo@culturemedianews.fr';
 
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '60px 24px', fontFamily: 'Georgia, serif', color: '#1f2937', lineHeight: '1.8' }}>
@@ -195,7 +195,7 @@ export default function PrivacyPage() {
       {/* Footer */}
       <div style={{ marginTop: '60px', paddingTop: '24px', borderTop: '1px solid #e5e7eb', display: 'flex', gap: '24px', fontSize: '14px', color: '#6b7280', fontFamily: 'system-ui, sans-serif' }}>
         <Link href="/terms" style={{ color: '#dc2626', textDecoration: 'none' }}>Conditions d&apos;utilisation</Link>
-        <Link href="/" style={{ color: '#6b7280', textDecoration: 'none' }}>culturemedia.news</Link>
+        <Link href="/" style={{ color: '#6b7280', textDecoration: 'none' }}>culturemedianews.fr</Link>
       </div>
     </div>
   );
