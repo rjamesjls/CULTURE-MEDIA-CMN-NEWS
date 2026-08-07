@@ -268,6 +268,7 @@ export default function ReelsStudioClient() {
   };
 
   return (
+    <>
     <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 120px)', gap: '20px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#111827', margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -695,5 +696,6 @@ export default function ReelsStudioClient() {
         </div>
       </div>
     )}
+    </>
   );
 }
