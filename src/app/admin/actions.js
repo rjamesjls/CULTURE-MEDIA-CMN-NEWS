@@ -39,10 +39,26 @@ export async function saveArticle(formData) {
   const title = formData.get('title');
   const description = formData.get('description');
   const content = formData.get('content');
+  
+  // BSH Fields
+  const title_bsh = formData.get('title_bsh');
+  const hook_bsh = formData.get('hook_bsh');
+  const content_bsh = formData.get('content_bsh');
+
   const category = formData.get('category') || 'Non classé';
   const author = formData.get('author') || 'La Rédaction';
   const status = formData.get('status') || 'published';
   let image_url = formData.get('image_url');
+  
+  let seo_metadata = {};
+  const seoMetadataStr = formData.get('seo_metadata');
+  if (seoMetadataStr) {
+    try {
+      seo_metadata = JSON.parse(seoMetadataStr);
+    } catch (e) {
+      console.error("Erreur parsing seo_metadata", e);
+    }
+  }
   
   const supabaseServer = await createClient();
   
@@ -75,11 +91,15 @@ export async function saveArticle(formData) {
     title,
     description,
     content,
+    title_bsh,
+    hook_bsh,
+    content_bsh,
     category,
     image_url,
     slug,
     author,
     status,
+    seo_metadata,
   };
 
   if (id) {
@@ -136,6 +156,27 @@ export async function toggleArticleStatus(id, currentStatus) {
   if (!profile) throw new Error("Non autorisé");
 
   const newStatus = currentStatus === 'published' ? 'draft' : 'published';
+  const supabaseServer = await createClient();
+  
+  const { error } = await supabaseServer
+    .from('articles')
+    .update({ status: newStatus })
+    .eq('id', id);
+    
+  if (error) throw new Error("Erreur lors de la mise à jour du statut");
+  
+  revalidatePath('/admin/articles');
+  revalidatePath('/');
+  return newStatus;
+}
+
+export async function updateArticleStatus(id, newStatus) {
+  const { getUserProfile } = await import('@/utils/supabase/auth');
+  const { createClient } = await import('@/utils/supabase/server');
+  
+  const profile = await getUserProfile();
+  if (!profile) throw new Error("Non autorisé");
+
   const supabaseServer = await createClient();
   
   const { error } = await supabaseServer

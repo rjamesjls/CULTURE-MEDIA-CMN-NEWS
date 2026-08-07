@@ -2,7 +2,9 @@ import './globals.css';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import NewsletterPopup from '@/components/NewsletterPopup';
+import PublicOnly from '@/components/PublicOnly';
 import Script from 'next/script';
+import { headers } from 'next/headers';
 
 export const metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'https://www.culturemedia.news'), // Remplacez par le vrai nom de domaine
@@ -32,9 +34,12 @@ export const metadata = {
   },
 };
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+  const headersList = await headers();
+  const lang = headersList.get('x-lang') || 'fr';
+
   return (
-    <html lang="fr">
+    <html lang={lang}>
       <head>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
         <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;500;700;800;900&display=swap" rel="stylesheet" />
@@ -50,10 +55,14 @@ export default function RootLayout({ children }) {
         </Script>
       </head>
       <body>
-        <Header />
+        <PublicOnly>
+          <Header lang={lang} />
+        </PublicOnly>
         <main>{children}</main>
-        <Footer />
-        <NewsletterPopup />
+        <PublicOnly>
+          <Footer lang={lang} />
+          <NewsletterPopup lang={lang} />
+        </PublicOnly>
         {/* Scripts globaux */}
         <script src="/js/main.js" defer></script>
         <script src="/js/carousel.js" defer></script>

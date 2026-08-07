@@ -15,33 +15,29 @@ export default async function sitemap() {
     .eq('status', 'published')
     .order('pub_date', { ascending: false });
 
-  const articleEntries = (articles || []).map((article) => ({
-    url: `${baseUrl}/article/${article.slug}`,
-    lastModified: article.updated_at || article.pub_date || new Date(),
-    changeFrequency: 'daily',
-    priority: 0.8,
-  }));
+  const articleEntries = (articles || []).flatMap((article) => [
+    {
+      url: `${baseUrl}/fr/article/${article.slug}`,
+      lastModified: article.updated_at || article.pub_date || new Date(),
+      changeFrequency: 'daily',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/bsh/article/${article.slug}`,
+      lastModified: article.updated_at || article.pub_date || new Date(),
+      changeFrequency: 'daily',
+      priority: 0.8,
+    }
+  ]);
 
   // Routes statiques principales
   const staticRoutes = [
-    {
-      url: `${baseUrl}/`,
-      lastModified: new Date(),
-      changeFrequency: 'always',
-      priority: 1,
-    },
-    {
-      url: `${baseUrl}/faits-divers`,
-      lastModified: new Date(),
-      changeFrequency: 'hourly',
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/all-articles`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.9,
-    },
+    { url: `${baseUrl}/fr`, lastModified: new Date(), changeFrequency: 'always', priority: 1 },
+    { url: `${baseUrl}/bsh`, lastModified: new Date(), changeFrequency: 'always', priority: 1 },
+    { url: `${baseUrl}/fr/faits-divers`, lastModified: new Date(), changeFrequency: 'hourly', priority: 0.9 },
+    { url: `${baseUrl}/bsh/faits-divers`, lastModified: new Date(), changeFrequency: 'hourly', priority: 0.9 },
+    { url: `${baseUrl}/fr/all-articles`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.9 },
+    { url: `${baseUrl}/bsh/all-articles`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.9 },
   ];
 
   // TODO: On pourrait aussi ajouter les catégories dynamiquement si on le souhaite

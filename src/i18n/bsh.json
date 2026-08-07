@@ -1,0 +1,41 @@
+{
+  "nav": {
+    "home": "Oso",
+    "news": "Nyunsu",
+    "magazine": "Magazine",
+    "interviews": "Taki-taki",
+    "pro": "Pro Presi",
+    "faits_divers": "Sani di pasa",
+    "newsletter": "Newsletter",
+    "contact": "Kontaiki",
+    "login": "Inloggen"
+  },
+  "home": {
+    "headline": "A TAPU",
+    "flash_info": "NYUNSU TIDE",
+    "latest_news": "Nyun nyunsu",
+    "most_read": "Moro leisi",
+    "featured": "A tapu",
+    "view_all": "Luku ala",
+    "error_loading": "Fowtu fu feni nyunsu.",
+    "all_news": "Ala nyunsu",
+    "read_more": "Leisi moro",
+    "by": "Fu",
+    "published_on": "Poti a tapu"
+  },
+  "footer": {
+    "about": "San un de",
+    "legal": "Weti tori",
+    "privacy": "Kibri tori",
+    "follow_us": "Waka nanga u",
+    "rights": "Ala leti kibri."
+  },
+  "article": {
+    "back": "Drai go baka",
+    "share": "Poti gi trawan",
+    "related": "Trawan di gersi en",
+    "comments": "San suma e taki",
+    "leave_comment": "Poti wan sani",
+    "submit": "Seni go"
+  }
+}

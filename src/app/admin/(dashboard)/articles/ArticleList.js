@@ -4,7 +4,10 @@ import { useState } from 'react';
 import Link from 'next/link';
 import DeleteButton from './DeleteButton';
 import ToggleStatusButton from './ToggleStatusButton';
-import { LayoutGrid, List, Search } from 'lucide-react';
+import { LayoutGrid, List, Search, Kanban, Calendar } from 'lucide-react';
+import KanbanView from './KanbanView';
+import CalendarView from './CalendarView';
+import { updateArticleStatus } from '../../actions';
 
 export default function ArticleList({ initialArticles, categories }) {
   const [view, setView] = useState('list'); // 'list' or 'grid'
@@ -58,6 +61,7 @@ export default function ArticleList({ initialArticles, categories }) {
           >
             <option value="">Tous les statuts</option>
             <option value="published">Publiés</option>
+            <option value="pending">En attente</option>
             <option value="draft">Brouillons</option>
           </select>
         </div>
@@ -75,8 +79,39 @@ export default function ArticleList({ initialArticles, categories }) {
           >
             <LayoutGrid size={18} /> Grille
           </button>
+          <button 
+            onClick={() => setView('kanban')}
+            style={{ padding: '6px 10px', borderRadius: '4px', border: 'none', background: view === 'kanban' ? '#fff' : 'transparent', color: view === 'kanban' ? '#111827' : '#6b7280', cursor: 'pointer', boxShadow: view === 'kanban' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', display: 'flex', alignItems: 'center', gap: '5px' }}
+          >
+            <Kanban size={18} /> Kanban
+          </button>
+          <button 
+            onClick={() => setView('calendar')}
+            style={{ padding: '6px 10px', borderRadius: '4px', border: 'none', background: view === 'calendar' ? '#fff' : 'transparent', color: view === 'calendar' ? '#111827' : '#6b7280', cursor: 'pointer', boxShadow: view === 'calendar' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none', display: 'flex', alignItems: 'center', gap: '5px' }}
+          >
+            <Calendar size={18} /> Calendrier
+          </button>
         </div>
       </div>
+
+      {/* Affichage Kanban */}
+      {view === 'kanban' && (
+        <KanbanView 
+          articles={filteredArticles} 
+          onStatusChange={async (id, newStatus) => {
+            try {
+              await updateArticleStatus(id, newStatus);
+            } catch (err) {
+              alert("Erreur: " + err.message);
+            }
+          }} 
+        />
+      )}
+
+      {/* Affichage Calendrier */}
+      {view === 'calendar' && (
+        <CalendarView articles={filteredArticles} />
+      )}
 
       {/* Affichage Vue Grille */}
       {view === 'grid' && (
@@ -89,6 +124,10 @@ export default function ArticleList({ initialArticles, categories }) {
                 {article.status === 'draft' ? (
                   <span className="admin-badge badge-yellow" style={{ position: 'absolute', top: '12px', left: '12px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
                     Brouillon
+                  </span>
+                ) : article.status === 'pending' ? (
+                  <span className="admin-badge" style={{ position: 'absolute', top: '12px', left: '12px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', backgroundColor: '#ffedd5', color: '#9a3412' }}>
+                    En attente
                   </span>
                 ) : (
                   <span className="admin-badge badge-blue" style={{ position: 'absolute', top: '12px', left: '12px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
@@ -161,6 +200,8 @@ export default function ArticleList({ initialArticles, categories }) {
                   <td>
                     {article.status === 'draft' ? (
                       <span className="admin-badge badge-yellow">Brouillon</span>
+                    ) : article.status === 'pending' ? (
+                      <span className="admin-badge badge-orange" style={{ backgroundColor: '#ffedd5', color: '#9a3412' }}>En attente</span>
                     ) : (
                       <span className="admin-badge badge-green">Publié</span>
                     )}

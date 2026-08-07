@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { submitContactMessage } from '@/app/contact/actions';
+import { submitContactMessage } from '@/app/[lang]/contact/actions';
 
 export default function ContactForm() {
   const [status, setStatus] = useState(null);

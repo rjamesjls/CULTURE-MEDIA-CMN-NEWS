@@ -1,0 +1,41 @@
+{
+  "nav": {
+    "home": "Accueil",
+    "news": "Actualités",
+    "magazine": "Le Magazine",
+    "interviews": "Interviews",
+    "pro": "Espace Pro",
+    "faits_divers": "Faits divers",
+    "newsletter": "Newsletter",
+    "contact": "Contact",
+    "login": "Connexion"
+  },
+  "home": {
+    "headline": "À LA UNE",
+    "flash_info": "FLASH INFO",
+    "latest_news": "Derniers articles",
+    "most_read": "Les plus lus",
+    "featured": "À la une",
+    "view_all": "Voir tout",
+    "error_loading": "Erreur lors du chargement des articles.",
+    "all_news": "Toute l'actualité",
+    "read_more": "Lire la suite",
+    "by": "Par",
+    "published_on": "Publié le"
+  },
+  "footer": {
+    "about": "À propos",
+    "legal": "Mentions légales",
+    "privacy": "Politique de confidentialité",
+    "follow_us": "Suivez-nous",
+    "rights": "Tous droits réservés."
+  },
+  "article": {
+    "back": "Retour aux faits divers",
+    "share": "Partager",
+    "related": "Articles similaires",
+    "comments": "Commentaires",
+    "leave_comment": "Laisser un commentaire",
+    "submit": "Envoyer"
+  }
+}

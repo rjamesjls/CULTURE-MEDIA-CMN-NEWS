@@ -1,0 +1,19 @@
+{
+  "name": "desktop-app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "electron": "^43.3.0"
+  },
+  "dependencies": {
+    "obs-websocket-js": "^5.0.8"
+  }
+}

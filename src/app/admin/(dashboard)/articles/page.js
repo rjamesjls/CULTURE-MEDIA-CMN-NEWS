@@ -1,7 +1,7 @@
 import { createClient } from '@/utils/supabase/server';
 import { getUserProfile } from '@/utils/supabase/auth';
 import Link from 'next/link';
-import ArticleList from './ArticleList';
+import NewsroomClient from './NewsroomClient';
 
 export const revalidate = 0; // Don't cache admin pages
 
@@ -20,20 +20,14 @@ export default async function AdminArticles() {
 
   const { data: articles, error } = await query;
   const { data: categories } = await supabase.from('categories').select('*').order('name');
+  const { data: ideas } = await supabase.from('content_ideas').select('*').order('created_at', { ascending: false });
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h2 style={{ fontFamily: 'var(--font-heading)' }}>Gestion des articles</h2>
-        <Link href="/admin/articles/new" className="admin-btn admin-btn-primary">
-          <i className="fas fa-plus"></i> Nouvel Article
-        </Link>
-      </div>
-
+    <div style={{ maxWidth: '1400px', margin: '0 auto', paddingBottom: '50px' }}>
       {error ? (
         <p style={{ padding: '20px', color: 'red' }}>Erreur: {error.message}</p>
       ) : (
-        <ArticleList initialArticles={articles || []} categories={categories || []} />
+        <NewsroomClient initialArticles={articles || []} articles={articles || []} categories={categories || []} ideas={ideas || []} profile={profile} />
       )}
     </div>
   );

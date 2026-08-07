@@ -3,12 +3,15 @@ import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 import FlashTicker from './FlashTicker';
 import SubscribeButton from './SubscribeButton';
+import LanguageSwitcher from './LanguageSwitcher';
+import { getDictionary } from '@/i18n/dictionaries';
 
 import { createClient } from '@/utils/supabase/server';
 
-export default async function Header() {
+export default async function Header({ lang = 'fr' }) {
   const supabaseClient = await createClient();
   const { data: { user } } = await supabaseClient.auth.getUser();
+  const dict = await getDictionary(lang);
 
   const { data: menus } = await supabase
     .from('menus')
@@ -21,7 +24,7 @@ export default async function Header() {
       <header className="header" id="header" suppressHydrationWarning>
         <FlashTicker />
         <div className="header-container">
-          <Link href="/" className="logo-link" style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none' }}>
+          <Link href={`/${lang}`} className="logo-link" style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none' }}>
             <img 
               src="/assets/logo.png" 
               alt="Culture Média News" 
@@ -64,7 +67,7 @@ export default async function Header() {
 
           <nav className="nav-menu" id="navMenu">
             {menus?.map((menu) => (
-              <Link key={menu.id} href={menu.url} className={`nav-link ${menu.url === '/' ? 'active' : ''}`}>
+              <Link key={menu.id} href={`/${lang}${menu.url === '/' ? '' : menu.url}`} className={`nav-link ${menu.url === '/' ? 'active' : ''}`}>
                 {menu.label}
               </Link>
             ))}
@@ -74,27 +77,29 @@ export default async function Header() {
               <input type="text" placeholder="Rechercher..." className="search-input" id="searchInput" />
             </div>
 
-            <Link href="/pro" style={{ 
+            <Link href={`/${lang}/pro`} style={{ 
               background: '#F59E0B', color: '#FFF', fontWeight: 'bold', 
               padding: '4px 10px', borderRadius: '12px', textDecoration: 'none', 
               fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' 
             }}>
-              Espace PRO
+              {dict.nav.pro}
             </Link>
 
             {user ? (
-              <Link href="/profile" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fff', textDecoration: 'none', fontSize: '14px', fontWeight: '600' }}>
+              <Link href={`/${lang}/profile`} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fff', textDecoration: 'none', fontSize: '14px', fontWeight: '600' }}>
                 <i className="fas fa-user-circle" style={{ fontSize: '18px' }}></i>
                 <span>Profil</span>
               </Link>
             ) : (
               <Link href="/auth/login" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fff', textDecoration: 'none', fontSize: '14px', fontWeight: '600' }}>
                 <i className="fas fa-sign-in-alt"></i>
-                <span>Connexion</span>
+                <span>{dict.nav.login}</span>
               </Link>
             )}
 
             <SubscribeButton />
+            
+            <LanguageSwitcher currentLang={lang} />
           </nav>
 
           <button className="menu-toggle" id="menuToggle" aria-label="Toggle menu">

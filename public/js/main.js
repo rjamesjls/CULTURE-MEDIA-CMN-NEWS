@@ -52,10 +52,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const currentScroll = window.pageYOffset;
     
     // Hide header on scroll down, show on scroll up
-    if (currentScroll > lastScroll && currentScroll > 100) {
-      header.style.transform = 'translateY(-100%)';
-    } else {
-      header.style.transform = 'translateY(0)';
+    if (header) {
+      if (currentScroll > lastScroll && currentScroll > 100) {
+        header.style.transform = 'translateY(-100%)';
+      } else {
+        header.style.transform = 'translateY(0)';
+      }
     }
     
     lastScroll = currentScroll;

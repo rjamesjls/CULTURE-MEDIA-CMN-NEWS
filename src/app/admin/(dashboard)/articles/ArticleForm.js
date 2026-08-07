@@ -4,7 +4,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { saveArticle } from '../../actions';
-import { generateArticleDraft, adjustArticleDraft } from '../ai-generator/actions';
+import { generateArticleDraft, adjustArticleDraft, generateSuperArticle } from '../ai-generator/actions';
+import { translateArticle } from '../ai-studio/actions';
 import SpeechButton from '@/components/SpeechButton';
 import TextToSpeechButton from '@/components/TextToSpeechButton';
 import 'react-quill-new/dist/quill.snow.css';
@@ -27,14 +28,41 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
   const [imageUrl, setImageUrl] = useState(initialData?.image_url || '');
   const [content, setContent] = useState(initialData?.content || '');
   
+  // Multilingual State (BSH)
+  const [currentLang, setCurrentLang] = useState('fr');
+  const [titleBsh, setTitleBsh] = useState(initialData?.title_bsh || '');
+  const [descriptionBsh, setDescriptionBsh] = useState(initialData?.hook_bsh || '');
+  const [contentBsh, setContentBsh] = useState(initialData?.content_bsh || '');
+  const [isTranslating, setIsTranslating] = useState(false);
+  
+  const handleFieldChange = (field, value) => {
+    if (currentLang === 'fr') {
+      if (field === 'title') setTitle(value);
+      if (field === 'description') setDescription(value);
+      if (field === 'content') setContent(value);
+    } else {
+      if (field === 'title') setTitleBsh(value);
+      if (field === 'description') setDescriptionBsh(value);
+      if (field === 'content') setContentBsh(value);
+    }
+  };
+
+  const displayedTitle = currentLang === 'fr' ? title : titleBsh;
+  const displayedDescription = currentLang === 'fr' ? description : descriptionBsh;
+  const displayedContent = currentLang === 'fr' ? content : contentBsh;
+  
   // AI Generation States
   const [aiPanelOpen, setAiPanelOpen] = useState(false);
   const [aiSubject, setAiSubject] = useState('');
   const [aiContext, setAiContext] = useState('');
   const [aiLinks, setAiLinks] = useState('');
-  const [aiFiles, setAiFiles] = useState([]);
+  const [aiFile, setAiFile] = useState(null); // Pour le fichier multimédia (Super Generator)
+  const [aiFiles, setAiFiles] = useState([]); // Array support for backward compat with dropzone
   const [isGenerating, setIsGenerating] = useState(false);
   const [aiError, setAiError] = useState('');
+  
+  // Super Generator Dashboard States
+  const [superMetadata, setSuperMetadata] = useState(null);
   
   // Image Generation States
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
@@ -55,13 +83,17 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
     setAiEditError('');
     
     try {
-      const currentData = { title, description, content };
+      const currentData = { 
+        title: displayedTitle, 
+        description: displayedDescription, 
+        content: displayedContent 
+      };
       const result = await adjustArticleDraft(currentData, aiEditInstruction);
       
       if (result.success && result.data) {
-        if (result.data.title) setTitle(result.data.title);
-        if (result.data.description) setDescription(result.data.description);
-        if (result.data.content) setContent(result.data.content);
+        if (result.data.title) handleFieldChange('title', result.data.title);
+        if (result.data.description) handleFieldChange('description', result.data.description);
+        if (result.data.content) handleFieldChange('content', result.data.content);
         setAiEditInstruction('');
         setAiEditPanelOpen(false); // On ferme après succès
       } else {
@@ -75,8 +107,8 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
   };
 
   const handleGenerateAI = async () => {
-    if (!aiSubject.trim()) {
-      setAiError("Veuillez entrer un sujet.");
+    if (!aiSubject.trim() && !aiLinks && !aiFile && aiFiles.length === 0) {
+      setAiError("Veuillez entrer un sujet, un lien, ou un fichier.");
       return;
     }
     
@@ -86,27 +118,44 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
         return;
       }
     }
-
+    
     setIsGenerating(true);
     setAiError('');
 
     try {
       const formData = new FormData();
-      formData.append('subject', aiSubject);
-      if (aiContext) formData.append('context', aiContext);
+      if (aiSubject) formData.append('subject', aiSubject);
       if (aiLinks) formData.append('links', aiLinks);
+      if (aiFile) formData.append('file', aiFile);
+      if (aiFiles.length > 0) {
+        // Fallback for drag&drop logic
+        formData.append('file', aiFiles[0]);
+      }
       
-      aiFiles.forEach(file => {
-        formData.append('files', file);
-      });
-
-      const result = await generateArticleDraft(formData);
+      const result = await generateSuperArticle(formData);
       
       if (result.success && result.data) {
-        setTitle(result.data.title || '');
-        setDescription(result.data.description || '');
-        setContent(result.data.content || '');
-        setAiPanelOpen(false); // Fermer le panneau après succès
+        const data = result.data;
+        if (data.title) handleFieldChange('title', data.title);
+        if (data.chapo) handleFieldChange('description', data.chapo);
+        if (data.content) handleFieldChange('content', data.content);
+        
+        setSuperMetadata({
+          alternateTitles: data.alternate_titles || [],
+          summary: data.summary || '',
+          metaDescription: data.meta_description || '',
+          keywords: data.keywords || [],
+          categories: data.categories || [],
+          tags: data.tags || [],
+          internalLinks: data.internal_links_suggestions || [],
+          externalLinks: data.external_links_suggestions || [],
+          suggestedImages: data.suggested_images || [],
+          readingTime: data.reading_time || 0,
+          seoScore: data.seo_score || 0,
+          readabilityScore: data.readability_score || 0,
+        });
+
+        setAiPanelOpen(false);
       } else {
         setAiError(result.error || "Erreur lors de la génération.");
       }
@@ -193,6 +242,12 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
 
     const formData = new FormData(e.target);
     formData.append('content', content);
+    formData.append('title_bsh', titleBsh);
+    formData.append('hook_bsh', descriptionBsh);
+    formData.append('content_bsh', contentBsh);
+    if (superMetadata) {
+      formData.append('seo_metadata', JSON.stringify(superMetadata));
+    }
     const status = e.nativeEvent?.submitter?.value || 'published';
     formData.set('status', status);
 
@@ -206,6 +261,26 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
     } catch (err) {
       setErrorMsg(err.message);
       setIsSubmitting(false);
+    }
+  };
+
+  const handleTranslate = async () => {
+    // Check if we have French content to translate
+    if (!title && !content) {
+      alert("Veuillez d'abord remplir le titre et le contenu en Français.");
+      return;
+    }
+
+    setIsTranslating(true);
+    try {
+      const translated = await translateArticle(title, description, content, 'Bushinengué');
+      setTitleBsh(translated.title || '');
+      setDescriptionBsh(translated.description || '');
+      setContentBsh(translated.content || '');
+    } catch (error) {
+      alert("Erreur de traduction : " + error.message);
+    } finally {
+      setIsTranslating(false);
     }
   };
 
@@ -254,13 +329,13 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
                   </div>
                 </div>
                 <div className="admin-form-group">
-                  <label className="admin-form-label" style={{ color: '#86198f', fontSize: '13px' }}>Photos ou PDF (Optionnel)</label>
+                  <label className="admin-form-label" style={{ color: '#86198f', fontSize: '13px' }}>Fichiers (PDF, Audio, Vidéo, Images) (Optionnel)</label>
                   <div 
                     onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
                     onDrop={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      const droppedFiles = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/') || f.type === 'application/pdf');
+                      const droppedFiles = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/') || f.type.startsWith('audio/') || f.type.startsWith('video/') || f.type === 'application/pdf');
                       if (droppedFiles.length > 0) setAiFiles(prev => [...prev, ...droppedFiles]);
                     }}
                     onPaste={(e) => {
@@ -270,7 +345,7 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
                       for (let i = 0; i < items.length; i++) {
                         if (items[i].kind === 'file') {
                           const file = items[i].getAsFile();
-                          if (file && (file.type.startsWith('image/') || file.type === 'application/pdf')) {
+                          if (file && (file.type.startsWith('image/') || file.type.startsWith('audio/') || file.type.startsWith('video/') || file.type === 'application/pdf')) {
                             newFiles.push(file);
                           }
                         }
@@ -294,7 +369,7 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
                       id="ai-file-upload"
                       type="file" 
                       multiple 
-                      accept="image/*,application/pdf"
+                      accept="image/*,application/pdf,audio/*,video/*"
                       style={{ display: 'none' }}
                       onChange={(e) => {
                         if (e.target.files.length > 0) {
@@ -304,9 +379,9 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
                     />
                     <i className="fas fa-cloud-upload-alt" style={{ fontSize: '24px', color: '#c026d3', marginBottom: '10px' }}></i>
                     <div style={{ color: '#86198f', fontSize: '14px', fontWeight: '500' }}>
-                      Cliquez, glissez-déposez ou collez (Ctrl+V) vos fichiers ici
+                      Cliquez, glissez-déposez ou collez vos fichiers ici
                     </div>
-                    <small style={{ color: '#a21caf', fontSize: '12px' }}>Images et PDF acceptés</small>
+                    <small style={{ color: '#a21caf', fontSize: '12px' }}>Max 50 Mo (PDF, Audio, Vidéo, Images)</small>
                   </div>
                   
                   {aiFiles.length > 0 && (
@@ -353,15 +428,77 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
             </div>
           )}
 
+          {/* SÉLECTEUR DE LANGUE */}
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', borderBottom: '2px solid #e5e7eb' }}>
+            <button
+              type="button"
+              onClick={() => setCurrentLang('fr')}
+              style={{
+                padding: '10px 20px',
+                border: 'none',
+                background: 'none',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+                fontSize: '15px',
+                color: currentLang === 'fr' ? '#10b981' : '#6b7280',
+                borderBottom: currentLang === 'fr' ? '3px solid #10b981' : '3px solid transparent',
+                marginBottom: '-2px'
+              }}
+            >
+              🇫🇷 Français (Principal)
+            </button>
+            <button
+              type="button"
+              onClick={() => setCurrentLang('bsh')}
+              style={{
+                padding: '10px 20px',
+                border: 'none',
+                background: 'none',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+                fontSize: '15px',
+                color: currentLang === 'bsh' ? '#f59e0b' : '#6b7280',
+                borderBottom: currentLang === 'bsh' ? '3px solid #f59e0b' : '3px solid transparent',
+                marginBottom: '-2px'
+              }}
+            >
+              🇸🇷 Bushinengué (Tongo)
+            </button>
+          </div>
+
+          {currentLang !== 'fr' && (
+            <div style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#fffbeb', border: '1px solid #fde68a', borderRadius: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h4 style={{ margin: 0, color: '#b45309', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <i className="fas fa-language"></i> Assistant Linguistique IA
+                  </h4>
+                  <p style={{ margin: '5px 0 0 0', fontSize: '13px', color: '#d97706' }}>
+                    Traduisez automatiquement la version française en utilisant le dictionnaire local et les règles éditoriales (Knowledge Brain).
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleTranslate}
+                  disabled={isTranslating}
+                  className="admin-btn"
+                  style={{ backgroundColor: '#f59e0b', color: '#fff', opacity: isTranslating ? 0.7 : 1, cursor: isTranslating ? 'not-allowed' : 'pointer' }}
+                >
+                  <i className="fas fa-magic"></i> {isTranslating ? 'Traduction en cours...' : 'Traduire depuis le Français'}
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="admin-form-group">
             <label className="admin-form-label">Titre de l'article</label>
             <input 
               type="text" 
-              name="title" 
+              name={`title_${currentLang}`} // just to prevent standard submit conflict if needed, though we manually control it
               className="admin-form-control" 
-              required 
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              required={currentLang === 'fr'}
+              value={displayedTitle}
+              onChange={(e) => handleFieldChange('title', e.target.value)}
             />
           </div>
 
@@ -507,20 +644,20 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
           <div className="admin-form-group">
             <label className="admin-form-label">Description courte (Extrait)</label>
             <textarea 
-              name="description" 
+              name={`description_${currentLang}`}
               className="admin-form-control" 
               rows="3" 
-              required
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              required={currentLang === 'fr'}
+              value={displayedDescription}
+              onChange={(e) => handleFieldChange('description', e.target.value)}
             ></textarea>
           </div>
 
           <div className="admin-form-group" style={{ marginBottom: '20px' }}>
             <label className="admin-form-label">Contenu de l'article</label>
             <CustomEditor 
-              value={content} 
-              onChange={setContent} 
+              value={displayedContent} 
+              onChange={(val) => handleFieldChange('content', val)} 
               style={{ height: '300px' }}
             />
           </div>
@@ -557,6 +694,8 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
                     <SpeechButton onTranscript={(text) => setAiEditInstruction(prev => prev ? prev + ' ' + text : text)} />
                   </div>
                 </div>
+
+
                 <button 
                   type="button" 
                   onClick={handleAiEdit}
@@ -579,7 +718,7 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
           </div>
           {/* --- FIN ASSISTANT IA MODIFICATION --- */}
 
-          <div style={{ display: 'flex', gap: '15px', marginTop: '20px', borderTop: '1px solid #e5e7eb', paddingTop: '20px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '10px', marginTop: '20px', borderTop: '1px solid #e5e7eb', paddingTop: '20px', flexWrap: 'wrap' }}>
             <button 
               type="submit" 
               name="status"
@@ -587,19 +726,29 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
               className="admin-btn admin-btn-primary" 
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Enregistrement...' : 'Publier'}
+              {isSubmitting ? 'Enregistrement...' : 'Publier immédiatement'}
+            </button>
+            <button 
+              type="submit" 
+              name="status"
+              value="pending"
+              className="admin-btn" 
+              style={{ backgroundColor: '#fef08a', color: '#854d0e', border: '1px solid #fde047' }}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Enregistrement...' : 'Soumettre pour validation'}
             </button>
             <button 
               type="submit" 
               name="status"
               value="draft"
               className="admin-btn" 
-              style={{ backgroundColor: '#fef3c7', color: '#92400e', border: '1px solid #fde68a' }}
+              style={{ backgroundColor: '#e5e7eb', color: '#4b5563', border: '1px solid #d1d5db' }}
               disabled={isSubmitting}
             >
               {isSubmitting ? 'Enregistrement...' : (initialData?.status === 'published' ? 'Repasser en brouillon' : 'Enregistrer le brouillon')}
             </button>
-            <button type="button" onClick={() => router.push('/admin/articles')} className="admin-btn" style={{ backgroundColor: '#e5e7eb', color: '#374151', marginLeft: 'auto' }}>
+            <button type="button" onClick={() => router.push('/admin/articles')} className="admin-btn" style={{ backgroundColor: '#f3f4f6', color: '#9ca3af', marginLeft: 'auto', border: 'none' }}>
               Annuler
             </button>
           </div>
@@ -634,7 +783,7 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
                 <i className="fas fa-external-link-alt"></i> Aperçu complet
               </button>
             )}
-            <TextToSpeechButton title={title || "Titre"} content={description + " " + content} />
+            <TextToSpeechButton title={displayedTitle || "Titre"} content={displayedDescription + " " + displayedContent} />
           </div>
         </div>
         
@@ -644,6 +793,52 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
             {!imageUrl && <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af' }}>Image de couverture</div>}
           </div>
           
+          {/* Super Dashboard (S'affiche si des métadonnées sont générées) */}
+          {superMetadata && (
+            <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '12px', border: '1px solid #e5e7eb', marginBottom: '20px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
+              <h3 style={{ margin: '0 0 15px 0', fontSize: '18px', color: '#111827', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '20px' }}>🚀</span> Tableau de Bord IA
+              </h3>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px', marginBottom: '20px' }}>
+                <div style={{ padding: '15px', backgroundColor: '#f3f4f6', borderRadius: '8px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '12px', color: '#6b7280', textTransform: 'uppercase', fontWeight: 'bold' }}>Score SEO</div>
+                  <div style={{ fontSize: '24px', fontWeight: 'bold', color: superMetadata.seoScore > 80 ? '#10b981' : '#f59e0b' }}>{superMetadata.seoScore}/100</div>
+                </div>
+                <div style={{ padding: '15px', backgroundColor: '#f3f4f6', borderRadius: '8px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '12px', color: '#6b7280', textTransform: 'uppercase', fontWeight: 'bold' }}>Lisibilité</div>
+                  <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#3b82f6' }}>{superMetadata.readabilityScore}/100</div>
+                </div>
+                <div style={{ padding: '15px', backgroundColor: '#f3f4f6', borderRadius: '8px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '12px', color: '#6b7280', textTransform: 'uppercase', fontWeight: 'bold' }}>Temps de lecture</div>
+                  <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#6366f1' }}>~{superMetadata.readingTime} min</div>
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '15px' }}>
+                <h4 style={{ margin: '0 0 8px 0', fontSize: '14px', color: '#374151' }}>💡 Titres Alternatifs (Note) :</h4>
+                <ul style={{ margin: 0, paddingLeft: '20px', color: '#4b5563', fontSize: '14px' }}>
+                  {superMetadata.alternateTitles.map((t, i) => <li key={i}>{t}</li>)}
+                </ul>
+              </div>
+              
+              <div style={{ marginBottom: '15px' }}>
+                <h4 style={{ margin: '0 0 8px 0', fontSize: '14px', color: '#374151' }}>🏷️ Mots-clés & Tags :</h4>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  {[...superMetadata.keywords, ...superMetadata.tags].map((kw, i) => (
+                    <span key={i} style={{ padding: '4px 8px', backgroundColor: '#e5e7eb', borderRadius: '16px', fontSize: '12px', color: '#374151' }}>{kw}</span>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '15px' }}>
+                <h4 style={{ margin: '0 0 8px 0', fontSize: '14px', color: '#374151' }}>📝 Résumé Analytique :</h4>
+                <p style={{ margin: 0, fontSize: '14px', color: '#4b5563', fontStyle: 'italic' }}>"{superMetadata.summary}"</p>
+              </div>
+            </div>
+          )}
+
+          {/* Affichage du Titre Principal */}
           <div style={{ padding: '20px' }}>
             {/* Tag */}
             <span style={{ display: 'inline-block', backgroundColor: 'var(--color-primary, #b91c1c)', color: 'white', padding: '4px 10px', fontSize: '12px', fontWeight: 'bold', borderRadius: '4px', marginBottom: '10px' }}>
@@ -652,7 +847,7 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
             
             {/* Titre */}
             <h2 style={{ fontFamily: 'var(--font-heading, "Playfair Display", serif)', fontSize: '24px', margin: '0 0 10px 0', lineHeight: '1.3' }}>
-              {title || 'Titre de votre article...'}
+              {displayedTitle || 'Titre de votre article...'}
             </h2>
 
             {/* Auteur et Date */}
@@ -662,14 +857,14 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
             
             {/* Description */}
             <p style={{ color: '#4b5563', fontSize: '15px', lineHeight: '1.5', margin: '0 0 20px 0', fontStyle: 'italic' }}>
-              {description || 'Rédigez une courte description qui apparaîtra comme extrait sur la page d\'accueil...'}
+              {displayedDescription || 'Rédigez une courte description qui apparaîtra comme extrait sur la page d\'accueil...'}
             </p>
             
             {/* Content (HTML) */}
             <div 
               id="article-content"
               style={{ fontSize: '15px', lineHeight: '1.6', color: '#111827', borderTop: '1px solid #e5e7eb', paddingTop: '20px' }}
-              dangerouslySetInnerHTML={{ __html: content || '<p style="color:#9ca3af;">Le contenu de votre article apparaîtra ici...</p>' }}
+              dangerouslySetInnerHTML={{ __html: displayedContent || '<p style="color:#9ca3af;">Le contenu de votre article apparaîtra ici...</p>' }}
             />
           </div>
         </div>

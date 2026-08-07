@@ -1,8 +1,11 @@
 import Link from 'next/link';
 import NewsletterForm from './NewsletterForm';
 import { supabase } from '@/lib/supabase';
+import { getDictionary } from '@/i18n/dictionaries';
 
-export default async function Footer() {
+export default async function Footer({ lang = 'fr' }) {
+  const dict = await getDictionary(lang);
+
   const { data: menus } = await supabase
     .from('menus')
     .select('*')
@@ -33,7 +36,13 @@ export default async function Footer() {
                 <i className="fab fa-youtube"></i>
               </a>
             </div>
-            <NewsletterForm />
+            <NewsletterForm 
+              title={dict.nav.newsletter}
+              description={dict.newsletter?.description || "Restez informé de nos derniers articles"}
+              placeholder={dict.newsletter?.placeholder || "Votre adresse email"}
+              buttonText={dict.newsletter?.buttonText || "S'abonner"}
+              buttonSubmitting={dict.newsletter?.buttonSubmitting || "Inscription..."}
+            />
           </div>
 
           {/* Rubriques */}
@@ -41,7 +50,7 @@ export default async function Footer() {
             <h4>Rubriques</h4>
             <div className="footer-links">
               {menus?.map((menu) => (
-                <Link key={menu.id} href={menu.url} className="footer-link">
+                <Link key={menu.id} href={`/${lang}${menu.url === '/' ? '' : menu.url}`} className="footer-link">
                   {menu.label}
                 </Link>
               ))}
@@ -50,28 +59,28 @@ export default async function Footer() {
 
           {/* À propos */}
           <div className="footer-section">
-            <h4>À propos</h4>
+            <h4>{dict.footer.about}</h4>
             <div className="footer-links">
-              <a href="/about" className="footer-link">Qui sommes-nous</a>
-              <a href="/contact" className="footer-link">Contact</a>
-              <a href="/all-articles" className="footer-link">Tous les articles</a>
-              <Link href="/pro" className="footer-link" style={{ color: 'var(--color-primary)', fontWeight: 'bold' }}>⭐ Portail des Entreprises (PRO)</Link>
+              <Link href={`/${lang}/about`} className="footer-link">Qui sommes-nous</Link>
+              <Link href={`/${lang}/contact`} className="footer-link">{dict.nav.contact}</Link>
+              <Link href={`/${lang}/all-articles`} className="footer-link">Tous les articles</Link>
+              <Link href={`/${lang}/pro`} className="footer-link" style={{ color: 'var(--color-primary)', fontWeight: 'bold' }}>⭐ {dict.nav.pro}</Link>
             </div>
           </div>
 
           {/* Légal */}
           <div className="footer-section">
-            <h4>Informations légales</h4>
+            <h4>{dict.footer.legal}</h4>
             <div className="footer-links">
-              <a href="/legal" className="footer-link">Mentions légales</a>
-              <a href="/legal#privacy" className="footer-link">Politique de confidentialité</a>
-              <a href="/legal#cgv" className="footer-link">CGV</a>
+              <Link href={`/${lang}/legal`} className="footer-link">{dict.footer.legal}</Link>
+              <Link href={`/${lang}/legal#privacy`} className="footer-link">{dict.footer.privacy}</Link>
+              <Link href={`/${lang}/legal#cgv`} className="footer-link">CGV</Link>
             </div>
           </div>
         </div>
 
         <div className="footer-bottom">
-          <p>&copy; 2026 Culture Média News. Tous droits réservés.</p>
+          <p>&copy; 2026 Culture Média News. {dict.footer.rights}</p>
         </div>
       </div>
     </footer>

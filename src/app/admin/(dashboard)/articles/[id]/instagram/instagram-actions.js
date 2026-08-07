@@ -7,6 +7,29 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+async function getKnowledgeContext(lang) {
+  try {
+    let context = "";
+    const { data: rules } = await supabase.from('knowledge_brain').select('*').eq('is_active', true);
+    if (rules && rules.length > 0) {
+      context += "\n[RÈGLES ÉDITORIALES ABSOLUES À RESPECTER (TRÈS IMPORTANT)]\n";
+      rules.forEach(r => context += `- ${r.title}: ${r.content}\n`);
+    }
+
+    if (lang === 'bsh' || lang === 'all') {
+      const { data: dict } = await supabase.from('linguistic_dictionary').select('*').eq('is_active', true).eq('language', 'bsh');
+      if (dict && dict.length > 0) {
+        context += "\n[DICTIONNAIRE LINGUISTIQUE (BUSHINENGUÉ)]\nPrivilégie toujours ces termes :\n";
+        dict.forEach(d => context += `- Français "${d.source_term}" = "${d.translated_term}" (${d.context || ''})\n`);
+      }
+    }
+    return context;
+  } catch (err) {
+    console.error("Knowledge Brain fetch error:", err);
+    return "";
+  }
+}
+
 export async function saveInstagramState(articleId, state) {
   try {
     const { error } = await supabase
@@ -28,10 +51,13 @@ export async function generateTitles(article, lang = 'fr') {
     if (!aiKey) throw new Error("Clé API IA manquante.");
 
     const genAI = new GoogleGenerativeAI(aiKey);
+    const knowledgeContext = await getKnowledgeContext(lang);
+
     const promptFr = `Génère 3 propositions de titres très courts, percutants et accrocheurs pour un post Instagram (style Breaking News ou Editorial). 
     Voici l'article d'origine :
     Titre : ${article.title}
     Contenu : ${article.content}
+    ${knowledgeContext}
     
     Formatte la réponse UNIQUEMENT en tableau JSON valide de strings, sans markdown, sans autre texte. Exemple: ["Titre 1", "Titre 2", "Titre 3"]`;
 
@@ -40,6 +66,7 @@ export async function generateTitles(article, lang = 'fr') {
     Voici l'article d'origine (en français) :
     Titre : ${article.title}
     Contenu : ${article.content}
+    ${knowledgeContext}
     
     Formatte la réponse UNIQUEMENT en tableau JSON valide de strings, sans markdown, sans autre texte. Exemple: ["Titre Bsh 1", "Titre Bsh 2", "Titre Bsh 3"]`;
 
@@ -83,6 +110,8 @@ export async function generateCaption(article) {
     if (!aiKey) throw new Error("Clé API IA manquante.");
 
     const genAI = new GoogleGenerativeAI(aiKey);
+    const knowledgeContext = await getKnowledgeContext('all');
+
     const prompt = `Génère une légende Instagram complète pour l'article suivant.
 La légende DOIT inclure DEUX versions du texte dans le même post :
 1. D'abord le texte en Français (engageant, avec des emojis)
@@ -92,7 +121,9 @@ La légende DOIT inclure DEUX versions du texte dans le même post :
 
 Voici l'article :
 Titre : ${article.title}
-Contenu : ${article.content}`;
+Contenu : ${article.content}
+
+${knowledgeContext}`;
 
     const modelsToTry = ['gemini-1.5-flash-latest', 'gemini-flash-latest'];
     let lastError;

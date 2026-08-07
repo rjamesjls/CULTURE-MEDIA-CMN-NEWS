@@ -83,8 +83,14 @@ export default async function AdminLayout({ children }) {
           <Link href="/admin/ideas" className="admin-nav-link">
             <i className="fas fa-lightbulb"></i> Idées de contenu
           </Link>
+          <Link href="/admin/ai-studio" className="admin-nav-link">
+            <i className="fas fa-brain"></i> AI Studio
+          </Link>
+          <Link href="/admin/publication-center" className="admin-nav-link">
+            <i className="fas fa-satellite-dish"></i> Publication Center
+          </Link>
           <Link href="/admin/articles" className="admin-nav-link">
-            <i className="fas fa-newspaper"></i> Articles
+            <i className="fas fa-newspaper"></i> Newsroom
           </Link>
           
           <Link href="/admin/flash-infos" className="admin-nav-link">
@@ -94,6 +100,9 @@ export default async function AdminLayout({ children }) {
           <Link href="/admin/ai-generator" className="admin-nav-link">
             <i className="fas fa-robot"></i> Générateur IA
           </Link>
+          <Link href="/admin/knowledge-brain" className="admin-nav-link" style={{ background: 'linear-gradient(45deg, #059669 0%, #10b981 100%)', color: 'white', fontWeight: 'bold' }}>
+            <i className="fas fa-brain"></i> Knowledge Brain
+          </Link>
 
           <Link href="/admin/veille" className="admin-nav-link">
             <i className="fas fa-satellite-dish"></i> Veille & Sources
@@ -101,6 +110,9 @@ export default async function AdminLayout({ children }) {
 
           <Link href="/admin/instagram" className="admin-nav-link" style={{ background: 'linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)', color: 'white', fontWeight: 'bold' }}>
             <i className="fab fa-instagram"></i> Posts Instagram
+          </Link>
+          <Link href="/admin/reels-studio" className="admin-nav-link" style={{ background: 'linear-gradient(45deg, #f09433 0%, #dc2743 50%, #bc1888 100%)', color: 'white', fontWeight: 'bold', marginTop: '5px' }}>
+            <i className="fas fa-film"></i> Reels Studio
           </Link>
 
           <Link href="/admin/interviews" className="admin-nav-link">
@@ -117,6 +129,10 @@ export default async function AdminLayout({ children }) {
           
           <Link href="/admin/widgets" className="admin-nav-link">
             <i className="fas fa-project-diagram"></i> Outils externes
+          </Link>
+
+          <Link href="/admin/broadcast-studio" className="admin-nav-link" style={{ background: 'linear-gradient(45deg, #6366f1 0%, #8b5cf6 100%)', color: 'white', fontWeight: 'bold', marginTop: '10px' }}>
+            <i className="fas fa-video"></i> Broadcast Studio
           </Link>
           
           {isAdmin && (

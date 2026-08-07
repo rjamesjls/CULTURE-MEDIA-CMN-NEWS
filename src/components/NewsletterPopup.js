@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { subscribeToNewsletter } from '@/app/newsletter/actions';
+import { subscribeToNewsletter } from '@/app/actions/newsletter';
 
 export default function NewsletterPopup() {
   const [isOpen, setIsOpen] = useState(false);
