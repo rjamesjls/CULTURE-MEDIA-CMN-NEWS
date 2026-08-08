@@ -154,7 +154,7 @@ export async function POST(req) {
     if (platform === 'instagram') {
       result = await publishToInstagram(videoBlob, caption);
     } else if (platform === 'tiktok') {
-      const cookieStore = cookies();
+      const cookieStore = await cookies();
       const tiktokAccessToken = cookieStore.get('tiktok_access_token')?.value;
       result = await publishToTikTok(videoBlob, caption, tiktokAccessToken);
     } else {

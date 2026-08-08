@@ -21,7 +21,7 @@ export async function GET(req) {
   const redirectUri = process.env.TIKTOK_REDIRECT_URI || 'https://culturemedianews.fr/api/auth/tiktok/callback';
 
   try {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const codeVerifier = cookieStore.get('tiktok_code_verifier')?.value;
 
     const tokenParams = new URLSearchParams();
