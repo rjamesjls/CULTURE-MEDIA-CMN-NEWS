@@ -195,8 +195,15 @@ export default function ReelsStudioClient() {
       const ctx = canvas.getContext('2d');
 
       const stream = canvas.captureStream(FPS);
-      const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
-        ? 'video/webm;codecs=vp9' : 'video/webm';
+      let mimeType = 'video/webm';
+      if (MediaRecorder.isTypeSupported('video/mp4')) {
+        mimeType = 'video/mp4';
+      } else if (MediaRecorder.isTypeSupported('video/webm;codecs=h264')) {
+        mimeType = 'video/webm;codecs=h264';
+      } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9')) {
+        mimeType = 'video/webm;codecs=vp9';
+      }
+      
       const recorder = new MediaRecorder(stream, {
         mimeType,
         videoBitsPerSecond: 2_000_000, // Réduit à 2 Mbps pour éviter la limite Vercel de 4.5MB

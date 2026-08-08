@@ -121,7 +121,7 @@ async function publishToTikTok(videoBlob, caption, cookieAccessToken) {
   const uploadRes = await fetch(upload_url, {
     method: 'PUT',
     headers: {
-      'Content-Type': 'video/webm',
+      'Content-Type': videoBlob.type || 'video/mp4',
       'Content-Range': `bytes 0-${videoBlob.size - 1}/${videoBlob.size}`,
       'Content-Length': String(videoBlob.size),
     },
