@@ -199,7 +199,7 @@ export default function ReelsStudioClient() {
         ? 'video/webm;codecs=vp9' : 'video/webm';
       const recorder = new MediaRecorder(stream, {
         mimeType,
-        videoBitsPerSecond: 8_000_000,
+        videoBitsPerSecond: 2_000_000, // Réduit à 2 Mbps pour éviter la limite Vercel de 4.5MB
       });
 
       const chunks = [];
