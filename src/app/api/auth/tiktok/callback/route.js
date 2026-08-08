@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 
 export async function GET(req) {
   const { searchParams } = new URL(req.url);
@@ -20,12 +21,18 @@ export async function GET(req) {
   const redirectUri = process.env.TIKTOK_REDIRECT_URI || 'https://culturemedianews.fr/api/auth/tiktok/callback';
 
   try {
+    const cookieStore = cookies();
+    const codeVerifier = cookieStore.get('tiktok_code_verifier')?.value;
+
     const tokenParams = new URLSearchParams();
     tokenParams.append('client_key', clientKey);
     tokenParams.append('client_secret', clientSecret);
     tokenParams.append('code', code);
     tokenParams.append('grant_type', 'authorization_code');
     tokenParams.append('redirect_uri', redirectUri);
+    if (codeVerifier) {
+      tokenParams.append('code_verifier', codeVerifier);
+    }
 
     const res = await fetch('https://open.tiktokapis.com/v2/oauth/token/', {
       method: 'POST',
