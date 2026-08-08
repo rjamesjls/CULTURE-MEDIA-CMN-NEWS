@@ -127,6 +127,15 @@ export default async function PublicationCenterPage() {
               >
                 <i className="fab fa-facebook"></i> Facebook
               </Link>
+              
+              <Link 
+                href={`/admin/reels-studio?articleId=${article.id}`}
+                className="admin-btn"
+                style={{ backgroundColor: '#fdf4ff', color: '#000000', border: '1px solid #e5e7eb', padding: '8px 12px' }}
+                title="Créer une vidéo TikTok"
+              >
+                <i className="fab fa-tiktok"></i> TikTok
+              </Link>
             </div>
           </div>
         ))}
