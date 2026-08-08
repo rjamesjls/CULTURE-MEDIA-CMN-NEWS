@@ -86,8 +86,8 @@ async function publishToTikTok(videoBlob, caption, cookieAccessToken) {
     );
   }
 
-  // Initialiser l'upload (Direct Post)
-  const initRes = await fetch('https://open.tiktokapis.com/v2/post/publish/video/init/', {
+  // Initialiser l'upload (Inbox Post - plus permissif en Sandbox)
+  const initRes = await fetch('https://open.tiktokapis.com/v2/post/publish/inbox/video/init/', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${accessToken}`,
