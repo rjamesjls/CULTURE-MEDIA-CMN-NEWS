@@ -669,7 +669,7 @@ export default function ReelsStudioClient() {
           {/* Info API */}
           {publishModal === 'tiktok' && (
             <div style={{ backgroundColor: '#f0fdf4', border: '1px solid #86efac', borderRadius: '8px', padding: '12px', marginBottom: '16px', fontSize: '13px', color: '#166534' }}>
-              <strong>ℹ️ Configuration requise :</strong> Ajoutez <code>TIKTOK_CLIENT_KEY</code> et <code>TIKTOK_CLIENT_SECRET</code> dans votre <code>.env.local</code> pour activer la publication.
+              <strong>ℹ️ Prêt pour la publication :</strong> Votre vidéo sera envoyée directement sur votre compte TikTok.
             </div>
           )}
 
