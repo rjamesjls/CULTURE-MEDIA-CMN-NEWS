@@ -77,11 +77,11 @@ export default function TikTokGenerator({ article, recentArticles = [] }) {
     try {
       // 1. Snapshot des 2 divs
       const dataUrlFr = await htmlToImage.toJpeg(postRefFr.current, {
-        quality: 1.0, pixelRatio: 2, width: 1080, height: 1920,
+        quality: 1.0, pixelRatio: 2, width: 1080, height: 1350,
         style: { transform: 'scale(1)', transformOrigin: 'top left' }
       });
       const dataUrlBsh = await htmlToImage.toJpeg(postRefBsh.current, {
-        quality: 1.0, pixelRatio: 2, width: 1080, height: 1920,
+        quality: 1.0, pixelRatio: 2, width: 1080, height: 1350,
         style: { transform: 'scale(1)', transformOrigin: 'top left' }
       });
       
@@ -93,10 +93,10 @@ export default function TikTokGenerator({ article, recentArticles = [] }) {
       imgBsh.src = dataUrlBsh;
       await new Promise(r => { imgBsh.onload = r; });
       
-      // 2. Création d'un Canvas 1080x1920
+      // 2. Création d'un Canvas 1080x1350
       const canvas = document.createElement('canvas');
       canvas.width = 1080;
-      canvas.height = 1920;
+      canvas.height = 1350;
       const ctx = canvas.getContext('2d');
       
       // 3. Enregistrement vidéo (6 secondes : 3s FR, 3s BSH)
@@ -123,7 +123,7 @@ export default function TikTokGenerator({ article, recentArticles = [] }) {
       
       const renderLoop = () => {
         if (!isRecording) return;
-        ctx.drawImage(currentImg, 0, 0, 1080, 1920);
+        ctx.drawImage(currentImg, 0, 0, 1080, 1350);
         requestAnimationFrame(renderLoop);
       };
       renderLoop();
@@ -255,7 +255,6 @@ export default function TikTokGenerator({ article, recentArticles = [] }) {
     const stateToSave = {
       templateData,
       carouselOrder,
-      instagramTags,
       publishCaption,
       activeLang,
       selectedTemplateFr,
@@ -267,7 +266,7 @@ export default function TikTokGenerator({ article, recentArticles = [] }) {
     }, 1500); // 1.5s debounce
 
     return () => clearTimeout(timeoutId);
-  }, [templateData, carouselOrder, instagramTags, publishCaption, activeLang, selectedTemplateFr, selectedTemplateBsh, article.id]);
+  }, [templateData, carouselOrder, publishCaption, activeLang, selectedTemplateFr, selectedTemplateBsh, article.id]);
 
   const updateData = (field, value) => {
     // Fields that represent content should be synchronized across all templates
@@ -512,7 +511,7 @@ Contenu: ${article.content || ''}`;
       ref={ref}
       style={{
         width: "1080px",
-        height: "1920px",
+        height: "1350px",
         backgroundColor: "#0d16c7",
         position: "relative",
         overflow: "hidden",
@@ -730,7 +729,7 @@ Contenu: ${article.content || ''}`;
       ref={ref}
       style={{
         width: "1080px",
-        height: "1920px",
+        height: "1350px",
         backgroundImage: "url(/backgrounds/editorial-blue-bg.png)",
         backgroundSize: "cover",
         backgroundPosition: "center",
@@ -1014,7 +1013,7 @@ Contenu: ${article.content || ''}`;
       ref={ref}
       style={{
         width: "1080px",
-        height: "1920px",
+        height: "1350px",
         backgroundColor: "#f8fafc",
         position: "relative",
         overflow: "hidden",
@@ -1314,7 +1313,7 @@ Contenu: ${article.content || ''}`;
       ref={ref}
       style={{
         width: "1080px",
-        height: "1920px",
+        height: "1350px",
         backgroundColor: "#041445",
         position: "relative",
         overflow: "hidden",
@@ -1541,7 +1540,7 @@ Contenu: ${article.content || ''}`;
       ref={ref}
       style={{
         width: "1080px",
-        height: "1920px",
+        height: "1350px",
         backgroundColor: "#020617",
         position: "relative",
         overflow: "hidden",
@@ -2290,8 +2289,8 @@ Contenu: ${article.content || ''}`;
               {/* Preview FR */}
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
                 <div style={{ padding: "6px 16px", backgroundColor: activeLang === "fr" ? "#2563eb" : "#9ca3af", color: "#fff", borderRadius: "6px 6px 0 0", fontWeight: "bold", fontSize: "13px", cursor: "pointer" }} onClick={() => setActiveLang("fr")}>🇫🇷 Français</div>
-                <div style={{ width: "454px", height: "806px", overflow: "hidden", position: "relative" }}>
-                  <div style={{ transform: "scale(0.42)", transformOrigin: "top left", width: "1080px", height: "1920px", position: "absolute", top: 0, left: 0, boxShadow: "0 10px 30px rgba(0,0,0,0.2)" }}>
+                <div style={{ width: "454px", height: "567px", overflow: "hidden", position: "relative" }}>
+                  <div style={{ transform: "scale(0.42)", transformOrigin: "top left", width: "1080px", height: "1350px", position: "absolute", top: 0, left: 0, boxShadow: "0 10px 30px rgba(0,0,0,0.2)" }}>
                     {selectedTemplateFr === "template-1" && renderTemplate1("fr", postRefFr)}
                     {selectedTemplateFr === "template-2" && renderTemplate2("fr", postRefFr)}
                     {selectedTemplateFr === "template-3" && renderTemplate3("fr", postRefFr)}
@@ -2303,8 +2302,8 @@ Contenu: ${article.content || ''}`;
               {/* Preview BSH */}
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
                 <div style={{ padding: "6px 16px", backgroundColor: activeLang === "bsh" ? "#16a34a" : "#9ca3af", color: "#fff", borderRadius: "6px 6px 0 0", fontWeight: "bold", fontSize: "13px", cursor: "pointer" }} onClick={() => setActiveLang("bsh")}>🌴 Boushingué</div>
-                <div style={{ width: "454px", height: "806px", overflow: "hidden", position: "relative" }}>
-                  <div style={{ transform: "scale(0.42)", transformOrigin: "top left", width: "1080px", height: "1920px", position: "absolute", top: 0, left: 0, boxShadow: "0 10px 30px rgba(0,0,0,0.2)" }}>
+                <div style={{ width: "454px", height: "567px", overflow: "hidden", position: "relative" }}>
+                  <div style={{ transform: "scale(0.42)", transformOrigin: "top left", width: "1080px", height: "1350px", position: "absolute", top: 0, left: 0, boxShadow: "0 10px 30px rgba(0,0,0,0.2)" }}>
                     {selectedTemplateBsh === "template-1" && renderTemplate1("bsh", postRefBsh)}
                     {selectedTemplateBsh === "template-2" && renderTemplate2("bsh", postRefBsh)}
                     {selectedTemplateBsh === "template-3" && renderTemplate3("bsh", postRefBsh)}
@@ -2345,25 +2344,6 @@ Contenu: ${article.content || ''}`;
                   <option value="fr-first">FR en premier, puis BSH</option>
                   <option value="bsh-first">BSH en premier, puis FR</option>
                 </select>
-              </div>
-
-              <div style={{ marginBottom: "10px" }}>
-                <label style={{ display: "block", fontSize: "13px", marginBottom: "5px", color: "#4b5563" }}>
-                  Taguer (Instagram) :
-                </label>
-                <input
-                  type="text"
-                  value={instagramTags}
-                  onChange={(e) => setInstagramTags(e.target.value)}
-                  placeholder="@culturemediacmn"
-                  style={{
-                    width: "100%",
-                    padding: "8px",
-                    borderRadius: "4px",
-                    border: "1px solid #d1d5db",
-                    fontSize: "13px",
-                  }}
-                />
               </div>
 
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "5px" }}>
@@ -2554,7 +2534,7 @@ const previewContainerStyle = {
 
 const previewWrapperStyle = {
   width: "1080px",
-  height: "1920px",
+  height: "1350px",
   transform: "scale(0.32)",
   transformOrigin: "top center",
   boxShadow: "0 20px 50px rgba(0,0,0,0.2)",
