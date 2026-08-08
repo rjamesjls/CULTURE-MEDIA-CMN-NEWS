@@ -129,7 +129,7 @@ export default async function PublicationCenterPage() {
               </Link>
               
               <Link 
-                href={`/admin/reels-studio?articleId=${article.id}`}
+                href={`/admin/articles/${article.id}/tiktok`}
                 className="admin-btn"
                 style={{ backgroundColor: '#fdf4ff', color: '#000000', border: '1px solid #e5e7eb', padding: '8px 12px' }}
                 title="Créer une vidéo TikTok"
