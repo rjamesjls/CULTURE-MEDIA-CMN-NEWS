@@ -74,6 +74,6 @@ export async function GET(req) {
     return response;
   } catch (err) {
     console.error('Callback network error:', err);
-    return NextResponse.redirect(new URL('/admin/reels-studio?error=server_error', req.url));
+    return NextResponse.redirect(new URL(`/admin/reels-studio?error=server_error&details=${encodeURIComponent(err.message)}`, req.url));
   }
 }
