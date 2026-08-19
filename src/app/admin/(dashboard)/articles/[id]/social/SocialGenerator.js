@@ -7,9 +7,10 @@ const CustomEditor = dynamic(() => import("@/components/CustomEditor"), {
   ssr: false,
 });
 import { useRouter } from "next/navigation";
-import { saveTikTokState, generateCaption } from "./tiktok-actions";
+import { publishToMeta } from "./social-actions";
+import { saveInstagramState, generateTitles, generateCaption } from "./instagram-actions";
 
-export default function TikTokGenerator({ article, recentArticles = [] }) {
+export default function SocialGenerator({ article, recentArticles = [] }) {
   const router = useRouter();
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -18,7 +19,7 @@ export default function TikTokGenerator({ article, recentArticles = [] }) {
   const [quillKey, setQuillKey] = useState(0);
 
   // Layout states
-  const [leftWidth, setLeftWidth] = useState(500);
+  const [leftWidth, setLeftWidth] = useState(400);
   const [rightWidth, setRightWidth] = useState(300);
   const [isDraggingLeft, setIsDraggingLeft] = useState(false);
   const [isDraggingRight, setIsDraggingRight] = useState(false);
@@ -51,8 +52,9 @@ export default function TikTokGenerator({ article, recentArticles = [] }) {
     };
   }, [isDraggingLeft, isDraggingRight]);
 
-  const [carouselOrder, setCarouselOrder] = useState(article.tiktok_state?.carouselOrder || "fr-first");
-  const [publishCaption, setPublishCaption] = useState(article.tiktok_state?.publishCaption || "");
+  const [carouselOrder, setCarouselOrder] = useState(article.instagram_state?.carouselOrder || "fr-first");
+  const [instagramTags, setInstagramTags] = useState(article.instagram_state?.instagramTags || "");
+  const [publishCaption, setPublishCaption] = useState(article.instagram_state?.publishCaption || "");
   const [isGeneratingCaption, setIsGeneratingCaption] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
 
@@ -141,7 +143,7 @@ export default function TikTokGenerator({ article, recentArticles = [] }) {
     }
   };
 
-  const handlePublish = async () => {
+  const handlePublish = async (targets) => {
     if (!publishCaption) {
       alert("Veuillez générer ou rédiger une légende.");
       return;
@@ -150,30 +152,95 @@ export default function TikTokGenerator({ article, recentArticles = [] }) {
     setIsPublishing(true);
     
     try {
-      const videoBlob = await getCombinedVideoBlob();
-      if (!videoBlob) {
-        alert("Erreur lors de la génération de la vidéo.");
-        setIsPublishing(false);
-        return;
+      let combinedSuccess = true;
+      let combinedMessage = "";
+
+      // Si on cible Instagram et/ou Facebook, on génère les images
+      if (targets.includes("instagram") || targets.includes("facebook")) {
+        const base64Fr = await getCanvasImage("fr");
+        const base64Bsh = await getCanvasImage("bsh");
+        
+        if (!base64Fr || !base64Bsh) {
+          alert("Erreur de génération des images.");
+          setIsPublishing(false);
+          return;
+        }
+        
+        const formData = new FormData();
+        if (carouselOrder === "fr-first") {
+          formData.append("base64Image1", base64Fr);
+          formData.append("base64Image2", base64Bsh);
+        } else {
+          formData.append("base64Image1", base64Bsh);
+          formData.append("base64Image2", base64Fr);
+        }
+        
+        formData.append("caption", publishCaption);
+        formData.append("instagramTags", instagramTags);
+        formData.append("articleId", article.id);
+        
+        // Pass targets array as string to publishToMeta
+        const metaTargets = targets.filter(t => t === 'instagram' || t === 'facebook');
+        formData.append("targets", JSON.stringify(metaTargets));
+        
+        const res = await publishToMeta(formData);
+        if (!res.success) {
+          combinedSuccess = false;
+          combinedMessage += `Meta Erreur: ${res.error}\n`;
+        } else {
+          combinedMessage += `✅ Meta publié (${metaTargets.join(', ')})\n`;
+        }
       }
-      
-      const formData = new FormData();
-      formData.append("video", videoBlob, "tiktok.webm");
-      formData.append("caption", publishCaption);
-      formData.append("platform", "tiktok");
-      
-      const res = await fetch("/api/reels/publish", { method: "POST", body: formData });
-      const data = await res.json();
-      
-      if (res.ok) {
-        alert("✅ Publication réussie sur TikTok !");
-      } else {
-        alert("Erreur: " + data.error);
+
+      // Si on cible TikTok, on génère la vidéo WebM
+      if (targets.includes("tiktok")) {
+        const videoBlob = await getCombinedVideoBlob();
+        if (!videoBlob) {
+          combinedSuccess = false;
+          combinedMessage += `Erreur lors de la génération de la vidéo TikTok.\n`;
+        } else {
+          const formData = new FormData();
+          formData.append("video", videoBlob, "tiktok.webm");
+          formData.append("caption", publishCaption);
+          formData.append("platform", "tiktok");
+          
+          const res = await fetch("/api/reels/publish", { method: "POST", body: formData });
+          const data = await res.json();
+          
+          if (!res.ok) {
+            combinedSuccess = false;
+            combinedMessage += `TikTok Erreur: ${data.error}\n`;
+          } else {
+            combinedMessage += `✅ TikTok publié\n`;
+          }
+        }
       }
+
+      alert(combinedMessage);
     } catch (e) {
       alert("Erreur système: " + e.message);
     } finally {
       setIsPublishing(false);
+    }
+  };
+
+  const getCanvasImage = async (lang) => {
+    try {
+      const ref = lang === "fr" ? postRefFr : postRefBsh;
+      if (!ref.current) return null;
+      
+      // Petit hack pour forcer le bon rendu
+      const node = ref.current;
+      return await htmlToImage.toJpeg(node, {
+        quality: 1.0,
+        pixelRatio: 2,
+        width: 1080,
+        height: 1350,
+        style: { transform: 'scale(1)', transformOrigin: 'top left' }
+      });
+    } catch (e) {
+      console.error(e);
+      return null;
     }
   };
 
@@ -255,6 +322,7 @@ export default function TikTokGenerator({ article, recentArticles = [] }) {
     const stateToSave = {
       templateData,
       carouselOrder,
+      instagramTags,
       publishCaption,
       activeLang,
       selectedTemplateFr,
@@ -266,7 +334,7 @@ export default function TikTokGenerator({ article, recentArticles = [] }) {
     }, 1500); // 1.5s debounce
 
     return () => clearTimeout(timeoutId);
-  }, [templateData, carouselOrder, publishCaption, activeLang, selectedTemplateFr, selectedTemplateBsh, article.id]);
+  }, [templateData, carouselOrder, instagramTags, publishCaption, activeLang, selectedTemplateFr, selectedTemplateBsh, article.id]);
 
   const updateData = (field, value) => {
     // Fields that represent content should be synchronized across all templates
@@ -305,7 +373,8 @@ export default function TikTokGenerator({ article, recentArticles = [] }) {
 
   const cleanHtmlForDisplay = (html) => {
     if (!html) return "";
-    return html;
+    // Replace non-breaking spaces with regular spaces to prevent word-break issues
+    return html.replace(/&nbsp;/g, ' ');
   };
 
   const generateAITitle = async () => {
@@ -650,7 +719,8 @@ Contenu: ${article.content || ''}`;
             flexDirection: "column",
             textTransform: "uppercase",
             maxWidth: "350px",
-            wordBreak: "break-word",
+            wordBreak: "normal",
+            overflowWrap: "break-word",
             lineHeight: "1.2"
           }}
         >
@@ -790,7 +860,7 @@ Contenu: ${article.content || ''}`;
                 : "/backgrounds/cmn-corner-logo.png"
             }
             alt="CMN Media"
-            style={{ width: "180px" }}
+            style={{ width: "250px" }}
           />
           {currentData.showLogoNews && (
             <div
@@ -856,7 +926,7 @@ Contenu: ${article.content || ''}`;
               WebkitTextStroke: "2.5px #ffffff",
             }}
           >
-            CULTURE
+            AFOLUKU
           </span>
         </div>
         <div
@@ -1085,7 +1155,7 @@ Contenu: ${article.content || ''}`;
                 : "/backgrounds/cmn-corner-logo.png"
             }
             alt="CMN Media"
-            style={{ width: "180px" }}
+            style={{ width: "250px" }}
           />
           {currentData.showLogoNews && (
             <div
@@ -1152,7 +1222,7 @@ Contenu: ${article.content || ''}`;
               WebkitTextStroke: "2.5px #ffffff",
             }}
           >
-            CULTURE
+            AFOLUKU
           </span>
         </div>
         <div
@@ -1784,7 +1854,7 @@ Contenu: ${article.content || ''}`;
       <style>{`
         /* Styles pour Instagram Post (wrap, points clés en jaune et très gras) */
         .insta-body {
-          word-break: break-word;
+          word-break: normal;
           overflow-wrap: break-word;
           white-space: pre-wrap !important;
         }
@@ -1797,8 +1867,24 @@ Contenu: ${article.content || ''}`;
         .insta-body.bsh strong {
           color: #1e3a8a !important; /* Bleu foncé */
         }
+        .insta-body ul {
+          list-style-type: disc !important;
+          padding-left: 40px !important;
+          margin-top: 10px !important;
+          margin-bottom: 10px !important;
+        }
+        .insta-body ol {
+          list-style-type: decimal !important;
+          padding-left: 40px !important;
+          margin-top: 10px !important;
+          margin-bottom: 10px !important;
+        }
+        .insta-body li {
+          margin-bottom: 8px !important;
+          display: list-item !important;
+        }
         .insta-title {
-          word-break: break-word;
+          word-break: normal;
           overflow-wrap: break-word;
         }
 
@@ -1851,10 +1937,10 @@ Contenu: ${article.content || ''}`;
               </button>
               <h2 style={{ margin: 0, display: "flex", alignItems: "center" }}>
                 <i
-                  className="fab fa-instagram"
+                  className="fas fa-share-alt"
                   style={{ color: "#E1306C", marginRight: "8px" }}
                 ></i>{" "}
-                Générateur de Post Instagram
+                SocialPost
               </h2>
             </div>
           </div>
@@ -2346,6 +2432,25 @@ Contenu: ${article.content || ''}`;
                 </select>
               </div>
 
+              <div style={{ marginBottom: "10px" }}>
+                <label style={{ display: "block", fontSize: "13px", marginBottom: "5px", color: "#4b5563" }}>
+                  Taguer (Instagram) :
+                </label>
+                <input
+                  type="text"
+                  value={instagramTags}
+                  onChange={(e) => setInstagramTags(e.target.value)}
+                  placeholder="@culturemediacmn"
+                  style={{
+                    width: "100%",
+                    padding: "8px",
+                    borderRadius: "4px",
+                    border: "1px solid #d1d5db",
+                    fontSize: "13px",
+                  }}
+                />
+              </div>
+
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "5px" }}>
                 <label style={{ display: "block", fontSize: "13px", color: "#4b5563" }}>
                   Légende :
@@ -2392,24 +2497,72 @@ Contenu: ${article.content || ''}`;
                 }}
               />
               
-              <button
-                onClick={handlePublish}
-                disabled={isPublishing || isSaving}
-                className="admin-btn"
-                style={{ 
-                  width: "100%", 
-                  padding: "10px", 
-                  background: "linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)",
-                  color: "white", 
-                  border: "none",
-                  fontWeight: "bold",
-                  cursor: (isPublishing || isSaving) ? "not-allowed" : "pointer",
-                  opacity: (isPublishing || isSaving) ? 0.7 : 1
-                }}
-              >
-                {isPublishing ? <i className="fas fa-spinner fa-spin"></i> : <i className="fab fa-instagram"></i>}
-                {" "}Publier
-              </button>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <button
+                  onClick={() => handlePublish(['instagram'])}
+                  disabled={isPublishing || isSaving}
+                  className="admin-btn"
+                  style={{ 
+                    width: "100%", padding: "10px", 
+                    background: "linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)",
+                    color: "white", border: "none", fontWeight: "bold",
+                    cursor: (isPublishing || isSaving) ? "not-allowed" : "pointer",
+                    opacity: (isPublishing || isSaving) ? 0.7 : 1
+                  }}
+                >
+                  {isPublishing ? <i className="fas fa-spinner fa-spin"></i> : <i className="fab fa-instagram"></i>}
+                  {" "}Publier sur Instagram
+                </button>
+
+                <button
+                  onClick={() => handlePublish(['facebook'])}
+                  disabled={isPublishing || isSaving}
+                  className="admin-btn"
+                  style={{ 
+                    width: "100%", padding: "10px", 
+                    backgroundColor: "#1877F2",
+                    color: "white", border: "none", fontWeight: "bold",
+                    cursor: (isPublishing || isSaving) ? "not-allowed" : "pointer",
+                    opacity: (isPublishing || isSaving) ? 0.7 : 1
+                  }}
+                >
+                  {isPublishing ? <i className="fas fa-spinner fa-spin"></i> : <i className="fab fa-facebook"></i>}
+                  {" "}Publier sur Facebook
+                </button>
+
+                <button
+                  onClick={() => handlePublish(['tiktok'])}
+                  disabled={isPublishing || isSaving}
+                  className="admin-btn"
+                  style={{ 
+                    width: "100%", padding: "10px", 
+                    backgroundColor: "#000000",
+                    color: "white", border: "none", fontWeight: "bold",
+                    cursor: (isPublishing || isSaving) ? "not-allowed" : "pointer",
+                    opacity: (isPublishing || isSaving) ? 0.7 : 1
+                  }}
+                >
+                  {isPublishing ? <i className="fas fa-spinner fa-spin"></i> : <i className="fab fa-tiktok"></i>}
+                  {" "}Publier sur TikTok
+                </button>
+
+                <button
+                  onClick={() => handlePublish(['instagram', 'facebook', 'tiktok'])}
+                  disabled={isPublishing || isSaving}
+                  className="admin-btn"
+                  style={{ 
+                    width: "100%", padding: "10px", 
+                    backgroundColor: "#10b981",
+                    color: "white", border: "none", fontWeight: "bold",
+                    cursor: (isPublishing || isSaving) ? "not-allowed" : "pointer",
+                    opacity: (isPublishing || isSaving) ? 0.7 : 1,
+                    marginTop: "5px"
+                  }}
+                >
+                  {isPublishing ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-share-alt"></i>}
+                  {" "}Tout publier
+                </button>
+              </div>
             </div>
 
             {/* AUTRES ARTICLES BLOCK */}

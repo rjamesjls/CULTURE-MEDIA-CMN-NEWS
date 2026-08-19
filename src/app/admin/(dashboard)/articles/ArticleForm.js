@@ -241,6 +241,8 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
     setErrorMsg('');
 
     const formData = new FormData(e.target);
+    formData.append('title', title);
+    formData.append('description', description);
     formData.append('content', content);
     formData.append('title_bsh', titleBsh);
     formData.append('hook_bsh', descriptionBsh);

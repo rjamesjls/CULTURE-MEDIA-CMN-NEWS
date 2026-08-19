@@ -17,7 +17,7 @@ export default function ArticleList({ initialArticles, categories }) {
 
   // Filtrage
   const filteredArticles = initialArticles.filter((article) => {
-    const matchesSearch = article.title.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = article.title?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = categoryFilter ? article.category === categoryFilter : true;
     const matchesStatus = statusFilter ? article.status === statusFilter : true;
     return matchesSearch && matchesCategory && matchesStatus;
@@ -143,7 +143,7 @@ export default function ArticleList({ initialArticles, categories }) {
                 </h4>
                 <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '10px', borderTop: '1px solid #f3f4f6' }}>
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <span style={{ fontSize: '12px', color: '#6b7280' }}>{new Date(article.pub_date).toLocaleDateString('fr-FR')}</span>
+                    <span style={{ fontSize: '12px', color: '#6b7280' }}>{article.pub_date ? new Date(article.pub_date).toLocaleDateString('fr-FR') : 'Date inconnue'}</span>
                     <span style={{ fontSize: '11px', color: '#9ca3af' }}>{article.author}</span>
                   </div>
                   <div style={{ display: 'flex', gap: '8px' }}>
@@ -156,12 +156,21 @@ export default function ArticleList({ initialArticles, categories }) {
                       <i className="fas fa-chart-bar"></i>
                     </Link>
                     <Link 
-                      href={`/admin/articles/${article.id}/instagram`}
+                      href={`/admin/articles/${article.id}/social`}
                       className="btn-icon" 
-                      title="Créer Post Instagram" 
+                      title="Générateur Réseaux Sociaux" 
                       style={{ padding: '6px', backgroundColor: '#fdf4ff', color: '#c026d3' }}
                     >
-                      <i className="fab fa-instagram"></i>
+                      <i className="fas fa-share-alt"></i>
+                    </Link>
+                    <Link 
+                      href={`/fr/article/${article.slug}`}
+                      target="_blank"
+                      className="btn-icon" 
+                      title="Prévisualiser" 
+                      style={{ padding: '6px', backgroundColor: '#e0e7ff', color: '#4f46e5' }}
+                    >
+                      <i className="fas fa-eye"></i>
                     </Link>
                     <Link href={`/admin/articles/edit/${article.id}`} className="btn-icon btn-edit" title="Modifier" style={{ padding: '6px' }}>
                       <i className="fas fa-pen"></i>
@@ -207,7 +216,7 @@ export default function ArticleList({ initialArticles, categories }) {
                     )}
                   </td>
                   <td>{article.author}</td>
-                  <td>{new Date(article.pub_date).toLocaleDateString('fr-FR')}</td>
+                  <td>{article.pub_date ? new Date(article.pub_date).toLocaleDateString('fr-FR') : 'Date inconnue'}</td>
                   <td>
                     <div className="admin-actions" style={{ justifyContent: 'flex-end', display: 'flex', gap: '5px' }}>
                       <Link 
@@ -219,12 +228,21 @@ export default function ArticleList({ initialArticles, categories }) {
                         <i className="fas fa-chart-bar"></i>
                       </Link>
                       <Link 
-                        href={`/admin/articles/${article.id}/instagram`}
+                        href={`/admin/articles/${article.id}/social`}
                         className="btn-icon" 
-                        title="Créer Post Instagram" 
+                        title="Générateur Réseaux Sociaux" 
                         style={{ padding: '4px 8px', backgroundColor: '#fdf4ff', color: '#c026d3', border: '1px solid #f0abfc' }}
                       >
-                        <i className="fab fa-instagram"></i>
+                        <i className="fas fa-share-alt"></i>
+                      </Link>
+                      <Link 
+                        href={`/fr/article/${article.slug}`}
+                        target="_blank"
+                        className="btn-icon" 
+                        title="Prévisualiser" 
+                        style={{ padding: '4px 8px', backgroundColor: '#e0e7ff', color: '#4f46e5', border: '1px solid #c7d2fe' }}
+                      >
+                        <i className="fas fa-eye"></i>
                       </Link>
                       <Link href={`/admin/articles/edit/${article.id}`} className="btn-icon btn-edit" title="Modifier">
                         <i className="fas fa-pen"></i>

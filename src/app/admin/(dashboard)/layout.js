@@ -89,6 +89,9 @@ export default async function AdminLayout({ children }) {
           <Link href="/admin/publication-center" className="admin-nav-link">
             <i className="fas fa-satellite-dish"></i> Publication Center
           </Link>
+          <Link href="/admin/revue-presse" className="admin-nav-link">
+            <i className="fas fa-newspaper"></i> Revue de Presse
+          </Link>
           <Link href="/admin/articles" className="admin-nav-link">
             <i className="fas fa-newspaper"></i> Newsroom
           </Link>
@@ -99,6 +102,9 @@ export default async function AdminLayout({ children }) {
 
           <Link href="/admin/ai-generator" className="admin-nav-link">
             <i className="fas fa-robot"></i> Générateur IA
+          </Link>
+          <Link href="/admin/charts" className="admin-nav-link">
+            <i className="fas fa-chart-bar"></i> Classements YouTube
           </Link>
           <Link href="/admin/knowledge-brain" className="admin-nav-link" style={{ background: 'linear-gradient(45deg, #059669 0%, #10b981 100%)', color: 'white', fontWeight: 'bold' }}>
             <i className="fas fa-brain"></i> Knowledge Brain
@@ -114,9 +120,15 @@ export default async function AdminLayout({ children }) {
           <Link href="/admin/reels-studio" className="admin-nav-link" style={{ background: 'linear-gradient(45deg, #f09433 0%, #dc2743 50%, #bc1888 100%)', color: 'white', fontWeight: 'bold', marginTop: '5px' }}>
             <i className="fas fa-film"></i> Reels Studio
           </Link>
+          <Link href="/admin/library" className="admin-nav-link" style={{ background: '#111', color: 'white', fontWeight: 'bold', marginTop: '5px' }}>
+            <i className="fas fa-folder-open"></i> Médiathèque
+          </Link>
 
           <Link href="/admin/interviews" className="admin-nav-link">
             <i className="fas fa-microphone-alt"></i> Interviews
+          </Link>
+          <Link href="/admin/tournaments" className="admin-nav-link" style={{ background: 'linear-gradient(45deg, #2563eb 0%, #4f46e5 100%)', color: 'white', fontWeight: 'bold' }}>
+            <i className="fas fa-trophy"></i> Tournois & Matchs
           </Link>
 
           <Link href="/admin/companies" className="admin-nav-link">

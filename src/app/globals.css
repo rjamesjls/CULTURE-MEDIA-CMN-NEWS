@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* =================================================================
    CULTURE MÉDIA NEWS - DESIGN SYSTEM
    Modern, Premium News Website Design

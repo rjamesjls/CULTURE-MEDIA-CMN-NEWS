@@ -202,9 +202,14 @@ export default function NewsroomClient({ articles, categories, ideas, profile })
                       <span style={{ fontSize: '12px', color: '#6b7280' }}>
                         <i className="fas fa-user" style={{ marginRight: '4px' }}></i> {article.author}
                       </span>
-                      <Link href={`/admin/articles/edit/${article.id}`} className="admin-btn" style={{ fontSize: '12px', padding: '6px 12px', backgroundColor: '#f3f4f6', color: '#374151', textDecoration: 'none' }}>
-                        Reprendre <i className="fas fa-arrow-right" style={{ marginLeft: '4px' }}></i>
-                      </Link>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <Link href={`/fr/article/${article.slug}`} target="_blank" className="admin-btn" style={{ fontSize: '12px', padding: '6px 12px', backgroundColor: '#e0e7ff', color: '#4f46e5', textDecoration: 'none' }}>
+                          <i className="fas fa-eye"></i>
+                        </Link>
+                        <Link href={`/admin/articles/edit/${article.id}`} className="admin-btn" style={{ fontSize: '12px', padding: '6px 12px', backgroundColor: '#f3f4f6', color: '#374151', textDecoration: 'none' }}>
+                          Reprendre <i className="fas fa-arrow-right" style={{ marginLeft: '4px' }}></i>
+                        </Link>
+                      </div>
                     </div>
                   </div>
                 </div>

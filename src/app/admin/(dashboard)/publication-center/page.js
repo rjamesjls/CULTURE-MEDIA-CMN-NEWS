@@ -68,7 +68,7 @@ export default async function PublicationCenterPage() {
                   {article.status === 'published' ? 'En ligne' : 'En attente'}
                 </span>
                 <span style={{ color: '#6b7280' }}>
-                  {new Date(article.created_at).toLocaleDateString('fr-FR')}
+                  {article.created_at ? new Date(article.created_at).toLocaleDateString('fr-FR') : 'Date inconnue'}
                 </span>
               </div>
             </div>
@@ -93,12 +93,12 @@ export default async function PublicationCenterPage() {
               </Link>
               
               <Link 
-                href={`/admin/articles/${article.id}/instagram`}
+                href={`/admin/articles/${article.id}/social`}
                 className="admin-btn"
                 style={{ backgroundColor: '#fdf4ff', color: '#c026d3', border: '1px solid #f0abfc', padding: '8px 12px' }}
-                title="Créer un post Instagram"
+                title="Générateur Réseaux Sociaux Unifié"
               >
-                <i className="fab fa-instagram"></i> Post Insta
+                <i className="fas fa-share-alt"></i> Social Studio
               </Link>
 
               <Link 
@@ -128,14 +128,6 @@ export default async function PublicationCenterPage() {
                 <i className="fab fa-facebook"></i> Facebook
               </Link>
               
-              <Link 
-                href={`/admin/articles/${article.id}/tiktok`}
-                className="admin-btn"
-                style={{ backgroundColor: '#fdf4ff', color: '#000000', border: '1px solid #e5e7eb', padding: '8px 12px' }}
-                title="Créer une vidéo TikTok"
-              >
-                <i className="fab fa-tiktok"></i> TikTok
-              </Link>
             </div>
           </div>
         ))}

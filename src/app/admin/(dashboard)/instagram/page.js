@@ -38,8 +38,8 @@ export default async function InstagramDashboardPage() {
                 <div style={{ padding: '15px', flex: 1, display: 'flex', flexDirection: 'column' }}>
                   <h3 style={{ fontSize: '1rem', marginBottom: '10px', fontFamily: 'var(--font-heading)' }}>{article.title}</h3>
                   <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'flex-end' }}>
-                    <Link href={`/admin/articles/${article.id}/instagram`} className="admin-btn admin-btn-primary" style={{ fontSize: '0.9rem', padding: '6px 12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <i className="fab fa-instagram"></i> Créer le visuel
+                    <Link href={`/admin/articles/${article.id}/social`} className="admin-btn admin-btn-primary" style={{ fontSize: '0.9rem', padding: '6px 12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <i className="fas fa-share-alt"></i> Créer le visuel
                     </Link>
                   </div>
                 </div>

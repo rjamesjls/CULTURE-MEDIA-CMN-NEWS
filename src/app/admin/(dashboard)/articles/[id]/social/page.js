@@ -1,21 +1,21 @@
 import { createClient } from '@/utils/supabase/server';
 import { notFound } from 'next/navigation';
-import TikTokGenerator from './TikTokGenerator';
+import SocialGenerator from './SocialGenerator';
 
 export const revalidate = 0; // Don't cache admin pages
 
-export default async function TikTokGeneratorPage(props) {
+export default async function SocialGeneratorPage(props) {
   const params = await props.params;
   const supabase = await createClient();
   const { id } = params;
 
   let { data: article, error } = await supabase
     .from('articles')
-    .select('id, title, category, pub_date, slug, image_url, user_id, content, tiktok_state')
+    .select('id, title, category, pub_date, slug, image_url, user_id, content, instagram_state')
     .eq('id', id)
     .single();
 
-  // Fallback si la migration SQL n'a pas été exécutée (la colonne tiktok_state n'existe pas encore)
+  // Fallback si la migration SQL n'a pas été exécutée (la colonne instagram_state n'existe pas encore)
   if (error && error.code === '42703') { // 42703 = undefined_column
     const fallback = await supabase
       .from('articles')
@@ -27,12 +27,12 @@ export default async function TikTokGeneratorPage(props) {
     error = fallback.error;
     
     if (article) {
-       article.tiktok_state = null; // Mock state
+       article.instagram_state = null; // Mock state
     }
   }
 
   if (error || !article) {
-    console.error('Error fetching article for TikTok generator:', error);
+    console.error('Error fetching article for Social generator:', error);
     notFound();
   }
 
@@ -45,7 +45,7 @@ export default async function TikTokGeneratorPage(props) {
 
   return (
     <div>
-      <TikTokGenerator article={article} recentArticles={recentArticles || []} />
+      <SocialGenerator article={article} recentArticles={recentArticles || []} />
     </div>
   );
 }

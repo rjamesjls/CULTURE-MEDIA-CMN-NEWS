@@ -85,7 +85,7 @@ export async function saveArticle(formData) {
     image_url = publicUrlData.publicUrl;
   }
 
-  const slug = slugify(title, { lower: true, strict: true, locale: 'fr' });
+  const slug = slugify(title || 'sans-titre', { lower: true, strict: true, locale: 'fr' });
 
   const articleData = {
     title,

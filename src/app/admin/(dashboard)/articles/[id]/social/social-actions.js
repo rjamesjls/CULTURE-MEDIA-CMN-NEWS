@@ -19,6 +19,9 @@ export async function publishToMeta(formData) {
     const instagramAccountId = process.env.INSTAGRAM_ACCOUNT_ID;
     const accessToken = process.env.META_ACCESS_TOKEN;
 
+    const targetsStr = formData.get('targets') || '["facebook", "instagram"]';
+    const targets = JSON.parse(targetsStr);
+
     if (!facebookPageId || !instagramAccountId || !accessToken || !base64Image1 || !base64Image2) {
       return { 
         success: false, 
@@ -72,7 +75,8 @@ export async function publishToMeta(formData) {
     let fbPostId = null;
     let fbError = null;
     
-    try {
+    if (targets.includes('facebook')) {
+      try {
       // Étape FB 1 : Uploader les deux images en tant que "unpublished"
       const uploadFbPhoto = async (url) => {
         const res = await fetch(`https://graph.facebook.com/v19.0/${facebookPageId}/photos`, {
@@ -110,9 +114,12 @@ export async function publishToMeta(formData) {
         fbSuccess = true;
         fbPostId = fbData.id;
       }
-    } catch (e) {
-      fbError = e.message;
-      console.error("Erreur FB Multi-image:", e);
+      } catch (e) {
+        fbError = e.message;
+        console.error("Erreur FB Multi-image:", e);
+      }
+    } else {
+      fbSuccess = true; // Ignored implies success for overall logic
     }
 
     // ------------------------------------------
@@ -122,7 +129,8 @@ export async function publishToMeta(formData) {
     let igPostId = null;
     let igError = null;
     
-    try {
+    if (targets.includes('instagram')) {
+      try {
       // Étape IG 1 : Créer les Item Containers
       const createIgItemContainer = async (url) => {
         const reqBody = {
@@ -198,9 +206,12 @@ export async function publishToMeta(formData) {
       
       igSuccess = true;
       igPostId = publishData.id;
-    } catch (e) {
-      igError = e.message;
-      console.error("Erreur IG Carousel:", e);
+      } catch (e) {
+        igError = e.message;
+        console.error("Erreur IG Carousel:", e);
+      }
+    } else {
+      igSuccess = true;
     }
 
     // Determine overall success
