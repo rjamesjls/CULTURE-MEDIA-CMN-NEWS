@@ -49,7 +49,7 @@ export default async function Header({ lang = 'fr' }) {
                 whiteSpace: 'nowrap',
                 lineHeight: '1.1'
               }}>
-                CULTURE <span style={{ color: 'var(--color-primary)' }}>MEDIA</span>
+                A FOLUKU <span style={{ color: 'var(--color-primary)' }}>TV</span>
               </span>
               <span style={{
                 fontFamily: 'var(--font-body)',
