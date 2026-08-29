@@ -129,6 +129,10 @@ export default async function MagazineReaderPage({ params }) {
             </span>
           </div>
 
+          <div style={{ marginBottom: '15px' }}>
+            <img src="/magazine-logo.png" alt="Web Magazine" style={{ height: '50px', width: 'auto', objectFit: 'contain' }} />
+          </div>
+
           <h1 style={{ 
             fontFamily: 'var(--font-heading)', 
             fontSize: 'clamp(3rem, 6vw, 5.5rem)', 
