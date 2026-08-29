@@ -552,7 +552,13 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
 
           <div className="admin-form-row">
             <div className="admin-form-group">
-              <label className="admin-form-label">Image de couverture (Upload optionnel)</label>
+              <label className="admin-form-label">
+                {articleFormat === 'web_magazine' 
+                  ? 'Couverture du Web Magazine (Image Haute Résolution)' 
+                  : articleFormat === 'special_edition'
+                  ? 'Couverture de l\'Édition Spéciale'
+                  : 'Image de couverture (Upload optionnel)'}
+              </label>
               <div 
                 onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
                 onDrop={(e) => {
@@ -809,7 +815,11 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
         <div style={{ backgroundColor: '#fff', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
           {/* Image */}
           <div style={{ width: '100%', height: '200px', backgroundColor: '#e5e7eb', backgroundImage: imageUrl ? `url(${imageUrl})` : 'none', backgroundSize: 'cover', backgroundPosition: 'center' }}>
-            {!imageUrl && <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af' }}>Image de couverture</div>}
+            {!imageUrl && (
+              <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', fontWeight: '500' }}>
+                {articleFormat === 'web_magazine' ? 'Couverture Web Magazine' : 'Image de couverture'}
+              </div>
+            )}
           </div>
           
           {/* Super Dashboard (S'affiche si des métadonnées sont générées) */}
