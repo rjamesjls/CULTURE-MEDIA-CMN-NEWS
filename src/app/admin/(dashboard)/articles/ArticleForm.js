@@ -241,27 +241,78 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
     setIsSubmitting(true);
     setErrorMsg('');
 
-    const formData = new FormData(e.target);
-    formData.append('title', title);
-    formData.append('description', description);
-    formData.append('content', content);
-    formData.append('title_bsh', titleBsh);
-    formData.append('hook_bsh', descriptionBsh);
-    formData.append('content_bsh', contentBsh);
-    
-    const existingMetadata = initialData?.seo_metadata || {};
-    const mergedMetadata = superMetadata ? { ...superMetadata } : { ...existingMetadata };
-    mergedMetadata.article_format = articleFormat;
-    formData.append('seo_metadata', JSON.stringify(mergedMetadata));
-
-    const status = e.nativeEvent?.submitter?.value || 'published';
-    formData.set('status', status);
-
-    if (initialData?.id) {
-      formData.append('id', initialData.id);
-    }
-
     try {
+      const formElement = e.target;
+      const formData = new FormData(formElement);
+      
+      // Upload image_file to Supabase directly if present
+      const imageFile = formData.get('image_file');
+      if (imageFile && imageFile.size > 0) {
+        const fileExt = imageFile.name.split('.').pop();
+        const fileName = \`articles/\${Date.now()}.\${fileExt}\`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('media')
+          .upload(fileName, imageFile, { upsert: false });
+          
+        if (uploadError) throw new Error("Erreur lors de l'upload de l'image (Supabase): " + uploadError.message);
+        
+        const { data: publicUrlData } = supabase.storage.from('media').getPublicUrl(fileName);
+        formData.set('image_url', publicUrlData.publicUrl);
+        formData.delete('image_file'); // Ne pas envoyer le fichier au Server Action
+      }
+
+      // Upload magazine_cover_file to Supabase directly if present
+      const magazineCoverFile = formData.get('magazine_cover_file');
+      if (magazineCoverFile && magazineCoverFile.size > 0) {
+        const fileExt = magazineCoverFile.name.split('.').pop();
+        const fileName = \`magazines/cover_\${Date.now()}.\${fileExt}\`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('media')
+          .upload(fileName, magazineCoverFile, { upsert: false });
+          
+        if (uploadError) throw new Error("Erreur lors de l'upload de la couverture magazine (Supabase): " + uploadError.message);
+        
+        const { data: publicUrlData } = supabase.storage.from('media').getPublicUrl(fileName);
+        
+        // On ajoutera ce champ dans seo_metadata
+        formData.set('magazine_cover_url_temp', publicUrlData.publicUrl);
+        formData.delete('magazine_cover_file'); // Ne pas envoyer le fichier au Server Action
+      }
+
+      // Vider les autres champs non nécessaires
+      if (formData.get('image_url') && formData.get('image_url').startsWith('data:image/')) {
+        formData.delete('image_url'); // Evite d'envoyer la string base64 énorme si on n'a pas uploadé
+      }
+
+      formData.append('title', title);
+      formData.append('description', description);
+      formData.append('content', content);
+      formData.append('title_bsh', titleBsh);
+      formData.append('hook_bsh', descriptionBsh);
+      formData.append('content_bsh', contentBsh);
+      
+      const existingMetadata = initialData?.seo_metadata || {};
+      const mergedMetadata = superMetadata ? { ...superMetadata } : { ...existingMetadata };
+      mergedMetadata.article_format = articleFormat;
+      
+      // Récupérer l'URL uploadée
+      const magCoverUrl = formData.get('magazine_cover_url_temp');
+      if (magCoverUrl) {
+        mergedMetadata.magazine_cover_url = magCoverUrl;
+        formData.delete('magazine_cover_url_temp');
+      }
+
+      formData.append('seo_metadata', JSON.stringify(mergedMetadata));
+
+      const status = e.nativeEvent?.submitter?.value || 'published';
+      formData.set('status', status);
+
+      if (initialData?.id) {
+        formData.append('id', initialData.id);
+      }
+
       await saveArticle(formData);
       router.push('/admin/articles');
     } catch (err) {
