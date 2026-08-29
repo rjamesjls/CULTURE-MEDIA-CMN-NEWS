@@ -87,7 +87,7 @@ export default async function MagazineReaderPage({ params }) {
       </div>
 
       {/* Hero Section */}
-      <div style={{ position: 'relative', width: '100%', height: '100vh', display: 'flex', alignItems: 'flex-end', paddingBottom: '10vh', overflow: 'hidden' }}>
+      <div style={{ position: 'relative', width: '100%', minHeight: '100vh', display: 'flex', flexDirection: 'column', paddingBottom: '10vh', paddingTop: '100px', overflow: 'hidden' }}>
         {/* Image Background */}
         <div style={{ 
           position: 'absolute', 
@@ -110,7 +110,7 @@ export default async function MagazineReaderPage({ params }) {
         }}></div>
 
         {/* Header Content */}
-        <div className="container" style={{ position: 'relative', zIndex: 2, maxWidth: '1000px', width: '100%', margin: '0 auto', padding: '0 20px' }}>
+        <div className="container" style={{ position: 'relative', zIndex: 2, maxWidth: '1000px', width: '100%', margin: 'auto auto 0 auto', padding: '0 20px' }}>
           
           <div style={{ marginBottom: '-40px', marginTop: '-40px' }}>
             <img src="/magazine-logo.png" alt="Web Magazine" style={{ height: 'auto', width: '400px', maxWidth: '100%', objectFit: 'contain' }} />
