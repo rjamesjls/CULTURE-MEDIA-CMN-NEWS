@@ -23,6 +23,7 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
   // Controlled states for live preview
   const [title, setTitle] = useState(initialData?.title || '');
   const [category, setCategory] = useState(initialData?.category || (categories[0]?.name || ''));
+  const [articleFormat, setArticleFormat] = useState(initialData?.seo_metadata?.article_format || 'standard');
   const [author, setAuthor] = useState(initialData?.author || 'La Rédaction');
   const [description, setDescription] = useState(initialData?.description || '');
   const [imageUrl, setImageUrl] = useState(initialData?.image_url || '');
@@ -247,9 +248,12 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
     formData.append('title_bsh', titleBsh);
     formData.append('hook_bsh', descriptionBsh);
     formData.append('content_bsh', contentBsh);
-    if (superMetadata) {
-      formData.append('seo_metadata', JSON.stringify(superMetadata));
-    }
+    
+    const existingMetadata = initialData?.seo_metadata || {};
+    const mergedMetadata = superMetadata ? { ...superMetadata } : { ...existingMetadata };
+    mergedMetadata.article_format = articleFormat;
+    formData.append('seo_metadata', JSON.stringify(mergedMetadata));
+
     const status = e.nativeEvent?.submitter?.value || 'published';
     formData.set('status', status);
 
@@ -516,6 +520,19 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
                 {categories.map((cat) => (
                   <option key={cat.id} value={cat.name}>{cat.name}</option>
                 ))}
+              </select>
+            </div>
+
+            <div className="admin-form-group">
+              <label className="admin-form-label">Format de l'article</label>
+              <select 
+                className="admin-form-control" 
+                value={articleFormat}
+                onChange={(e) => setArticleFormat(e.target.value)}
+              >
+                <option value="standard">Article Standard</option>
+                <option value="web_magazine">Web Magazine</option>
+                <option value="special_edition">Édition Spéciale</option>
               </select>
             </div>
 
