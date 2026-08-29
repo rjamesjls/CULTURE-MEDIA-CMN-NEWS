@@ -169,6 +169,7 @@ export default async function MagazineReaderPage({ params }) {
               <a href="#" className="social-btn"><i className="fab fa-facebook-f"></i></a>
               <a href="#" className="social-btn"><i className="fab fa-instagram"></i></a>
               <a href="#" className="social-btn"><i className="fab fa-tiktok"></i></a>
+              <a href="#" className="social-btn"><i className="fab fa-snapchat-ghost"></i></a>
               <a href="#" className="social-btn"><i className="fab fa-youtube"></i></a>
             </div>
           </div>
