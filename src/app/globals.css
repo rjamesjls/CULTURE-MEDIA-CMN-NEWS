@@ -2553,18 +2553,17 @@ body.theme-alternate .reading-progress {
   margin: 0 auto;
 }
 
+.magazine-poster:hover .mag-bg-image {
+  transform: scale(1.05);
+}
+
+.magazine-poster:hover .mag-poster-overlay {
+  background: rgba(255,255,255,0.1) !important;
+}
+
 @media (max-width: 768px) {
   .magazines-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 15px;
-  }
-  
-  .magazine-hero-card h2 {
-    font-size: 1.5rem !important; /* Titre plus petit sur mobile */
-  }
-  
-  .magazine-hero-card p {
-    font-size: 0.9rem !important; /* Paragraphe plus petit sur mobile */
-    display: none; /* Facultatif: on peut cacher le paragraphe sur mobile pour gagner de la place */
   }
 }

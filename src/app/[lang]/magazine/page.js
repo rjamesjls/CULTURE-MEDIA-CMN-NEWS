@@ -70,87 +70,36 @@ export default async function MagazineKioskPage({ params }) {
           <div className="magazines-grid">
             {magazines.map((mag) => {
               return (
-                <article key={mag.id} style={{ 
-                  display: 'flex', 
-                  flexDirection: 'column',
-                  gap: '15px',
-                  background: 'rgba(30, 41, 59, 0.4)',
-                  borderRadius: '24px',
-                  padding: '20px',
-                  border: '1px solid rgba(255,255,255,0.05)',
-                  boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
-                }} className="magazine-hero-card">
-                  
-                  {/* Image large */}
-                  <div style={{ aspectRatio: '3/4', borderRadius: '16px', overflow: 'hidden', position: 'relative' }} className="image-wrapper">
+                <Link key={mag.id} href={`/${lang}/magazine/${mag.slug}`} style={{ display: 'block', textDecoration: 'none' }}>
+                  <div style={{ 
+                    width: '100%', 
+                    aspectRatio: '3/4', 
+                    borderRadius: '16px', 
+                    overflow: 'hidden', 
+                    position: 'relative',
+                    boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)',
+                    border: '1px solid rgba(255,255,255,0.05)',
+                    backgroundColor: '#1e293b'
+                  }} className="magazine-poster">
+                    
                     <div style={{ 
-                      position: 'absolute', inset: 0, 
+                      position: 'absolute', 
+                      inset: 0, 
                       backgroundImage: mag.seo_metadata?.magazine_cover_url ? `url(${mag.seo_metadata.magazine_cover_url})` : (mag.image_url ? `url(${mag.image_url})` : 'url(https://images.unsplash.com/photo-1499750310107-5fef28a66643)'),
-                      backgroundSize: 'contain', 
-                      backgroundRepeat: 'no-repeat',
+                      backgroundSize: 'cover', 
                       backgroundPosition: 'center',
-                      transition: 'transform 0.7s cubic-bezier(0.25, 1, 0.5, 1)'
+                      transition: 'transform 0.4s ease'
                     }} className="mag-bg-image"></div>
-                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(15,23,42,0.8) 0%, transparent 40%)' }}></div>
+                    
+                    {/* Optionnel : un très léger gradient au survol, ou rien du tout */}
+                    <div className="mag-poster-overlay" style={{ 
+                      position: 'absolute', 
+                      inset: 0, 
+                      background: 'rgba(0,0,0,0)',
+                      transition: 'background 0.3s ease'
+                    }}></div>
                   </div>
-
-                  {/* Contenu */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                      <span style={{ 
-                        padding: '6px 12px', 
-                        background: 'rgba(192, 38, 211, 0.1)', 
-                        color: '#f0abfc',
-                        borderRadius: '20px',
-                        fontSize: '0.8rem',
-                        fontWeight: '600',
-                        textTransform: 'uppercase',
-                        letterSpacing: '1px',
-                        border: '1px solid rgba(192, 38, 211, 0.3)'
-                      }}>Édition Spéciale</span>
-                      <span style={{ color: '#64748b', fontSize: '0.9rem' }}>
-                        <i className="far fa-clock"></i> {new Date(mag.pub_date).toLocaleDateString(lang === 'bsh' ? 'bs-BA' : 'fr-FR', { month: 'long', year: 'numeric' })}
-                      </span>
-                    </div>
-
-                    <h2 style={{ 
-                      fontSize: '2.5rem', 
-                      fontFamily: 'var(--font-heading)',
-                      lineHeight: '1.2',
-                      color: '#ffffff'
-                    }}>
-                      <Link href={`/${lang}/magazine/${mag.slug}`} style={{ color: 'inherit', textDecoration: 'none' }} className="hover-text-primary">
-                        {getTitle(mag)}
-                      </Link>
-                    </h2>
-
-                    <p style={{ 
-                      fontSize: '1.1rem', 
-                      lineHeight: '1.7', 
-                      color: '#94a3b8' 
-                    }}>
-                      {(getDesc(mag) || '').substring(0, 200)}...
-                    </p>
-
-                    <div style={{ marginTop: '20px' }}>
-                      <Link href={`/${lang}/magazine/${mag.slug}`} style={{ 
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '10px',
-                        background: '#ffffff',
-                        color: '#0f172a',
-                        padding: '12px 28px',
-                        borderRadius: '30px',
-                        fontSize: '1rem',
-                        fontWeight: '600',
-                        textDecoration: 'none',
-                        transition: 'all 0.3s ease'
-                      }} className="read-mag-btn">
-                        Commencer la lecture <i className="fas fa-arrow-right"></i>
-                      </Link>
-                    </div>
-                  </div>
-                </article>
+                </Link>
               );
             })}
           </div>
