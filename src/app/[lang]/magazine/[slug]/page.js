@@ -116,61 +116,63 @@ export default async function MagazineReaderPage({ params }) {
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '15px 20px',
-            background: 'rgba(15, 23, 42, 0.6)',
-            backdropFilter: 'blur(12px)',
-            border: '1px solid rgba(255,255,255,0.05)',
-            borderRadius: '16px',
+            padding: '15px',
+            background: 'rgba(21, 32, 51, 0.95)',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
+            borderRadius: '12px',
             marginBottom: '40px',
-            flexWrap: 'wrap',
             gap: '15px'
           }}>
-            {/* Left side: Avatar + Info */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-              {/* Avatar Placeholder */}
-              <div style={{
-                width: '60px',
-                height: '60px',
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, #c026d3 0%, #3b82f6 100%)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#fff',
-                fontSize: '1.5rem',
-                fontWeight: 'bold',
-                fontFamily: 'var(--font-heading)',
-                boxShadow: '0 4px 10px rgba(0,0,0,0.5)'
-              }}>
-                AF
+            {/* Left side: Avatar */}
+            <div style={{
+              width: '70px',
+              height: '70px',
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #a855f7 0%, #3b82f6 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#fff',
+              fontSize: '1.8rem',
+              fontWeight: '900',
+              fontFamily: 'var(--font-heading)',
+              boxShadow: '0 4px 10px rgba(0,0,0,0.2)',
+              flexShrink: 0
+            }}>
+              AF
+            </div>
+            
+            {/* Right side: Info */}
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '3px' }}>
+              
+              {/* Line 1: Name */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ color: '#fff', fontSize: '1.15rem', fontWeight: 'bold', fontFamily: 'var(--font-heading)', letterSpacing: '0.5px' }}>
+                  A FOLUKU TV
+                </span>
+                <i className="fas fa-check-circle" style={{ color: '#3b82f6', fontSize: '1rem' }} title="Compte Vérifié"></i>
               </div>
               
-              {/* Name and Followers */}
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ color: '#fff', fontSize: '1.2rem', fontWeight: 'bold', fontFamily: 'var(--font-heading)' }}>
-                    A FOLUKU TV
-                  </span>
-                  <i className="fas fa-check-circle" style={{ color: '#3b82f6', fontSize: '1rem' }} title="Compte Vérifié"></i>
-                </div>
-                <div style={{ color: '#cbd5e1', fontSize: '0.9rem', marginTop: '2px', fontFamily: 'var(--font-body)' }}>
+              {/* Line 2: Username & Socials */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                <div style={{ color: '#cbd5e1', fontSize: '0.95rem', fontFamily: 'var(--font-body)' }}>
                   @afolukutv
                 </div>
-                <div style={{ color: '#94a3b8', fontSize: '0.9rem', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <i className="fas fa-users"></i>
-                  <span>6000+ followers</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                  <a href="#" className="social-icon"><i className="fab fa-facebook-f"></i></a>
+                  <a href="#" className="social-icon"><i className="fab fa-instagram"></i></a>
+                  <a href="#" className="social-icon"><i className="fab fa-tiktok"></i></a>
+                  <a href="#" className="social-icon"><i className="fab fa-snapchat-ghost"></i></a>
+                  <a href="#" className="social-icon"><i className="fab fa-youtube"></i></a>
                 </div>
               </div>
-            </div>
-
-            {/* Right side: Social links */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <a href="#" className="social-btn"><i className="fab fa-facebook-f"></i></a>
-              <a href="#" className="social-btn"><i className="fab fa-instagram"></i></a>
-              <a href="#" className="social-btn"><i className="fab fa-tiktok"></i></a>
-              <a href="#" className="social-btn"><i className="fab fa-snapchat-ghost"></i></a>
-              <a href="#" className="social-btn"><i className="fab fa-youtube"></i></a>
+              
+              {/* Line 3: Followers */}
+              <div style={{ color: '#94a3b8', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
+                <i className="fas fa-user-friends"></i>
+                <span>6000+ followers</span>
+              </div>
+              
             </div>
           </div>
           
@@ -367,22 +369,15 @@ export default async function MagazineReaderPage({ params }) {
           max-width: 100% !important;
         }
         
-        .social-btn {
-          width: 40px;
-          height: 40px;
-          border-radius: 50%;
-          background: rgba(255,255,255,0.1);
-          display: flex;
-          align-items: center;
-          justify-content: center;
+        .social-icon {
           color: #fff;
+          font-size: 1.15rem;
           text-decoration: none;
           transition: all 0.3s ease;
         }
         
-        .social-btn:hover {
-          background: #c026d3;
-          color: #fff !important;
+        .social-icon:hover {
+          color: #c026d3;
           transform: translateY(-2px);
         }
         
