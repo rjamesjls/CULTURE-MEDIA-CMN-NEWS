@@ -168,7 +168,7 @@ export default async function MagazineReaderPage({ params }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <a href="#" className="social-btn"><i className="fab fa-facebook-f"></i></a>
               <a href="#" className="social-btn"><i className="fab fa-instagram"></i></a>
-              <a href="#" className="social-btn"><i className="fab fa-twitter"></i></a>
+              <a href="#" className="social-btn"><i className="fab fa-tiktok"></i></a>
               <a href="#" className="social-btn"><i className="fab fa-youtube"></i></a>
             </div>
           </div>
