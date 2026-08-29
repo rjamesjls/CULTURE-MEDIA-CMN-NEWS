@@ -67,22 +67,22 @@ export default async function MagazineKioskPage({ params }) {
             <p style={{ color: '#64748b', fontSize: '1.1rem' }}>Nos numéros spéciaux sont en cours de rédaction.</p>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '30px', maxWidth: '1200px', margin: '0 auto' }}>
+          <div className="magazines-grid">
             {magazines.map((mag) => {
               return (
                 <article key={mag.id} style={{ 
                   display: 'flex', 
                   flexDirection: 'column',
-                  gap: '20px',
+                  gap: '15px',
                   background: 'rgba(30, 41, 59, 0.4)',
                   borderRadius: '24px',
-                  padding: '30px',
+                  padding: '20px',
                   border: '1px solid rgba(255,255,255,0.05)',
                   boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
                 }} className="magazine-hero-card">
                   
                   {/* Image large */}
-                  <div style={{ flex: '1.5', aspectRatio: '3/4', borderRadius: '16px', overflow: 'hidden', position: 'relative' }} className="image-wrapper">
+                  <div style={{ aspectRatio: '3/4', borderRadius: '16px', overflow: 'hidden', position: 'relative' }} className="image-wrapper">
                     <div style={{ 
                       position: 'absolute', inset: 0, 
                       backgroundImage: mag.seo_metadata?.magazine_cover_url ? `url(${mag.seo_metadata.magazine_cover_url})` : (mag.image_url ? `url(${mag.image_url})` : 'url(https://images.unsplash.com/photo-1499750310107-5fef28a66643)'),
@@ -95,8 +95,8 @@ export default async function MagazineKioskPage({ params }) {
                   </div>
 
                   {/* Contenu */}
-                  <div style={{ flex: '1', display: 'flex', flexDirection: 'column', gap: '15px', padding: '0 10px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                       <span style={{ 
                         padding: '6px 12px', 
                         background: 'rgba(192, 38, 211, 0.1)', 

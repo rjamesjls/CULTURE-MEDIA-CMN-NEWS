@@ -2544,3 +2544,27 @@ body.theme-alternate .reading-progress {
   }
 }
 
+/* Responsive Magazine Grid */
+.magazines-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 30px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .magazines-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+  }
+  
+  .magazine-hero-card h2 {
+    font-size: 1.5rem !important; /* Titre plus petit sur mobile */
+  }
+  
+  .magazine-hero-card p {
+    font-size: 0.9rem !important; /* Paragraphe plus petit sur mobile */
+    display: none; /* Facultatif: on peut cacher le paragraphe sur mobile pour gagner de la place */
+  }
+}
