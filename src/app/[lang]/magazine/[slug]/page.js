@@ -60,14 +60,24 @@ export default async function MagazineReaderPage({ params }) {
   const getDesc = () => (lang === 'bsh' && article.hook_bsh) ? article.hook_bsh : article.description;
   const getContent = () => (lang === 'bsh' && article.content_bsh) ? article.content_bsh : article.content;
 
-  // Fetch follower count setting
+  // Fetch profile settings
   const { data: settingsData } = await supabase
     .from('site_settings')
-    .select('value')
-    .eq('key', 'total_followers')
-    .maybeSingle();
+    .select('key, value')
+    .in('key', ['total_followers', 'profile_name', 'profile_username', 'profile_avatar_url']);
 
-  const followerCount = settingsData?.value?.replace(/"/g, '') || '6000+ followers';
+  const settings = {
+    total_followers: '6000+ followers',
+    profile_name: 'A FOLUKU TV',
+    profile_username: '@afolukutv',
+    profile_avatar_url: ''
+  };
+
+  if (settingsData) {
+    settingsData.forEach(item => {
+      if (item.value) settings[item.key] = item.value.replace(/^"|"$/g, '');
+    });
+  }
 
   return (
     <div className="magazine-reader" style={{ backgroundColor: '#020617', minHeight: '100vh', color: '#f8fafc', overflowX: 'hidden' }}>
@@ -133,23 +143,39 @@ export default async function MagazineReaderPage({ params }) {
             gap: '15px'
           }}>
             {/* Left side: Avatar */}
-            <div style={{
-              width: '70px',
-              height: '70px',
-              borderRadius: '50%',
-              background: 'linear-gradient(135deg, #a855f7 0%, #3b82f6 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#fff',
-              fontSize: '1.8rem',
-              fontWeight: '900',
-              fontFamily: 'var(--font-heading)',
-              boxShadow: '0 4px 10px rgba(0,0,0,0.2)',
-              flexShrink: 0
-            }}>
-              AF
-            </div>
+            {settings.profile_avatar_url ? (
+              <img 
+                src={settings.profile_avatar_url} 
+                alt={settings.profile_name}
+                style={{
+                  width: '70px',
+                  height: '70px',
+                  borderRadius: '50%',
+                  objectFit: 'cover',
+                  boxShadow: '0 4px 10px rgba(0,0,0,0.2)',
+                  flexShrink: 0,
+                  backgroundColor: '#1e293b'
+                }}
+              />
+            ) : (
+              <div style={{
+                width: '70px',
+                height: '70px',
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, #a855f7 0%, #3b82f6 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#fff',
+                fontSize: '1.8rem',
+                fontWeight: '900',
+                fontFamily: 'var(--font-heading)',
+                boxShadow: '0 4px 10px rgba(0,0,0,0.2)',
+                flexShrink: 0
+              }}>
+                AF
+              </div>
+            )}
             
             {/* Right side: Info */}
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '3px' }}>
@@ -157,7 +183,7 @@ export default async function MagazineReaderPage({ params }) {
               {/* Line 1: Name */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <span style={{ color: '#fff', fontSize: '1.15rem', fontWeight: 'bold', fontFamily: 'var(--font-heading)', letterSpacing: '0.5px' }}>
-                  A FOLUKU TV
+                  {settings.profile_name}
                 </span>
                 <i className="fas fa-check-circle" style={{ color: '#3b82f6', fontSize: '1.1rem', backgroundColor: '#fff', borderRadius: '50%' }} title="Compte Vérifié"></i>
               </div>
@@ -165,7 +191,7 @@ export default async function MagazineReaderPage({ params }) {
               {/* Line 2: Username & Socials */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
                 <div style={{ color: '#cbd5e1', fontSize: '0.95rem', fontFamily: 'var(--font-body)' }}>
-                  @afolukutv
+                  {settings.profile_username}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                   <a href="#" className="social-icon"><i className="fab fa-facebook-f"></i></a>
@@ -179,7 +205,7 @@ export default async function MagazineReaderPage({ params }) {
               {/* Line 3: Followers */}
               <div style={{ color: '#94a3b8', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
                 <i className="fas fa-user-friends"></i>
-                <span>{followerCount}</span>
+                <span>{settings.total_followers}</span>
               </div>
               
             </div>

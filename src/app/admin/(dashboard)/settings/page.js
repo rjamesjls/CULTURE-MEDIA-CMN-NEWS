@@ -1,13 +1,22 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/utils/supabase/client';
 
 export default function SettingsPage() {
-  const [followerCount, setFollowerCount] = useState('');
+  const [settings, setSettings] = useState({
+    total_followers: '6000+ followers',
+    profile_name: 'A FOLUKU TV',
+    profile_username: '@afolukutv',
+    profile_avatar_url: ''
+  });
+  
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState('');
+  const fileInputRef = useRef(null);
+  
   const supabase = createClient();
 
   useEffect(() => {
@@ -15,16 +24,18 @@ export default function SettingsPage() {
       try {
         const { data, error } = await supabase
           .from('site_settings')
-          .select('*')
-          .eq('key', 'total_followers')
-          .single();
+          .select('*');
 
-        if (error && error.code !== 'PGRST116') throw error;
+        if (error) throw error;
         
-        if (data) {
-          setFollowerCount(data.value.replace(/"/g, ''));
-        } else {
-          setFollowerCount('6000+ followers');
+        if (data && data.length > 0) {
+          const newSettings = { ...settings };
+          data.forEach(item => {
+            if (item.value) {
+              newSettings[item.key] = item.value.replace(/^"|"$/g, '');
+            }
+          });
+          setSettings(newSettings);
         }
       } catch (error) {
         console.error('Error fetching settings:', error);
@@ -42,13 +53,15 @@ export default function SettingsPage() {
     setMessage('');
 
     try {
+      const updates = Object.keys(settings).map(key => ({
+        key,
+        value: JSON.stringify(settings[key]),
+        updated_at: new Date().toISOString()
+      }));
+
       const { error } = await supabase
         .from('site_settings')
-        .upsert({ 
-          key: 'total_followers', 
-          value: JSON.stringify(followerCount),
-          updated_at: new Date().toISOString()
-        });
+        .upsert(updates);
 
       if (error) throw error;
       
@@ -59,6 +72,42 @@ export default function SettingsPage() {
       setMessage('Erreur lors de la sauvegarde.');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    setMessage('');
+
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `avatar-${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('media')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: publicUrlData } = supabase.storage
+        .from('media')
+        .getPublicUrl(fileName);
+
+      if (publicUrlData) {
+        setSettings({ ...settings, profile_avatar_url: publicUrlData.publicUrl });
+        setMessage('Image téléchargée avec succès. N\'oubliez pas de sauvegarder.');
+      }
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      setMessage('Erreur lors de l\'upload de l\'image.');
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
@@ -73,25 +122,88 @@ export default function SettingsPage() {
       </div>
 
       <div className="admin-card" style={{ maxWidth: '600px' }}>
-        <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
           
           <div className="form-group">
-            <label htmlFor="followerCount">Nombre total de followers (affiché sur le magazine)</label>
+            <label>Photo de profil (URL ou Upload)</label>
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <input
+                  type="text"
+                  value={settings.profile_avatar_url}
+                  onChange={(e) => setSettings({...settings, profile_avatar_url: e.target.value})}
+                  className="form-control"
+                  placeholder="Lien vers l'image..."
+                />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                    ref={fileInputRef}
+                    style={{ display: 'none' }}
+                  />
+                  <button 
+                    type="button" 
+                    className="admin-btn-secondary"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
+                  >
+                    <i className="fas fa-upload"></i> {uploading ? 'Upload...' : 'Uploader une image'}
+                  </button>
+                  <small style={{ color: '#94a3b8' }}>Laissez vide pour afficher "AF"</small>
+                </div>
+              </div>
+              {settings.profile_avatar_url && (
+                <img 
+                  src={settings.profile_avatar_url} 
+                  alt="Avatar preview" 
+                  style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover', background: '#334155' }}
+                />
+              )}
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="profileName">Nom du Média</label>
+            <input
+              type="text"
+              id="profileName"
+              value={settings.profile_name}
+              onChange={(e) => setSettings({...settings, profile_name: e.target.value})}
+              className="form-control"
+              placeholder="Ex: A FOLUKU TV"
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="profileUsername">Nom d'utilisateur (Pseudo)</label>
+            <input
+              type="text"
+              id="profileUsername"
+              value={settings.profile_username}
+              onChange={(e) => setSettings({...settings, profile_username: e.target.value})}
+              className="form-control"
+              placeholder="Ex: @afolukutv"
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="followerCount">Nombre total de followers</label>
             <input
               type="text"
               id="followerCount"
-              value={followerCount}
-              onChange={(e) => setFollowerCount(e.target.value)}
+              value={settings.total_followers}
+              onChange={(e) => setSettings({...settings, total_followers: e.target.value})}
               className="form-control"
               placeholder="Ex: 6000+ followers"
               required
             />
-            <small style={{ color: '#94a3b8', marginTop: '5px', display: 'block' }}>
-              Ce texte apparaîtra dans la bannière sociale en haut des magazines.
-            </small>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginTop: '10px' }}>
             <button 
               type="submit" 
               className="admin-btn-primary"
