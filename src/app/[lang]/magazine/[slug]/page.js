@@ -51,6 +51,31 @@ export default async function MagazineReaderPage({ params }) {
   return (
     <div className="magazine-reader" style={{ backgroundColor: '#020617', minHeight: '100vh', color: '#f8fafc', overflowX: 'hidden' }}>
       
+      {/* Bouton Retour Fixe */}
+      <div style={{ position: 'fixed', top: '20px', left: '20px', zIndex: 100 }}>
+        <Link href={`/${lang}/magazine`} className="mag-back-btn" style={{ 
+          display: 'inline-flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          gap: '8px', 
+          color: '#ffffff', 
+          textDecoration: 'none', 
+          textTransform: 'uppercase', 
+          fontSize: '0.8rem', 
+          letterSpacing: '2px', 
+          fontWeight: 'bold', 
+          background: 'rgba(2, 6, 23, 0.6)',
+          backdropFilter: 'blur(10px)',
+          border: '1px solid rgba(255,255,255,0.1)', 
+          padding: '10px 20px', 
+          borderRadius: '30px',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+          transition: 'all 0.3s ease'
+        }}>
+          <i className="fas fa-arrow-left"></i> Retour
+        </Link>
+      </div>
+
       {/* Hero Section */}
       <div style={{ position: 'relative', width: '100%', height: '100vh', display: 'flex', alignItems: 'flex-end', paddingBottom: '10vh' }}>
         {/* Image Background */}
@@ -75,10 +100,6 @@ export default async function MagazineReaderPage({ params }) {
         {/* Header Content */}
         <div className="container" style={{ position: 'relative', zIndex: 2, maxWidth: '1000px', width: '100%', margin: '0 auto', padding: '0 20px' }}>
           
-          <Link href={`/${lang}/magazine`} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', color: '#94a3b8', textDecoration: 'none', marginBottom: '30px', textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '2px', fontWeight: 'bold', border: '1px solid rgba(255,255,255,0.2)', padding: '6px 14px', borderRadius: '30px' }} className="mag-back-btn">
-            <i className="fas fa-arrow-left"></i> Retour au Kiosque
-          </Link>
-
           <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '20px' }}>
             <span style={{ 
               padding: '6px 16px', 
