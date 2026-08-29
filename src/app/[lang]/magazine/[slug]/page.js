@@ -112,6 +112,10 @@ export default async function MagazineReaderPage({ params }) {
         {/* Header Content */}
         <div className="container" style={{ position: 'relative', zIndex: 2, maxWidth: '1000px', width: '100%', margin: '0 auto', padding: '0 20px' }}>
           
+          <div style={{ marginBottom: '-40px', marginTop: '-40px' }}>
+            <img src="/magazine-logo.png" alt="Web Magazine" style={{ height: 'auto', width: '400px', maxWidth: '100%', objectFit: 'contain' }} />
+          </div>
+
           <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '20px' }}>
             <span style={{ 
               padding: '6px 16px', 
@@ -127,10 +131,6 @@ export default async function MagazineReaderPage({ params }) {
             <span style={{ color: '#94a3b8', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <i className="far fa-calendar-alt"></i> {new Date(article.pub_date).toLocaleDateString(lang === 'bsh' ? 'bs-BA' : 'fr-FR', { month: 'long', year: 'numeric' })}
             </span>
-          </div>
-
-          <div style={{ marginBottom: '0px', marginTop: '-40px' }}>
-            <img src="/magazine-logo.png" alt="Web Magazine" style={{ height: 'auto', width: '400px', maxWidth: '100%', objectFit: 'contain' }} />
           </div>
 
           <h1 style={{ 
