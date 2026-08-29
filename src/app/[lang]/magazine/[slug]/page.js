@@ -159,7 +159,7 @@ export default async function MagazineReaderPage({ params }) {
                 <span style={{ color: '#fff', fontSize: '1.15rem', fontWeight: 'bold', fontFamily: 'var(--font-heading)', letterSpacing: '0.5px' }}>
                   A FOLUKU TV
                 </span>
-                <i className="fas fa-check-circle" style={{ color: '#3b82f6', fontSize: '1rem' }} title="Compte Vérifié"></i>
+                <i className="fas fa-check-circle" style={{ color: '#3b82f6', fontSize: '1.1rem', backgroundColor: '#fff', borderRadius: '50%' }} title="Compte Vérifié"></i>
               </div>
               
               {/* Line 2: Username & Socials */}
