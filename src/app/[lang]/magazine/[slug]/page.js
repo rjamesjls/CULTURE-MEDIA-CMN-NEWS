@@ -82,9 +82,9 @@ export default async function MagazineReaderPage({ params }) {
         <div style={{ 
           position: 'absolute', 
           inset: 0, 
-          backgroundImage: article.image_url ? `url(${article.image_url})` : 'url(https://images.unsplash.com/photo-1499750310107-5fef28a66643)',
+          backgroundImage: article.seo_metadata?.magazine_cover_url ? `url(${article.seo_metadata.magazine_cover_url})` : (article.image_url ? `url(${article.image_url})` : 'url(https://images.unsplash.com/photo-1499750310107-5fef28a66643)'),
           backgroundSize: 'cover', 
-          backgroundPosition: 'center',
+          backgroundPosition: 'top center',
           backgroundAttachment: 'fixed',
           zIndex: 0
         }}></div>

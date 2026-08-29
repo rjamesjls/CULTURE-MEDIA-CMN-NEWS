@@ -67,16 +67,13 @@ export default async function MagazineKioskPage({ params }) {
             <p style={{ color: '#64748b', fontSize: '1.1rem' }}>Nos numéros spéciaux sont en cours de rédaction.</p>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '80px' }}>
-            {magazines.map((mag, index) => {
-              // Alternance gauche/droite pour un look asymétrique premium
-              const isEven = index % 2 === 0;
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '30px', maxWidth: '1200px', margin: '0 auto' }}>
+            {magazines.map((mag) => {
               return (
                 <article key={mag.id} style={{ 
                   display: 'flex', 
-                  flexDirection: isEven ? 'row' : 'row-reverse',
-                  gap: '40px',
-                  alignItems: 'center',
+                  flexDirection: 'column',
+                  gap: '20px',
                   background: 'rgba(30, 41, 59, 0.4)',
                   borderRadius: '24px',
                   padding: '30px',
@@ -85,11 +82,12 @@ export default async function MagazineKioskPage({ params }) {
                 }} className="magazine-hero-card">
                   
                   {/* Image large */}
-                  <div style={{ flex: '1.5', height: '500px', borderRadius: '16px', overflow: 'hidden', position: 'relative' }} className="image-wrapper">
+                  <div style={{ flex: '1.5', aspectRatio: '3/4', borderRadius: '16px', overflow: 'hidden', position: 'relative' }} className="image-wrapper">
                     <div style={{ 
                       position: 'absolute', inset: 0, 
-                      backgroundImage: mag.image_url ? `url(${mag.image_url})` : 'url(https://images.unsplash.com/photo-1499750310107-5fef28a66643)',
-                      backgroundSize: 'cover', 
+                      backgroundImage: mag.seo_metadata?.magazine_cover_url ? `url(${mag.seo_metadata.magazine_cover_url})` : (mag.image_url ? `url(${mag.image_url})` : 'url(https://images.unsplash.com/photo-1499750310107-5fef28a66643)'),
+                      backgroundSize: 'contain', 
+                      backgroundRepeat: 'no-repeat',
                       backgroundPosition: 'center',
                       transition: 'transform 0.7s cubic-bezier(0.25, 1, 0.5, 1)'
                     }} className="mag-bg-image"></div>
@@ -97,7 +95,7 @@ export default async function MagazineKioskPage({ params }) {
                   </div>
 
                   {/* Contenu */}
-                  <div style={{ flex: '1', display: 'flex', flexDirection: 'column', gap: '20px', padding: isEven ? '0 20px 0 0' : '0 0 0 20px' }}>
+                  <div style={{ flex: '1', display: 'flex', flexDirection: 'column', gap: '15px', padding: '0 10px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                       <span style={{ 
                         padding: '6px 12px', 

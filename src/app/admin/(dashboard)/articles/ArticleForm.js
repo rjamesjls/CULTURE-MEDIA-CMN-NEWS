@@ -553,11 +553,7 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
           <div className="admin-form-row">
             <div className="admin-form-group">
               <label className="admin-form-label">
-                {articleFormat === 'web_magazine' 
-                  ? 'Couverture du Web Magazine (Image Haute Résolution)' 
-                  : articleFormat === 'special_edition'
-                  ? 'Couverture de l\'Édition Spéciale'
-                  : 'Image de couverture (Upload optionnel)'}
+                Image de l'article (Upload optionnel)
               </label>
               <div 
                 onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
@@ -641,8 +637,30 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
                 className="admin-form-control" 
                 value={imageUrl}
                 onChange={(e) => setImageUrl(e.target.value)}
-                placeholder="https://..."
+                placeholder="https://exemple.com/image.jpg"
               />
+
+              {articleFormat === 'web_magazine' && (
+                <div className="admin-form-row" style={{ marginTop: '20px' }}>
+                  <div className="admin-form-group">
+                    <label className="admin-form-label" style={{ color: '#c026d3' }}>
+                      Couverture spécifique du Web Magazine (Format Portrait)
+                    </label>
+                    <input 
+                      type="file" 
+                      name="magazine_cover_file" 
+                      accept="image/*"
+                      className="admin-form-control"
+                      style={{ padding: '10px' }}
+                    />
+                    <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '5px' }}>
+                      Utilisée pour l'affichage en kiosque et l'en-tête de la page de lecture. 
+                      Laissez vide pour réutiliser l'image principale de l'article.
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
                 <button 
                   type="button" 

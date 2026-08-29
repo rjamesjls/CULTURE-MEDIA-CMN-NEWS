@@ -85,6 +85,28 @@ export async function saveArticle(formData) {
     image_url = publicUrlData.publicUrl;
   }
 
+  // Handling magazine cover upload if provided
+  const magazineCoverFile = formData.get('magazine_cover_file');
+  if (magazineCoverFile && magazineCoverFile.size > 0) {
+    const fileExt = magazineCoverFile.name.split('.').pop();
+    const fileName = `magazines/cover_${Date.now()}.${fileExt}`;
+
+    const { data: uploadData, error: uploadError } = await supabaseServer.storage
+      .from('media')
+      .upload(fileName, magazineCoverFile, {
+        cacheControl: '3600',
+        upsert: false
+      });
+
+    if (uploadError) throw new Error("Erreur lors de l'upload de la couverture magazine");
+
+    const { data: publicUrlData } = supabaseServer.storage
+      .from('media')
+      .getPublicUrl(fileName);
+
+    seo_metadata.magazine_cover_url = publicUrlData.publicUrl;
+  }
+
   const slug = slugify(title || 'sans-titre', { lower: true, strict: true, locale: 'fr' });
 
   const articleData = {
