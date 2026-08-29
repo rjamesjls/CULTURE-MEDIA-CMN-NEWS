@@ -154,6 +154,9 @@ export default async function MagazineReaderPage({ params }) {
                   </span>
                   <i className="fas fa-check-circle" style={{ color: '#3b82f6', fontSize: '1rem' }} title="Compte Vérifié"></i>
                 </div>
+                <div style={{ color: '#cbd5e1', fontSize: '0.9rem', marginTop: '2px', fontFamily: 'var(--font-body)' }}>
+                  @afolukutv
+                </div>
                 <div style={{ color: '#94a3b8', fontSize: '0.9rem', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <i className="fas fa-users"></i>
                   <span>6000+ followers</span>
