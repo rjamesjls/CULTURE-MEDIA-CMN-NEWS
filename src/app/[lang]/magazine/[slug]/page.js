@@ -245,11 +245,15 @@ export default async function MagazineReaderPage({ params }) {
           color: #c026d3;
         }
 
-        /* Surcharge forte pour écraser les styles en ligne (WYSIWYG) qui mettraient le texte en noir */
+        /* Surcharge forte pour écraser les styles en ligne (WYSIWYG) qui mettraient le texte en noir ou empêcheraient le retour à la ligne */
         .mag-content * {
           color: inherit !important;
           background-color: transparent !important;
           font-family: inherit !important;
+          white-space: normal !important;
+          word-wrap: break-word !important;
+          overflow-wrap: break-word !important;
+          max-width: 100% !important;
         }
         
         .mag-content b, .mag-content strong {
