@@ -112,6 +112,64 @@ export default async function MagazineReaderPage({ params }) {
         {/* Header Content */}
         <div className="container" style={{ position: 'relative', zIndex: 2, maxWidth: '1000px', width: '100%', margin: 'auto auto 0 auto', padding: '0 20px' }}>
           
+          {/* Social Cover Banner */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '15px 20px',
+            background: 'rgba(15, 23, 42, 0.6)',
+            backdropFilter: 'blur(12px)',
+            border: '1px solid rgba(255,255,255,0.05)',
+            borderRadius: '16px',
+            marginBottom: '40px',
+            flexWrap: 'wrap',
+            gap: '15px'
+          }}>
+            {/* Left side: Avatar + Info */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+              {/* Avatar Placeholder */}
+              <div style={{
+                width: '60px',
+                height: '60px',
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, #c026d3 0%, #3b82f6 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#fff',
+                fontSize: '1.5rem',
+                fontWeight: 'bold',
+                fontFamily: 'var(--font-heading)',
+                boxShadow: '0 4px 10px rgba(0,0,0,0.5)'
+              }}>
+                AF
+              </div>
+              
+              {/* Name and Followers */}
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ color: '#fff', fontSize: '1.2rem', fontWeight: 'bold', fontFamily: 'var(--font-heading)' }}>
+                    A FOLUKU TV
+                  </span>
+                  <i className="fas fa-check-circle" style={{ color: '#3b82f6', fontSize: '1rem' }} title="Compte Vérifié"></i>
+                </div>
+                <div style={{ color: '#94a3b8', fontSize: '0.9rem', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <i className="fas fa-users"></i>
+                  <span>6000+ followers</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Right side: Social links */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <a href="#" className="social-btn"><i className="fab fa-facebook-f"></i></a>
+              <a href="#" className="social-btn"><i className="fab fa-instagram"></i></a>
+              <a href="#" className="social-btn"><i className="fab fa-twitter"></i></a>
+              <a href="#" className="social-btn"><i className="fab fa-youtube"></i></a>
+            </div>
+          </div>
+          
           <div style={{ marginBottom: '-40px', marginTop: '-40px' }}>
             <img src="/magazine-logo.png" alt="Web Magazine" style={{ height: 'auto', width: '400px', maxWidth: '100%', objectFit: 'contain' }} />
           </div>
@@ -303,6 +361,25 @@ export default async function MagazineReaderPage({ params }) {
           word-break: normal !important;
           overflow-wrap: normal !important;
           max-width: 100% !important;
+        }
+        
+        .social-btn {
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          background: rgba(255,255,255,0.1);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #fff;
+          text-decoration: none;
+          transition: all 0.3s ease;
+        }
+        
+        .social-btn:hover {
+          background: #c026d3;
+          color: #fff !important;
+          transform: translateY(-2px);
         }
         
         .mag-content b, .mag-content strong {
