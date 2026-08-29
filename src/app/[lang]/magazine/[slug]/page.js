@@ -65,7 +65,7 @@ export default async function MagazineReaderPage({ params }) {
       <ViewTracker articleId={article.id} />
       
       {/* Bouton Retour Discret */}
-      <div style={{ position: 'fixed', top: '20px', left: '20px', zIndex: 100 }}>
+      <div style={{ position: 'absolute', top: '20px', left: '20px', zIndex: 100 }}>
         <Link href={`/${lang}/magazine`} className="mag-back-btn" style={{ 
           display: 'flex', 
           alignItems: 'center', 
