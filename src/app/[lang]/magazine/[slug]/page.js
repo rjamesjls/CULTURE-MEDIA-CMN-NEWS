@@ -175,7 +175,7 @@ export default async function MagazineReaderPage({ params }) {
           )}
 
           {/* Core Content */}
-          <div className="mag-content" dangerouslySetInnerHTML={{ __html: getContent() }}></div>
+          <div className="mag-content" dangerouslySetInnerHTML={{ __html: (getContent() || '').replace(/&nbsp;/g, ' ') }}></div>
           
           {/* Section Partage et Interactions */}
           <div style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
@@ -295,9 +295,9 @@ export default async function MagazineReaderPage({ params }) {
           color: inherit !important;
           background-color: transparent !important;
           font-family: inherit !important;
-          white-space: pre-wrap !important;
+          white-space: normal !important;
           word-break: normal !important;
-          overflow-wrap: break-word !important;
+          overflow-wrap: normal !important;
           max-width: 100% !important;
         }
         
