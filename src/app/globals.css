@@ -562,7 +562,7 @@ textarea.input {
 .menu-toggle span {
   width: 25px;
   height: 3px;
-  background: var(--color-dark);
+  background: var(--color-white);
   border-radius: var(--radius-sm);
   transition: all var(--transition-fast);
 }
