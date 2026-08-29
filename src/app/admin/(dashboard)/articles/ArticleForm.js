@@ -250,7 +250,7 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
       const imageFile = formData.get('image_file');
       if (imageFile && imageFile.size > 0) {
         const fileExt = imageFile.name.split('.').pop();
-        const fileName = \`articles/\${Date.now()}.\${fileExt}\`;
+        const fileName = `articles/${Date.now()}.${fileExt}`;
         
         const { error: uploadError } = await supabase.storage
           .from('media')
@@ -267,7 +267,7 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
       const magazineCoverFile = formData.get('magazine_cover_file');
       if (magazineCoverFile && magazineCoverFile.size > 0) {
         const fileExt = magazineCoverFile.name.split('.').pop();
-        const fileName = \`magazines/cover_\${Date.now()}.\${fileExt}\`;
+        const fileName = `magazines/cover_${Date.now()}.${fileExt}`;
         
         const { error: uploadError } = await supabase.storage
           .from('media')
