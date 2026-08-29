@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import { incrementLike, incrementShare } from '@/app/actions/analytics';
 
 export default function ArticleInteractions({ articleId, initialLikes = 0 }) {
   const [likes, setLikes] = useState(initialLikes);
@@ -54,12 +55,10 @@ export default function ArticleInteractions({ articleId, initialLikes = 0 }) {
       likedArticles.push(articleId);
       localStorage.setItem('cmn_liked_articles', JSON.stringify(likedArticles));
 
-      // Call RPC
-      const { error } = await supabase.rpc('increment_article_likes', {
-        article_id: articleId
-      });
+      // Call server action
+      const newCount = await incrementLike(articleId);
 
-      if (error) {
+      if (newCount === null) {
         console.error('Erreur lors du like:', error);
         // Revert optimistic update
         setLikes(prev => prev - 1);
@@ -118,6 +117,9 @@ export default function ArticleInteractions({ articleId, initialLikes = 0 }) {
   const handleShare = async (platform) => {
     const url = window.location.href;
     const title = document.title;
+
+    // Increment share count in background
+    incrementShare(articleId).catch(console.error);
 
     switch (platform) {
       case 'facebook':
