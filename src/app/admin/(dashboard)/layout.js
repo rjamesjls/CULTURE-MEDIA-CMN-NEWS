@@ -173,6 +173,9 @@ export default async function AdminLayout({ children }) {
               <Link href="/admin/users" className="admin-nav-link">
                 <i className="fas fa-users"></i> Utilisateurs
               </Link>
+              <Link href="/admin/settings" className="admin-nav-link">
+                <i className="fas fa-cog"></i> Paramètres
+              </Link>
             </>
           )}
 

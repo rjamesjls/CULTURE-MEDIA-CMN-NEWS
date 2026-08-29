@@ -60,6 +60,15 @@ export default async function MagazineReaderPage({ params }) {
   const getDesc = () => (lang === 'bsh' && article.hook_bsh) ? article.hook_bsh : article.description;
   const getContent = () => (lang === 'bsh' && article.content_bsh) ? article.content_bsh : article.content;
 
+  // Fetch follower count setting
+  const { data: settingsData } = await supabase
+    .from('site_settings')
+    .select('value')
+    .eq('key', 'total_followers')
+    .maybeSingle();
+
+  const followerCount = settingsData?.value?.replace(/"/g, '') || '6000+ followers';
+
   return (
     <div className="magazine-reader" style={{ backgroundColor: '#020617', minHeight: '100vh', color: '#f8fafc', overflowX: 'hidden' }}>
       <ViewTracker articleId={article.id} />
@@ -170,7 +179,7 @@ export default async function MagazineReaderPage({ params }) {
               {/* Line 3: Followers */}
               <div style={{ color: '#94a3b8', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
                 <i className="fas fa-user-friends"></i>
-                <span>6000+ followers</span>
+                <span>{followerCount}</span>
               </div>
               
             </div>
