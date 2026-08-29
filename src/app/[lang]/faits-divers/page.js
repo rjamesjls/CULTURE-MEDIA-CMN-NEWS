@@ -28,6 +28,7 @@ export default async function FaitsDivers({ params }) {
     .from('articles')
     .select('*')
     .eq('status', 'published')
+    .ilike('category', '%fait%diver%')
     .order('pub_date', { ascending: false });
 
   const getTitle = (article) => (lang === 'bsh' && article.title_bsh) ? article.title_bsh : article.title;
