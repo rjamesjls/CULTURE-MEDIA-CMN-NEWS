@@ -77,13 +77,13 @@ export default async function Header({ lang = 'fr' }) {
               <input type="text" placeholder="Rechercher..." className="search-input" id="searchInput" />
             </div>
 
-            <Link href={`/${lang}/pro`} style={{ 
+            {/* <Link href={`/${lang}/pro`} style={{ 
               background: '#F59E0B', color: '#FFF', fontWeight: 'bold', 
               padding: '4px 10px', borderRadius: '12px', textDecoration: 'none', 
               fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' 
             }}>
               {dict.nav.pro}
-            </Link>
+            </Link> */}
 
             {user ? (
               <Link href={`/${lang}/profile`} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fff', textDecoration: 'none', fontSize: '14px', fontWeight: '600' }}>
@@ -99,7 +99,7 @@ export default async function Header({ lang = 'fr' }) {
 
             <SubscribeButton />
             
-            <LanguageSwitcher currentLang={lang} />
+            {/* <LanguageSwitcher currentLang={lang} /> */}
           </nav>
 
           <button className="menu-toggle" id="menuToggle" aria-label="Toggle menu">
