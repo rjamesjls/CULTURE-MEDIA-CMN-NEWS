@@ -2,6 +2,8 @@ import { supabase } from '@/lib/supabase';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import ArticleInteractions from '@/components/ArticleInteractions';
+import ArticleComments from '@/components/ArticleComments';
+import ViewTracker from '@/components/ViewTracker';
 export const revalidate = 60;
 
 export async function generateMetadata({ params }) {
@@ -15,6 +17,8 @@ export async function generateMetadata({ params }) {
     .single();
 
   if (!article) return { title: 'Magazine Introuvable' };
+
+
 
   const getTitle = () => (lang === 'bsh' && article.title_bsh) ? article.title_bsh : article.title;
   const getDesc = () => (lang === 'bsh' && article.hook_bsh) ? article.hook_bsh : article.description;
@@ -44,12 +48,21 @@ export default async function MagazineReaderPage({ params }) {
 
   // Si c'est pas un web magazine, on pourrait rediriger vers l'article normal, mais on le laisse accessible ici s'il est appelé
   
+  // Fetch comments (approved only)
+  const { data: comments } = await supabase
+    .from('comments')
+    .select('*')
+    .eq('article_id', article.id)
+    .eq('status', 'approved')
+    .order('created_at', { ascending: false });
+
   const getTitle = () => (lang === 'bsh' && article.title_bsh) ? article.title_bsh : article.title;
   const getDesc = () => (lang === 'bsh' && article.hook_bsh) ? article.hook_bsh : article.description;
   const getContent = () => (lang === 'bsh' && article.content_bsh) ? article.content_bsh : article.content;
 
   return (
     <div className="magazine-reader" style={{ backgroundColor: '#020617', minHeight: '100vh', color: '#f8fafc', overflowX: 'hidden' }}>
+      <ViewTracker articleId={article.id} />
       
       {/* Bouton Retour Discret */}
       <div style={{ position: 'fixed', top: '20px', left: '20px', zIndex: 100 }}>
@@ -170,6 +183,11 @@ export default async function MagazineReaderPage({ params }) {
               Partager cette édition
             </h3>
             <ArticleInteractions articleId={article.id} initialLikes={article.likes_count || 0} />
+          </div>
+          
+          {/* Section Commentaires */}
+          <div style={{ marginTop: '40px' }}>
+            <ArticleComments articleId={article.id} initialComments={comments || []} />
           </div>
 
         </article>
