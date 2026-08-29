@@ -18,7 +18,7 @@ export default async function Footer({ lang = 'fr' }) {
         <div className="footer-content">
           {/* About */}
           <div className="footer-section">
-            <h4>Culture Média News</h4>
+            <h4>A FOLUKU TV</h4>
             <p style={{ color: 'var(--color-gray-400)', marginBottom: 'var(--space-3)' }}>
               Votre source d'actualité culturelle et locale. News, événements, tendances et breaking news.
             </p>
@@ -80,7 +80,7 @@ export default async function Footer({ lang = 'fr' }) {
         </div>
 
         <div className="footer-bottom">
-          <p>&copy; 2026 Culture Média News. {dict.footer.rights}</p>
+          <p>&copy; 2026 A FOLUKU TV. {dict.footer.rights}</p>
         </div>
       </div>
     </footer>

@@ -1,7 +1,7 @@
 import YouTubeChartsClient from './YouTubeChartsClient';
 
 export const metadata = {
-  title: 'Classements YouTube | Culture Media',
+  title: 'Classements YouTube | A FOLUKU TV',
 };
 
 export default function YouTubeChartsPage() {

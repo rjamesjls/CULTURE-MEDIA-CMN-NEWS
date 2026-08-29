@@ -2,7 +2,7 @@ import { Suspense } from 'react';
 import VeilleClient from './VeilleClient';
 
 export const metadata = {
-  title: 'Veille & Sources - Admin Culture Media',
+  title: 'Veille & Sources - Admin A FOLUKU TV',
 };
 
 export default function VeillePage() {

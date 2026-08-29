@@ -29,7 +29,7 @@ export async function generateFacebookPost(articleId, instructions = "") {
 
   const rulesContext = rules?.map(r => `- ${r.name}: ${r.content}`).join('\n') || 'Aucune règle spécifique.';
 
-  const prompt = `Tu es un Community Manager expert pour "Culture Média CMN NEWS".
+  const prompt = `Tu es un Community Manager expert pour "A FOLUKU TV".
 Ta mission est de créer un Post FACEBOOK engageant basé sur l'article ci-dessous.
 
 Voici les règles éditoriales (Knowledge Brain) que tu DOIS ABSOLUMENT respecter :

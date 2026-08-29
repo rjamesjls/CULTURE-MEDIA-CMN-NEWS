@@ -17,7 +17,7 @@ export async function generateMetadata({ params }) {
   if (!page) return { title: 'Page non trouvée' };
 
   return {
-    title: `${page.title} | Culture Média News`,
+    title: `${page.title} | A FOLUKU TV`,
   };
 }
 
@@ -69,7 +69,7 @@ export default async function CustomPage({ params }) {
             textTransform: 'uppercase',
             marginBottom: '20px'
           }}>
-            Culture Média News
+            A FOLUKU TV
           </div>
           <h1 style={{ 
             fontSize: 'clamp(2.5rem, 5vw, 4rem)', 

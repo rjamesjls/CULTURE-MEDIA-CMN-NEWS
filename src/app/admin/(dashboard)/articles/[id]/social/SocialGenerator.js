@@ -281,7 +281,7 @@ export default function SocialGenerator({ article, recentArticles = [] }) {
     category_bsh: article.category || "Actualité",
 
     date: getInitialDate(),
-    source: "Culture Media News",
+    source: "A FOLUKU TV",
     logoTheme: "white",
     showBreakingNews: false,
     showLogoNews: false,
@@ -428,7 +428,7 @@ Formatte la réponse UNIQUEMENT en string, sans markdown, sans autre texte.`;
       const promptFr = `Résume cet article en une version très courte (2 à 3 phrases maximum) allant à l'essentiel pour un post Instagram. 
 Tu dois absolument mettre en gras (avec la balise HTML <strong>) les points clés ou les mots importants dans le résumé. 
 INTERDICTION D'UTILISER DU MARKDOWN (aucun astérisque **). Utilise UNIQUEMENT la balise <strong> pour le gras.
-De plus, extrais le nom de la source d'origine de l'article (ex: Le Monde, AFP, L'Equipe, etc.). Si aucune source n'est identifiable de manière évidente, utilise "Culture Media News".
+De plus, extrais le nom de la source d'origine de l'article (ex: Le Monde, AFP, L'Equipe, etc.). Si aucune source n'est identifiable de manière évidente, utilise "A FOLUKU TV".
 Tu DOIS renvoyer UNIQUEMENT un objet JSON valide avec cette structure exacte (sans bloc markdown):
 {
   "hook": "Le résumé avec les balises <strong>...",
@@ -443,7 +443,7 @@ IMPORTANT: NE TRADUIS SURTOUT PAS EN CRÉOLE HAÏTIEN, NI CRÉOLE ANTILLAIS.
 IMPORTANT: NE RENVOIE QUE LA VERSION TRADUITE EN BUSHINENGÉ. N'inclus SURTOUT PAS la version française.
 Tu dois absolument mettre en gras (avec la balise HTML <strong>) les points clés ou les mots importants dans le résumé.
 INTERDICTION D'UTILISER DU MARKDOWN (aucun astérisque **). Utilise UNIQUEMENT la balise <strong> pour le gras.
-De plus, extrais le nom de la source d'origine de l'article (ex: Le Monde, AFP, L'Equipe, etc.). Si aucune source n'est identifiable de manière évidente, utilise "Culture Media News".
+De plus, extrais le nom de la source d'origine de l'article (ex: Le Monde, AFP, L'Equipe, etc.). Si aucune source n'est identifiable de manière évidente, utilise "A FOLUKU TV".
 Tu DOIS renvoyer UNIQUEMENT un objet JSON valide avec cette structure exacte (sans bloc markdown):
 {
   "hook": "Le résumé traduit avec les balises <strong>...",
@@ -473,7 +473,7 @@ Contenu: ${article.content || ''}`;
           }
           parsed = JSON.parse(cleaned);
         } catch(e) {
-          parsed = { hook: data.hook, source: "Culture Media News" };
+          parsed = { hook: data.hook, source: "A FOLUKU TV" };
         }
 
         const htmlHook = parsed.hook.startsWith("<") 
@@ -787,7 +787,7 @@ Contenu: ${article.content || ''}`;
         }}
       >
         <span style={{ color: "#0f172a", fontSize: "20px", fontWeight: "600" }}>
-          Culture Media News &bull; Votre source d&apos;actualité culturelle et médiatique
+          A FOLUKU TV &bull; Votre source d&apos;actualité culturelle et médiatique
         </span>
       </div>
       {renderBreakingNewsBanner()}
@@ -859,7 +859,7 @@ Contenu: ${article.content || ''}`;
                 ? "/backgrounds/cmn-corner-logo-black.png"
                 : "/backgrounds/cmn-corner-logo.png"
             }
-            alt="CMN Media"
+            alt="AFOLUKUTV Media"
             style={{ width: "250px" }}
           />
           {currentData.showLogoNews && (
@@ -1154,7 +1154,7 @@ Contenu: ${article.content || ''}`;
                 ? "/backgrounds/cmn-corner-logo-black.png"
                 : "/backgrounds/cmn-corner-logo.png"
             }
-            alt="CMN Media"
+            alt="AFOLUKUTV Media"
             style={{ width: "250px" }}
           />
           {currentData.showLogoNews && (
@@ -1415,7 +1415,7 @@ Contenu: ${article.content || ''}`;
           fontWeight: "900",
         }}
       >
-        <i className="fas fa-globe-americas"></i> CMN
+        <i className="fas fa-globe-americas"></i> AFOLUKUTV
       </div>
       <div
         style={{
@@ -1671,7 +1671,7 @@ Contenu: ${article.content || ''}`;
               lineHeight: "1",
             }}
           >
-            CMN
+            AFOLUKUTV
           </div>
           <div
             style={{

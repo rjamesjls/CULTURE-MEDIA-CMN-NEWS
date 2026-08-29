@@ -2,7 +2,7 @@ import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 
 export const metadata = {
-  title: 'Messages de contact | Culture Media Admin',
+  title: 'Messages de contact | A FOLUKU TV Admin',
 };
 
 export default async function MessagesPage() {

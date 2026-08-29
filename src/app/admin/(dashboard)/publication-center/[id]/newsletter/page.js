@@ -62,7 +62,7 @@ export default async function NewsletterSenderPage({ params }) {
           <div style={{ padding: '20px', borderBottom: '1px solid #f3f4f6' }}>
             <div style={{ marginBottom: '10px' }}>
               <span style={{ fontSize: '13px', color: '#6b7280', display: 'inline-block', width: '60px' }}>De :</span>
-              <span style={{ fontSize: '14px', color: '#111827', fontWeight: '500' }}>CMN NEWS &lt;hello@cmn-news.com&gt;</span>
+              <span style={{ fontSize: '14px', color: '#111827', fontWeight: '500' }}>AFOLUKUTV &lt;hello@afolukutv.com&gt;</span>
             </div>
             <div>
               <span style={{ fontSize: '13px', color: '#6b7280', display: 'inline-block', width: '60px' }}>Objet :</span>
@@ -74,7 +74,7 @@ export default async function NewsletterSenderPage({ params }) {
             {/* Contenu de l'email (Template) */}
             <div style={{ backgroundColor: '#fff', width: '100%', maxWidth: '500px', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', overflow: 'hidden' }}>
               <div style={{ backgroundColor: '#111827', color: '#fff', padding: '20px', textAlign: 'center' }}>
-                <h1 style={{ margin: 0, fontSize: '24px', fontFamily: 'var(--font-heading)', letterSpacing: '2px' }}>CMN NEWS</h1>
+                <h1 style={{ margin: 0, fontSize: '24px', fontFamily: 'var(--font-heading)', letterSpacing: '2px' }}>AFOLUKUTV</h1>
               </div>
               
               {article.image_url && (
@@ -84,7 +84,7 @@ export default async function NewsletterSenderPage({ params }) {
               <div style={{ padding: '30px' }}>
                 <h2 style={{ marginTop: 0, fontSize: '20px', color: '#111827', lineHeight: '1.4' }}>{article.title}</h2>
                 <p style={{ color: '#4b5563', fontSize: '15px', lineHeight: '1.6' }}>
-                  {article.description || "Découvrez notre dernier article exclusif sur CMN NEWS."}
+                  {article.description || "Découvrez notre dernier article exclusif sur AFOLUKUTV."}
                 </p>
                 
                 <div style={{ marginTop: '30px', textAlign: 'center' }}>
@@ -95,7 +95,7 @@ export default async function NewsletterSenderPage({ params }) {
               </div>
               
               <div style={{ backgroundColor: '#f3f4f6', padding: '20px', textAlign: 'center', fontSize: '12px', color: '#6b7280' }}>
-                Vous recevez cet email car vous êtes abonné à la newsletter de CMN NEWS.<br/>
+                Vous recevez cet email car vous êtes abonné à la newsletter de AFOLUKUTV.<br/>
                 <a href="#" style={{ color: '#d97706' }}>Se désabonner</a>
               </div>
             </div>

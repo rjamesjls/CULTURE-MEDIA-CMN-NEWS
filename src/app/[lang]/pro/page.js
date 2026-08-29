@@ -2,7 +2,7 @@ import { createClient } from '@/utils/supabase/server';
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Portail des Entreprises PRO - Culture Média News',
+  title: 'Portail des Entreprises PRO - A FOLUKU TV',
   description: 'Découvrez notre annuaire d\'entreprises partenaires.',
 };
 
@@ -24,7 +24,7 @@ export default async function ProDirectory() {
           L'Annuaire des <span style={{ color: 'var(--color-primary, #D32F2F)' }}>Professionnels</span>
         </h1>
         <p style={{ fontSize: '18px', color: '#64748B', maxWidth: '600px', margin: '20px auto' }}>
-          Découvrez les entreprises qui nous font confiance. Rejoignez le réseau Culture Média News dès aujourd'hui.
+          Découvrez les entreprises qui nous font confiance. Rejoignez le réseau A FOLUKU TV dès aujourd'hui.
         </p>
         <Link href="/pro/register">
           <button style={{ 

@@ -48,7 +48,7 @@ async function buildKnowledgeContext() {
   try {
     const rules = await getKnowledgeRules();
     if (!rules || rules.length === 0) return '';
-    let kbContext = '\n\n=== RÈGLES ÉDITORIALES DE CULTURE MÉDIA (À RESPECTER STRICTEMENT) ===\n';
+    let kbContext = '\n\n=== RÈGLES ÉDITORIALES DE A FOLUKU TV (À RESPECTER STRICTEMENT) ===\n';
     rules.forEach(rule => {
       kbContext += `- [${rule.category.toUpperCase()}] ${rule.title}: ${rule.content}\n`;
     });
@@ -134,7 +134,7 @@ IMPORTANT: Tu dois renvoyer la réponse **UNIQUEMENT** sous la forme d'un objet 
       try {
         const currentModel = genAI.getGenerativeModel({ 
           model: modelName,
-          systemInstruction: `Tu es un journaliste professionnel expert et rigoureux.\n${knowledgeContext}\nCONSIGNE ABSOLUE : Tu DOIS respecter les Mots Interdits et les Règles Éditoriales de Culture Média à la lettre. C'est une question de survie pour l'entreprise.`
+          systemInstruction: `Tu es un journaliste professionnel expert et rigoureux.\n${knowledgeContext}\nCONSIGNE ABSOLUE : Tu DOIS respecter les Mots Interdits et les Règles Éditoriales de A FOLUKU TV à la lettre. C'est une question de survie pour l'entreprise.`
         });
         const result = await currentModel.generateContent(promptParts);
         let text = result.response.text();
@@ -199,7 +199,7 @@ IMPORTANT: Tu dois renvoyer la réponse **UNIQUEMENT** sous la forme d'un objet 
       try {
         const currentModel = genAI.getGenerativeModel({ 
           model: modelName,
-          systemInstruction: `Tu es un journaliste professionnel expert.\n${knowledgeContext}\nCONSIGNE ABSOLUE : Tu DOIS respecter les Mots Interdits et les Règles Éditoriales de Culture Média à la lettre.`
+          systemInstruction: `Tu es un journaliste professionnel expert.\n${knowledgeContext}\nCONSIGNE ABSOLUE : Tu DOIS respecter les Mots Interdits et les Règles Éditoriales de A FOLUKU TV à la lettre.`
         });
         const result = await currentModel.generateContent(prompt);
         let text = result.response.text();
@@ -338,7 +338,7 @@ export async function generateSuperArticle(formData) {
     let knowledgeContext = await buildKnowledgeContext();
 
     // 4. Le Super Prompt
-    const prompt = `Tu es un Rédacteur en Chef et Expert SEO de "Culture Média CMN NEWS".
+    const prompt = `Tu es un Rédacteur en Chef et Expert SEO de "A FOLUKU TV".
 Ta mission est d'analyser les sources fournies (texte, fichier audio/vidéo/pdf, ou contenu web) et de générer une structure d'article de presse ultra-complète.
 
 Source(s) fournie(s) :
@@ -381,7 +381,7 @@ CONSIGNE CRITIQUE : Tu DOIS renvoyer ta réponse STRICTEMENT sous forme d'un obj
         try {
           const currentModel = genAI.getGenerativeModel({ 
             model: modelName,
-            systemInstruction: `Tu es le Rédacteur en Chef Ultime de Culture Média.\n${knowledgeContext}\nCONSIGNE ABSOLUE : Tu DOIS respecter les Mots Interdits et les Règles Éditoriales à la lettre. Renvoie UNIQUEMENT du JSON.`
+            systemInstruction: `Tu es le Rédacteur en Chef Ultime de A FOLUKU TV.\n${knowledgeContext}\nCONSIGNE ABSOLUE : Tu DOIS respecter les Mots Interdits et les Règles Éditoriales à la lettre. Renvoie UNIQUEMENT du JSON.`
           });
           const result = await currentModel.generateContent(promptParts);
           let text = result.response.text();

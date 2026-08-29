@@ -14,7 +14,7 @@ export async function generateMetadata({ params }) {
   if (!campaign) return { title: 'Interview non trouvée' };
 
   return {
-    title: `Interview : ${campaign.title} | Culture Média News`,
+    title: `Interview : ${campaign.title} | A FOLUKU TV`,
     description: campaign.description
   };
 }

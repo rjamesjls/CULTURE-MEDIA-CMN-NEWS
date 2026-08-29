@@ -88,7 +88,7 @@ export default function InterviewClient({ campaign }) {
         <i className="fas fa-check-circle" style={{ fontSize: '64px', color: '#10b981', marginBottom: '20px' }}></i>
         <h1 style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-dark)', marginBottom: '15px' }}>Merci pour vos réponses !</h1>
         <p style={{ color: '#4b5563', fontSize: '1.1rem', marginBottom: '30px' }}>
-          Vos réponses ont bien été transmises à la rédaction de Culture Média News.
+          Vos réponses ont bien été transmises à la rédaction de A FOLUKU TV.
         </p>
         <Link href="/" className="btn btn-primary">
           Retour à l'accueil
@@ -234,7 +234,7 @@ export default function InterviewClient({ campaign }) {
               )}
             </button>
             <p style={{ marginTop: '15px', fontSize: '0.9rem', color: '#6b7280' }}>
-              En soumettant ce formulaire, vous autorisez Culture Média News à utiliser vos réponses pour la rédaction d'un article.
+              En soumettant ce formulaire, vous autorisez A FOLUKU TV à utiliser vos réponses pour la rédaction d'un article.
             </p>
           </div>
         </form>

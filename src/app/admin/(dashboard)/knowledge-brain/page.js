@@ -2,7 +2,7 @@ import KnowledgeBrainClient from "./KnowledgeBrainClient";
 import { getKnowledgeRules, getDictionaryTerms } from "./actions";
 
 export const metadata = {
-  title: "Knowledge Brain | Culture Média CMN",
+  title: "Knowledge Brain | A FOLUKU TV AFOLUKUTV",
 };
 
 export default async function KnowledgeBrainPage() {

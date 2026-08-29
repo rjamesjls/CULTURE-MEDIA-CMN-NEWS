@@ -1,13 +1,13 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Politique de confidentialité — Culture Média News',
-  description: 'Politique de confidentialité et traitement des données personnelles de Culture Média News (CMN).',
+  title: 'Politique de confidentialité — A FOLUKU TV',
+  description: 'Politique de confidentialité et traitement des données personnelles de A FOLUKU TV (AFOLUKUTV).',
 };
 
 export default function PrivacyPage() {
   const lastUpdated = '8 août 2025';
-  const companyName = 'Culture Média News (CMN)';
+  const companyName = 'A FOLUKU TV (AFOLUKUTV)';
   const companyEmail = 'contact@culturemedianews.fr';
   const websiteUrl = 'https://culturemedianews.fr';
   const dpoEmail = 'dpo@culturemedianews.fr';
@@ -29,7 +29,7 @@ export default function PrivacyPage() {
 
       {/* Intro */}
       <div style={{ backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: '8px', padding: '20px', marginBottom: '40px', fontSize: '15px' }}>
-        <strong style={{ fontFamily: 'system-ui, sans-serif' }}>Résumé :</strong> Culture Média News collecte uniquement les données nécessaires 
+        <strong style={{ fontFamily: 'system-ui, sans-serif' }}>Résumé :</strong> A FOLUKU TV collecte uniquement les données nécessaires 
         au fonctionnement de la plateforme. Nous ne vendons jamais vos données. 
         Vous disposez d&apos;un droit d&apos;accès, de rectification et de suppression.
       </div>
@@ -53,7 +53,7 @@ export default function PrivacyPage() {
         <ul>
           <li>Nom, prénom, adresse e-mail</li>
           <li>Identifiants de connexion (mot de passe chiffré)</li>
-          <li>Rôle et permissions dans la plateforme CMN OS</li>
+          <li>Rôle et permissions dans la plateforme AFOLUKUTV OS</li>
         </ul>
 
         <h3 style={{ fontSize: '16px', fontWeight: 'bold', fontFamily: 'system-ui, sans-serif', color: '#111827', marginTop: '16px' }}>
@@ -104,7 +104,7 @@ export default function PrivacyPage() {
       <Section title="4. Intégration TikTok — données spécifiques">
         <p>
           Dans le cadre de l&apos;intégration avec l&apos;API TikTok (<em>Content Posting API</em>), 
-          CMN OS collecte et traite les données suivantes pour le compte des utilisateurs autorisés :
+          AFOLUKUTV OS collecte et traite les données suivantes pour le compte des utilisateurs autorisés :
         </p>
         <ul>
           <li><strong>Token d&apos;accès OAuth TikTok</strong> : utilisé uniquement pour publier des vidéos sur le compte TikTok autorisé</li>

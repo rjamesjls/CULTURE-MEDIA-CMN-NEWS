@@ -1,13 +1,13 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Conditions d\'utilisation — Culture Média News',
-  description: 'Conditions générales d\'utilisation de la plateforme Culture Média News (CMN).',
+  title: 'Conditions d\'utilisation — A FOLUKU TV',
+  description: 'Conditions générales d\'utilisation de la plateforme A FOLUKU TV (AFOLUKUTV).',
 };
 
 export default function TermsPage() {
   const lastUpdated = '8 août 2025';
-  const companyName = 'Culture Média News (CMN)';
+  const companyName = 'A FOLUKU TV (AFOLUKUTV)';
   const companyEmail = 'contact@culturemedianews.fr';
   const websiteUrl = 'https://culturemedianews.fr';
 
@@ -28,9 +28,9 @@ export default function TermsPage() {
 
       <Section title="1. Présentation de la plateforme">
         <p>
-          {companyName} (ci-après « CMN », « nous », « notre ») exploite la plateforme éditoriale disponible 
+          {companyName} (ci-après « AFOLUKUTV », « nous », « notre ») exploite la plateforme éditoriale disponible 
           à l&apos;adresse <a href={websiteUrl} style={{ color: '#dc2626' }}>{websiteUrl}</a> ainsi que 
-          ses outils associés, dont CMN OS, un système de gestion et de publication de contenu 
+          ses outils associés, dont AFOLUKUTV OS, un système de gestion et de publication de contenu 
           à destination des équipes éditoriales.
         </p>
         <p>
@@ -40,7 +40,7 @@ export default function TermsPage() {
       </Section>
 
       <Section title="2. Utilisation des services">
-        <p>Nos services sont destinés à un usage éditorial et journalistique. En utilisant CMN OS, vous vous engagez à :</p>
+        <p>Nos services sont destinés à un usage éditorial et journalistique. En utilisant AFOLUKUTV OS, vous vous engagez à :</p>
         <ul>
           <li>Utiliser la plateforme uniquement dans un cadre professionnel et éditorial autorisé</li>
           <li>Ne pas publier de contenu illégal, diffamatoire, haineux ou portant atteinte à des droits de tiers</li>
@@ -52,12 +52,12 @@ export default function TermsPage() {
 
       <Section title="3. Intégrations avec des plateformes tierces">
         <p>
-          CMN OS intègre des API de plateformes tierces (TikTok, Instagram, Facebook) pour permettre 
+          AFOLUKUTV OS intègre des API de plateformes tierces (TikTok, Instagram, Facebook) pour permettre 
           la publication directe de contenu. En utilisant ces fonctionnalités, vous reconnaissez que :
         </p>
         <ul>
           <li>Vous êtes soumis aux conditions d&apos;utilisation de ces plateformes tierces</li>
-          <li>CMN n&apos;est pas responsable des modifications apportées par ces plateformes à leurs APIs ou politiques</li>
+          <li>AFOLUKUTV n&apos;est pas responsable des modifications apportées par ces plateformes à leurs APIs ou politiques</li>
           <li>Vous devez disposer des droits nécessaires sur les contenus publiés</li>
           <li>La publication est effectuée sous votre responsabilité éditoriale</li>
         </ul>
@@ -70,12 +70,12 @@ export default function TermsPage() {
 
       <Section title="4. Propriété intellectuelle">
         <p>
-          L&apos;ensemble des contenus produits par {companyName} (articles, vidéos, graphiques, logo CMN) 
+          L&apos;ensemble des contenus produits par {companyName} (articles, vidéos, graphiques, logo AFOLUKUTV) 
           sont protégés par le droit de la propriété intellectuelle. Toute reproduction, diffusion 
           ou exploitation sans autorisation préalable est interdite.
         </p>
         <p>
-          Les contenus publiés par les utilisateurs via CMN OS restent la propriété de leurs auteurs. 
+          Les contenus publiés par les utilisateurs via AFOLUKUTV OS restent la propriété de leurs auteurs. 
           En les publiant via notre plateforme, vous accordez à {companyName} une licence d&apos;utilisation 
           non exclusive pour les afficher et les diffuser dans le cadre de nos services.
         </p>

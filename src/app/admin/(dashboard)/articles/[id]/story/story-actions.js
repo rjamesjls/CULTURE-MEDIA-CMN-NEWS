@@ -77,7 +77,7 @@ ${languageInstruction}`;
       try {
         const model = genAI.getGenerativeModel({ 
           model: modelName,
-          systemInstruction: `Tu es un Community Manager expert pour "Culture Média CMN NEWS".\n=== RÈGLES ÉDITORIALES (KNOWLEDGE BRAIN) ===\n${rulesContext}\nCONSIGNE ABSOLUE : Tu DOIS respecter les Mots Interdits et les Règles Éditoriales à la lettre.`
+          systemInstruction: `Tu es un Community Manager expert pour "A FOLUKU TV".\n=== RÈGLES ÉDITORIALES (KNOWLEDGE BRAIN) ===\n${rulesContext}\nCONSIGNE ABSOLUE : Tu DOIS respecter les Mots Interdits et les Règles Éditoriales à la lettre.`
         });
         const result = await model.generateContent(prompt);
         const response = await result.response;

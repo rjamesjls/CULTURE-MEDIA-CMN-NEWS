@@ -3,7 +3,7 @@ import SpinoffsClient from './SpinoffsClient';
 import { notFound } from 'next/navigation';
 
 export const metadata = {
-  title: 'Déclinaisons Automatiques | CMN OS',
+  title: 'Déclinaisons Automatiques | AFOLUKUTV OS',
 };
 
 export const revalidate = 0; // Disable caching

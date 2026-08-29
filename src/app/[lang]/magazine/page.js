@@ -2,7 +2,7 @@ import { createClient } from '@/utils/supabase/server';
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Kiosque Numérique | Culture Media News',
+  title: 'Kiosque Numérique | A FOLUKU TV',
   description: 'Feuilletez nos éditions au format magazine interactif',
 };
 
@@ -22,7 +22,7 @@ export default async function MagazineKioskPage() {
           Le Kiosque
         </h1>
         <p style={{ fontSize: '1.2rem', color: '#6b7280', maxWidth: '600px', margin: '0 auto' }}>
-          Découvrez nos éditions spéciales en format immersif. Feuilletez Culture Media News comme un vrai magazine.
+          Découvrez nos éditions spéciales en format immersif. Feuilletez A FOLUKU TV comme un vrai magazine.
         </p>
       </header>
 

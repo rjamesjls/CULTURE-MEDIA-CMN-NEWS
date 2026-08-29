@@ -3,7 +3,7 @@ import BroadcastController from './BroadcastController';
 import { redirect } from 'next/navigation';
 
 export const metadata = {
-  title: 'Broadcast Studio | CMN OS',
+  title: 'Broadcast Studio | AFOLUKUTV OS',
 };
 
 export default async function BroadcastStudioPage() {

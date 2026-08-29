@@ -444,7 +444,7 @@ export default function SpinoffsClient({ article, initialSpinoffs }) {
               <i className="fas fa-paper-plane" style={{ color: '#1877f2' }}></i> Confirmer la publication
             </h3>
             <p style={{ color: '#4b5563', fontSize: '15px', lineHeight: '1.5', marginBottom: '25px' }}>
-              Êtes-vous sûr de vouloir publier ce contenu immédiatement sur la page Facebook de CMN NEWS ?<br/><br/>
+              Êtes-vous sûr de vouloir publier ce contenu immédiatement sur la page Facebook de AFOLUKUTV ?<br/><br/>
               Le lien de l'article remplacera automatiquement la balise [LIEN_ARTICLE].
             </p>
             

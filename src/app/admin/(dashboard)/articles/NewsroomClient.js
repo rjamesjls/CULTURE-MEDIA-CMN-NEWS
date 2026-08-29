@@ -30,7 +30,7 @@ export default function NewsroomClient({ articles, categories, ideas, profile })
             Newsroom
           </h2>
           <p style={{ margin: 0, color: '#6b7280', fontSize: '15px' }}>
-            La salle de rédaction centrale de Culture Média News.
+            La salle de rédaction centrale de A FOLUKU TV.
           </p>
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>

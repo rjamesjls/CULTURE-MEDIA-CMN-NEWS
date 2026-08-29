@@ -288,7 +288,7 @@ export default function OmniGeneratorClient() {
           AI Studio
         </h1>
         <p style={{ margin: 0, color: '#a1a1aa', fontSize: '16px', maxWidth: '500px', marginInline: 'auto' }}>
-          Le cerveau central de CMN OS. Discutez de vos idées avec l'IA et lancez la génération de tout votre écosystème de communication.
+          Le cerveau central de AFOLUKUTV OS. Discutez de vos idées avec l'IA et lancez la génération de tout votre écosystème de communication.
         </p>
       </div>
 

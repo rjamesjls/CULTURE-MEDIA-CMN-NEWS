@@ -4,7 +4,7 @@ import { getUserProfile } from '@/utils/supabase/auth';
 import { redirect } from 'next/navigation';
 
 export const metadata = {
-  title: 'Nouveau Magazine | Admin - Culture Media News',
+  title: 'Nouveau Magazine | Admin - A FOLUKU TV',
 };
 
 export default async function NewMagazinePage() {

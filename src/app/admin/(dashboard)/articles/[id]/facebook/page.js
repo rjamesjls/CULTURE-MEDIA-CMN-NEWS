@@ -114,7 +114,7 @@ export default function FacebookGeneratorPage({ params }) {
               <i className="fas fa-users" style={{ color: '#606770' }}></i>
             </div>
             <div>
-              <div style={{ fontWeight: '600', fontSize: '15px', color: '#050505' }}>CMN NEWS</div>
+              <div style={{ fontWeight: '600', fontSize: '15px', color: '#050505' }}>AFOLUKUTV</div>
               <div style={{ fontSize: '13px', color: '#65676b' }}>À l'instant · 🌎</div>
             </div>
           </div>
@@ -136,7 +136,7 @@ export default function FacebookGeneratorPage({ params }) {
               <div style={{ width: '100%', height: '260px', backgroundColor: '#e4e6eb' }}></div>
             )}
             <div style={{ padding: '10px 16px' }}>
-              <div style={{ fontSize: '12px', color: '#65676b', textTransform: 'uppercase' }}>cmn-news.com</div>
+              <div style={{ fontSize: '12px', color: '#65676b', textTransform: 'uppercase' }}>afolukutv.com</div>
               <div style={{ fontWeight: '600', fontSize: '16px', color: '#050505', margin: '4px 0' }}>{article?.title || 'Titre de l\'article'}</div>
               <div style={{ fontSize: '14px', color: '#65676b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {article?.description || 'Description de l\'article...'}
@@ -278,7 +278,7 @@ export default function FacebookGeneratorPage({ params }) {
               <i className="fas fa-paper-plane" style={{ color: '#1877f2' }}></i> Confirmer la publication
             </h3>
             <p style={{ color: '#4b5563', fontSize: '15px', lineHeight: '1.5', marginBottom: '25px' }}>
-              Êtes-vous sûr de vouloir publier ce contenu immédiatement sur la page Facebook de CMN NEWS ?<br/><br/>
+              Êtes-vous sûr de vouloir publier ce contenu immédiatement sur la page Facebook de AFOLUKUTV ?<br/><br/>
               Le lien de l'article remplacera automatiquement la balise [LIEN ICI] ou [LIEN_ARTICLE].
             </p>
             

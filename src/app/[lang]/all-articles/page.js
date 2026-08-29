@@ -9,8 +9,8 @@ export async function generateMetadata({ params }) {
   const resolvedParams = await params;
   const lang = resolvedParams.lang;
   return {
-    title: 'Tous les articles | Culture Média News',
-    description: 'Retrouvez tous les articles de Culture Média News.',
+    title: 'Tous les articles | A FOLUKU TV',
+    description: 'Retrouvez tous les articles de A FOLUKU TV.',
     alternates: {
       canonical: `/${lang}/all-articles`,
       languages: {

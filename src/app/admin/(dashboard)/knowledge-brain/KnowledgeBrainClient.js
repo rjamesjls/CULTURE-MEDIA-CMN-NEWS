@@ -102,7 +102,7 @@ export default function KnowledgeBrainClient({ initialRules, initialDictionary }
             Knowledge Brain
           </h1>
           <p style={{ color: "#6b7280", marginTop: "5px" }}>
-            Mémoire centrale de CMN OS. Définissez la ligne éditoriale, le ton et le vocabulaire multilingue pour l'IA.
+            Mémoire centrale de AFOLUKUTV OS. Définissez la ligne éditoriale, le ton et le vocabulaire multilingue pour l'IA.
           </p>
         </div>
       </div>

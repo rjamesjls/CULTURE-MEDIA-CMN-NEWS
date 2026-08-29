@@ -59,7 +59,7 @@ export default function MagazineViewer({ magazine, articlesData = [] }) {
         <Page key={`page-${pageData.id}`} number={pageNum}>
           <div style={{ position: 'absolute', inset: 0, backgroundColor: '#111827', color: 'white', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px', textAlign: 'center' }}>
             <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2.5rem', marginBottom: '20px' }}>{magazine.title}</h1>
-            <p style={{ fontSize: '1.2rem', color: '#9ca3af' }}>CULTURE MEDIA NEWS</p>
+            <p style={{ fontSize: '1.2rem', color: '#9ca3af' }}>A FOLUKU TV</p>
           </div>
         </Page>
       );

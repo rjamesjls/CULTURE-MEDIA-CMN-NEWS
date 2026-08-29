@@ -111,9 +111,9 @@ export default function VisualsClient({ tournament, teams, matches, players, eve
         <div className="lg:col-span-3 bg-black/50 border border-white/10 rounded-xl p-8 flex items-center justify-center overflow-x-auto">
            {/* This container will be captured by html2canvas */}
            <div id="visual-preview-container" className="w-[1080px] h-[1080px] bg-gradient-to-br from-[#0a0a0f] to-[#1a1a24] relative shadow-2xl overflow-hidden shrink-0" style={{ transform: 'scale(0.5)', transformOrigin: 'top center' }}>
-             {/* Logo CMN Watermark */}
+             {/* Logo AFOLUKUTV Watermark */}
              <div className="absolute top-8 left-8 z-50">
-               <img src="/backgrounds/cmn-corner-logo.png" alt="CMN" className="h-12 opacity-80" />
+               <img src="/backgrounds/cmn-corner-logo.png" alt="AFOLUKUTV" className="h-12 opacity-80" />
              </div>
              
              {/* Visual Content */}

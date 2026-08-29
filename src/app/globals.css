@@ -3,19 +3,19 @@
 @tailwind utilities;
 
 /* =================================================================
-   CULTURE MÉDIA NEWS - DESIGN SYSTEM
+   A FOLUKU TV - DESIGN SYSTEM
    Modern, Premium News Website Design
    ================================================================= */
 
 /* ===== CSS VARIABLES ===== */
 :root {
-  /* Brand Colors - from CMN Logo */
+  /* Brand Colors - from AFOLUKUTV Logo */
   --color-primary: #FFD700;        /* Vibrant Yellow */
   --color-primary-dark: #E6C200;   /* Darker Yellow for hover */
   --color-primary-light: #FFF4CC;  /* Light Yellow for backgrounds */
   
   --color-accent-red: #DC143C;     /* MEDIA box red */
-  --color-accent-black: #0a0a0a;   /* CMN letters black */
+  --color-accent-black: #0a0a0a;   /* AFOLUKUTV letters black */
   
   /* Neutrals */
   --color-dark: #1a1a1a;

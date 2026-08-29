@@ -2,7 +2,7 @@ import { getIdeas } from './actions';
 import IdeasClient from './IdeasClient';
 
 export const metadata = {
-  title: 'Idées de contenu | CMN Admin',
+  title: 'Idées de contenu | AFOLUKUTV Admin',
 };
 
 export default async function IdeasPage() {

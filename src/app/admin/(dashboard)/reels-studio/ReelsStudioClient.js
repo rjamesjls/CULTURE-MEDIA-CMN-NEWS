@@ -267,7 +267,7 @@ const hex2rgbStr = (hex, opacity = 1) => {
 
     // 4. LOGO WATERMARK
     if (logo !== 'none') {
-      const label = logo === 'culture-media' ? 'CULTURE MEDIA' : 'CMN';
+      const label = logo === 'culture-media' ? 'A FOLUKU TV' : 'AFOLUKUTV';
       const lSize = Math.round(canvasWidth * 0.028);
       ctx.font = `bold ${lSize}px Arial, sans-serif`;
       const lw = ctx.measureText(label).width;
@@ -573,7 +573,7 @@ const hex2rgbStr = (hex, opacity = 1) => {
                   {logo !== 'none' && (
                     <div className="absolute top-[40px] right-[10px]">
                       <span className={`px-2 py-1 text-[10px] font-bold ${logo === 'cmn-white' ? 'bg-white/90 text-black' : 'bg-black/80 text-white'}`}>
-                        {logo === 'culture-media' ? 'CULTURE MEDIA' : 'CMN'}
+                        {logo === 'culture-media' ? 'A FOLUKU TV' : 'AFOLUKUTV'}
                       </span>
                     </div>
                   )}
@@ -651,9 +651,9 @@ const hex2rgbStr = (hex, opacity = 1) => {
                   onChange={(e) => setLogo(e.target.value)} 
                   className="w-full bg-[#18153a] border border-[#2d295a] text-white rounded-xl p-3 outline-none focus:border-blue-500"
                 >
-                  <option value="culture-media">CULTURE MEDIA</option>
-                  <option value="cmn-white">CMN (Blanc)</option>
-                  <option value="cmn-black">CMN (Noir)</option>
+                  <option value="culture-media">A FOLUKU TV</option>
+                  <option value="cmn-white">AFOLUKUTV (Blanc)</option>
+                  <option value="cmn-black">AFOLUKUTV (Noir)</option>
                   <option value="none">Aucun</option>
                 </select>
               </div>

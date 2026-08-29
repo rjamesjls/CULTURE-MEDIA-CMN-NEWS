@@ -9,7 +9,7 @@ export async function generateMetadata({ params }) {
   const resolvedParams = await params;
   const lang = resolvedParams.lang;
   return {
-    title: 'Faits Divers - Culture Média News',
+    title: 'Faits Divers - A FOLUKU TV',
     alternates: {
       canonical: `/${lang}/faits-divers`,
       languages: {

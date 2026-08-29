@@ -14,7 +14,7 @@ export async function generateMetadata({ params }) {
   if (!magazine) return { title: 'Magazine Introuvable' };
 
   return {
-    title: `${magazine.title} | Culture Media News`,
+    title: `${magazine.title} | A FOLUKU TV`,
     description: magazine.description,
   };
 }

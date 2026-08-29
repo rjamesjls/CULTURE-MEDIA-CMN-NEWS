@@ -11,7 +11,7 @@ export async function generateMetadata({ params, searchParams }) {
   const resolvedSearchParams = await searchParams;
   const catSlug = resolvedSearchParams.cat;
 
-  let title = 'Catégorie - Culture Média News';
+  let title = 'Catégorie - A FOLUKU TV';
 
   if (catSlug) {
     const { data: category } = await supabase
@@ -20,7 +20,7 @@ export async function generateMetadata({ params, searchParams }) {
       .eq('slug', catSlug)
       .single();
     if (category) {
-      title = `${category.name} - Culture Média News`;
+      title = `${category.name} - A FOLUKU TV`;
     }
   }
 

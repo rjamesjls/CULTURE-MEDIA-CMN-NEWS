@@ -48,6 +48,7 @@ export default function YouTubeChartsClient() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [isLoadingNotifs, setIsLoadingNotifs] = useState(true);
   const [shortGeneratorModal, setShortGeneratorModal] = useState({ isOpen: false, video: null });
+  const [previewVideo, setPreviewVideo] = useState(null);
   
   const [activeTab, setActiveTab] = useState('clips'); // 'clips' ou 'channels'
   
@@ -330,7 +331,7 @@ export default function YouTubeChartsClient() {
         logoVersion: 'new',
         logoPosition: 'top-center',
         highlightColor: '#FBBF24',
-        footerText: 'CULTURE MEDIA',
+        footerText: 'A FOLUKU TV',
         showLive: false,
         socials: { instagram: true, youtube: true, tiktok: false },
         titleSize: 90,
@@ -425,7 +426,7 @@ export default function YouTubeChartsClient() {
         logoType: 'white',
         logoVersion: 'new',
         logoPosition: 'top-center',
-        footerText: 'CULTURE MEDIA'
+        footerText: 'A FOLUKU TV'
       };
 
       localStorage.setItem('youtube_charts_export', JSON.stringify([page]));
@@ -488,6 +489,12 @@ export default function YouTubeChartsClient() {
                 className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${activeTab === 'channels' ? 'bg-blue-600 text-white' : 'bg-[#18153a] text-gray-400 hover:text-white border border-[#2d295a]'}`}
               >
                 Chaînes & Artistes
+              </button>
+              <button 
+                onClick={() => setActiveTab('sorties')}
+                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${activeTab === 'sorties' ? 'bg-blue-600 text-white' : 'bg-[#18153a] text-gray-400 hover:text-white border border-[#2d295a]'}`}
+              >
+                <i className="fas fa-fire mr-2 text-orange-500"></i>Dernières Sorties
               </button>
             </div>
 
@@ -567,6 +574,8 @@ export default function YouTubeChartsClient() {
         </div>
       </div>
         
+        {activeTab !== 'sorties' && (
+          <>
         {/* Dropdowns style mockup */}
         <div className="flex flex-wrap gap-3">
           <div className="flex items-center bg-[#18153a] border border-[#2d295a] rounded-xl overflow-hidden">
@@ -929,6 +938,82 @@ export default function YouTubeChartsClient() {
           )}
         </div>
       </div>
+      </>
+      )}
+
+      {/* SECTION DERNIERES SORTIES */}
+      {activeTab === 'sorties' && (
+        <div className="bg-[#100d23] rounded-3xl border border-[#242145] p-6 mb-8 overflow-hidden">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <i className="fas fa-fire text-orange-500 text-xl"></i>
+              <h2 className="text-xl font-bold text-white">Musiques sorties dans les dernières 48 heures</h2>
+            </div>
+          </div>
+          
+          {isLoadingNotifs ? (
+             <div className="py-12 flex justify-center text-blue-500"><i className="fas fa-spinner fa-spin text-3xl"></i></div>
+          ) : notifications.length === 0 ? (
+             <div className="py-12 text-center text-gray-500 text-base">Aucune sortie récente dans les dernières 48h.</div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {notifications.map((notif, idx) => (
+                <div key={idx} className="bg-[#18153a] hover:bg-[#2d295a]/30 transition-colors p-4 rounded-2xl border border-[#2d295a]/50 group flex flex-col justify-between">
+                  <div className="flex gap-4 mb-4">
+                    <img src={notif.thumbnail} alt="" className="w-28 h-20 object-cover rounded-xl" />
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-base font-bold text-white truncate">{notif.title}</h4>
+                      <p className="text-sm text-purple-400 truncate mt-1">{notif.channelTitle}</p>
+                      <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
+                        <i className="fas fa-clock"></i> 
+                        {new Date(notif.publishedAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-2 mt-2">
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => setPreviewVideo({ id: notif.id, title: notif.title })}
+                        className="flex-1 py-2 rounded-xl bg-[#2d295a]/30 hover:bg-[#2d295a]/60 border border-[#2d295a] text-gray-300 text-xs font-semibold transition-all flex items-center justify-center gap-2"
+                        title="Aperçu"
+                      >
+                        <i className="fas fa-play"></i> Aperçu
+                      </button>
+                      <a 
+                        href={notif.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 text-xs font-semibold transition-all flex items-center justify-center gap-2"
+                        title="Voir sur YouTube"
+                      >
+                        <i className="fab fa-youtube"></i> YouTube
+                      </a>
+                      <button 
+                        onClick={() => {
+                          navigator.clipboard.writeText(notif.link);
+                          alert('Lien copié !');
+                        }}
+                        className="w-10 flex-shrink-0 py-2 rounded-xl bg-[#2d295a]/30 hover:bg-[#2d295a]/60 border border-[#2d295a] text-gray-300 text-xs transition-all flex items-center justify-center"
+                        title="Copier le lien"
+                      >
+                        <i className="fas fa-copy"></i>
+                      </button>
+                    </div>
+                    <button 
+                      onClick={() => {
+                        router.push(`/admin/reels-studio?title=${encodeURIComponent(notif.title)}&artist=${encodeURIComponent(notif.channelTitle)}`);
+                      }}
+                      className="w-full py-2 rounded-xl bg-gradient-to-r from-purple-600/20 to-blue-600/20 hover:from-purple-600/40 hover:to-blue-600/40 border border-purple-500/30 text-purple-300 text-xs font-semibold transition-all flex items-center justify-center gap-2"
+                    >
+                      <i className="fas fa-magic"></i> Créer dans Reels Studio
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Export Sector Selection Modal */}
       {exportModal.isOpen && (
@@ -1011,6 +1096,31 @@ export default function YouTubeChartsClient() {
         video={shortGeneratorModal.video}
         onClose={() => setShortGeneratorModal({ isOpen: false, video: null })}
       />
+
+      {/* Video Preview Modal */}
+      {previewVideo && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setPreviewVideo(null)} />
+          <div className="relative w-full max-w-4xl bg-[#100d23] border border-[#2d295a] rounded-3xl shadow-2xl overflow-hidden flex flex-col mx-4">
+            <div className="p-4 border-b border-[#2d295a] flex items-center justify-between bg-[#18153a]/50">
+              <h3 className="font-bold text-white truncate pr-4">{previewVideo.title}</h3>
+              <button onClick={() => setPreviewVideo(null)} className="w-8 h-8 rounded-full bg-[#2d295a] hover:bg-gray-600 flex items-center justify-center text-white transition-colors flex-shrink-0">
+                <i className="fas fa-times"></i>
+              </button>
+            </div>
+            <div className="aspect-video w-full bg-black">
+              <iframe 
+                src={`https://www.youtube.com/embed/${previewVideo.id}?autoplay=1`} 
+                title="YouTube video player" 
+                frameBorder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                allowFullScreen
+                className="w-full h-full"
+              ></iframe>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
     </>

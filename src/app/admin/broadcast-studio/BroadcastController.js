@@ -54,7 +54,7 @@ export default function BroadcastController() {
 
   const connectOBS = async () => {
     if (!window.cmnOS) {
-      setError("CMN OS Desktop App requise.");
+      setError("AFOLUKUTV OS Desktop App requise.");
       return;
     }
     const res = await window.cmnOS.obsConnect({ url: 'ws://localhost:4455', password: obsPassword });

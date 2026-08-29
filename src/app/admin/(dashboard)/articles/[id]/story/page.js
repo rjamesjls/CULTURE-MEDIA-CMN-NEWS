@@ -335,9 +335,9 @@ export default function StoryGeneratorPage({ params }) {
               )}
             </div>
             
-            {/* Logo CMN en bas */}
+            {/* Logo AFOLUKUTV en bas */}
             <div style={{ position: 'absolute', bottom: '20px', left: 0, right: 0, textAlign: 'center', color: 'rgba(255,255,255,0.7)', fontSize: '12px', fontWeight: 'bold', letterSpacing: '2px' }}>
-              CMN NEWS
+              AFOLUKUTV
             </div>
           </div>
         </div>
@@ -351,7 +351,7 @@ export default function StoryGeneratorPage({ params }) {
             <div style={{ display: 'flex', gap: '8px' }}>
               <button onClick={() => setBgColor('rgba(0,0,0,0.7)')} style={{ width: '30px', height: '30px', borderRadius: '50%', backgroundColor: '#000', border: bgColor === 'rgba(0,0,0,0.7)' ? '2px solid #c026d3' : '2px solid transparent', cursor: 'pointer' }} title="Noir sombre"></button>
               <button onClick={() => setBgColor('rgba(0,0,0,0.3)')} style={{ width: '30px', height: '30px', borderRadius: '50%', backgroundColor: '#555', border: bgColor === 'rgba(0,0,0,0.3)' ? '2px solid #c026d3' : '2px solid transparent', cursor: 'pointer' }} title="Noir léger"></button>
-              <button onClick={() => setBgColor('linear-gradient(to top, rgba(217,119,6,0.9), transparent)')} style={{ width: '30px', height: '30px', borderRadius: '50%', background: 'linear-gradient(to top, #d97706, transparent)', border: bgColor.includes('217') ? '2px solid #c026d3' : '2px solid transparent', cursor: 'pointer' }} title="Dégradé CMN"></button>
+              <button onClick={() => setBgColor('linear-gradient(to top, rgba(217,119,6,0.9), transparent)')} style={{ width: '30px', height: '30px', borderRadius: '50%', background: 'linear-gradient(to top, #d97706, transparent)', border: bgColor.includes('217') ? '2px solid #c026d3' : '2px solid transparent', cursor: 'pointer' }} title="Dégradé AFOLUKUTV"></button>
               <button onClick={() => setBgColor('rgba(192,38,211,0.6)')} style={{ width: '30px', height: '30px', borderRadius: '50%', backgroundColor: '#c026d3', border: bgColor === 'rgba(192,38,211,0.6)' ? '2px solid #000' : '2px solid transparent', cursor: 'pointer' }} title="Violet"></button>
             </div>
           </div>

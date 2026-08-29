@@ -66,7 +66,7 @@ export default async function ArbitrePage(props) {
     <div className="min-h-screen bg-[#0a0a0f]">
       <div className="bg-[#12121A] border-b border-white/10 p-4 sticky top-0 z-50">
          <div className="flex justify-between items-center max-w-lg mx-auto">
-           <img src="/backgrounds/cmn-corner-logo.png" alt="CMN" className="h-6" />
+           <img src="/backgrounds/cmn-corner-logo.png" alt="AFOLUKUTV" className="h-6" />
            <div className="text-xs font-bold text-gray-400 uppercase tracking-widest">Espace Arbitre</div>
          </div>
       </div>

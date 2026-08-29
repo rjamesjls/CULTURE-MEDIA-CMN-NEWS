@@ -1,7 +1,7 @@
 import OmniGeneratorClient from './OmniGeneratorClient';
 
 export const metadata = {
-  title: 'AI Studio | CMN OS',
+  title: 'AI Studio | AFOLUKUTV OS',
 };
 
 export default function AIStudioPage() {

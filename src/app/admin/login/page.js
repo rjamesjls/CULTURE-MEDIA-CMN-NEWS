@@ -46,7 +46,7 @@ export default function LoginPage() {
       <div style={{ backgroundColor: '#fff', padding: '40px', borderRadius: '8px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', width: '100%', maxWidth: '400px' }}>
         
         <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-          <img src="/assets/logo.png" alt="Culture Media News" style={{ height: '40px', margin: '0 auto 20px auto' }} />
+          <img src="/assets/logo.png" alt="A FOLUKU TV" style={{ height: '40px', margin: '0 auto 20px auto' }} />
           <h1 style={{ fontSize: '24px', fontFamily: 'var(--font-heading)', color: '#111827', margin: 0 }}>Espace Administration</h1>
           <p style={{ color: '#6b7280', marginTop: '5px' }}>Connectez-vous pour continuer</p>
         </div>

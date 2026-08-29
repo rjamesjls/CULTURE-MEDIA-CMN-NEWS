@@ -27,7 +27,7 @@ export default async function Header({ lang = 'fr' }) {
           <Link href={`/${lang}`} className="logo-link" style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none' }}>
             <img 
               src="/assets/logo.png" 
-              alt="Culture Média News" 
+              alt="A FOLUKU TV" 
               className="header-logo" 
               style={{ 
                 borderRadius: '50%', 
@@ -60,7 +60,7 @@ export default async function Header({ lang = 'fr' }) {
                 whiteSpace: 'nowrap',
                 opacity: 0.8
               }}>
-                CMN NEWS
+                AFOLUKUTV
               </span>
             </div>
           </Link>

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { getDictionary } from '@/i18n/dictionaries';
 
 export const metadata = {
-  title: 'Dashboard Pro | Culture Média News',
+  title: 'Dashboard Pro | A FOLUKU TV',
 };
 
 export default async function ProDashboardPage({ params }) {
@@ -88,7 +88,7 @@ export default async function ProDashboardPage({ params }) {
                 <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9rem', color: 'var(--color-gray-300)' }}>Type de réservation</label>
                 <select style={{ width: '100%', padding: '10px', backgroundColor: 'var(--color-gray-800)', border: '1px solid var(--color-gray-700)', borderRadius: '6px', color: 'white' }}>
                   <option>Espace Publicitaire (Web)</option>
-                  <option>Table (Événement Culture Média)</option>
+                  <option>Table (Événement A FOLUKU TV)</option>
                   <option>Publireportage (Article)</option>
                 </select>
               </div>

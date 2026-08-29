@@ -4,7 +4,7 @@ import { getUserProfile } from '@/utils/supabase/auth';
 import { redirect } from 'next/navigation';
 
 export const metadata = {
-  title: 'Admin - Culture Média News',
+  title: 'Admin - A FOLUKU TV',
   robots: { index: false, follow: false },
 };
 
@@ -73,7 +73,7 @@ export default async function AdminLayout({ children }) {
       <aside className="admin-sidebar">
         <div className="admin-brand">
           <Link href="/admin">
-            <h3>CMN Admin</h3>
+            <h3>AFOLUKUTV Admin</h3>
           </Link>
         </div>
         <nav className="admin-nav">

@@ -28,9 +28,9 @@ export async function generateMetadata({ params }) {
   const getDesc = () => (lang === 'bsh' && article.hook_bsh) ? article.hook_bsh : article.description;
 
   return {
-    title: `${getTitle()} | Culture Média News`,
+    title: `${getTitle()} | A FOLUKU TV`,
     description: getDesc(),
-    keywords: [categoryName, 'Culture Média News', 'Actualité'],
+    keywords: [categoryName, 'A FOLUKU TV', 'Actualité'],
     alternates: {
       canonical: `/${lang}/article/${slug}`,
       languages: {
@@ -44,7 +44,7 @@ export async function generateMetadata({ params }) {
       url: `/article/${slug}`,
       type: 'article',
       publishedTime: article.pub_date,
-      authors: ['Culture Média News'],
+      authors: ['A FOLUKU TV'],
       section: categoryName,
       images: [
         {
@@ -133,7 +133,7 @@ export default async function ArticlePage({ params }) {
     dateModified: article.updated_at || article.pub_date,
     author: [{
       '@type': 'Organization',
-      name: 'Culture Média News',
+      name: 'A FOLUKU TV',
       url: 'https://www.culturemedia.news'
     }]
   };

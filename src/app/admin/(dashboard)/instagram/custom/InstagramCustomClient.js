@@ -55,7 +55,7 @@ const createDefaultPage = () => ({
   logoVersion: 'new',
   logoPosition: 'top-center',
   highlightColor: '#FBBF24',
-  footerText: 'CULTURE MEDIA',
+  footerText: 'A FOLUKU TV',
   showLive: false,
   socials: { instagram: true, youtube: false, tiktok: false },
   titleSize: 90,
@@ -81,7 +81,7 @@ const ensurePageDefaults = (page) => {
     logoVersion: page.logoVersion ?? 'new',
     logoPosition: page.logoPosition ?? 'top-center',
     highlightColor: page.highlightColor ?? '#FBBF24',
-    footerText: page.footerText ?? 'CULTURE MEDIA',
+    footerText: page.footerText ?? 'A FOLUKU TV',
     titleSize: page.titleSize ?? 90,
     contentSize: page.contentSize ?? 42,
     tagSize: page.tagSize ?? 28,
@@ -470,7 +470,7 @@ Découvrez la suite sur notre site ! 🔗 Lien en bio ou en story.
           
           <div style={{ position: 'relative', zIndex: 10, width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '80px', boxSizing: 'border-box' }}>
             <div style={getLogoContainerStyle(logoPosition)}>
-              <img src={logoSrc} alt="CMN" style={{ height: '80px', filter: logoType === 'black' ? 'none' : 'drop-shadow(0 4px 10px rgba(0,0,0,0.5))' }} />
+              <img src={logoSrc} alt="AFOLUKUTV" style={{ height: '80px', filter: logoType === 'black' ? 'none' : 'drop-shadow(0 4px 10px rgba(0,0,0,0.5))' }} />
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '40px' }}>
@@ -532,7 +532,7 @@ Découvrez la suite sur notre site ! 🔗 Lien en bio ou en story.
             {/* Top Logo & Presenter Bar */}
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
               <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '16px', fontWeight: '800', letterSpacing: '4px', textTransform: 'uppercase' }}>PRESENT</span>
-              <img src={logoSrc} alt="CMN" style={{ height: '45px', filter: 'drop-shadow(0 4px 10px rgba(236,72,153,0.6))' }} />
+              <img src={logoSrc} alt="AFOLUKUTV" style={{ height: '45px', filter: 'drop-shadow(0 4px 10px rgba(236,72,153,0.6))' }} />
               <span style={{ color: '#F472B6', fontSize: '22px', fontWeight: '900', letterSpacing: '2px' }}>2026</span>
             </div>
 
@@ -639,7 +639,7 @@ Découvrez la suite sur notre site ! 🔗 Lien en bio ou en story.
             
             {/* Header / Logo Bar */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-              <img src={logoSrc} alt="CMN" style={{ height: '55px', filter: 'drop-shadow(0 4px 15px rgba(56,189,248,0.5))' }} />
+              <img src={logoSrc} alt="AFOLUKUTV" style={{ height: '55px', filter: 'drop-shadow(0 4px 15px rgba(56,189,248,0.5))' }} />
               {tag && (
                 <span style={{ 
                   background: 'linear-gradient(135deg, #0EA5E9 0%, #0284C7 100%)', 
@@ -727,7 +727,7 @@ Découvrez la suite sur notre site ! 🔗 Lien en bio ou en story.
                 <div style={{ color: '#F59E0B', fontSize: '14px', fontWeight: '700', marginTop: '2px' }}>Duy nhất 50 vé VIP giao lưu cùng diễn giả</div>
               </div>
               <div style={{ background: 'rgba(56,189,248,0.15)', color: '#38BDF8', padding: '10px 22px', borderRadius: '30px', fontSize: '15px', fontWeight: '800', border: '1px solid #38BDF8' }}>
-                {partnerText || 'CULTURE MEDIA 4.0'}
+                {partnerText || 'A FOLUKU TV 4.0'}
               </div>
             </div>
           </div>
@@ -760,7 +760,7 @@ Découvrez la suite sur notre site ! 🔗 Lien en bio ou en story.
             
             {/* Corporate Logo Header */}
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '30px', marginBottom: '35px' }}>
-              <img src={logoSrc} alt="CMN" style={{ height: '45px' }} />
+              <img src={logoSrc} alt="AFOLUKUTV" style={{ height: '45px' }} />
               <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '20px' }}>|</span>
               <span style={{ color: '#FFF', fontWeight: '800', fontSize: '18px', letterSpacing: '2px' }}>BLOCKDEV • UPH</span>
             </div>
@@ -856,7 +856,7 @@ Découvrez la suite sur notre site ! 🔗 Lien en bio ou en story.
             
             {/* Header Logo & Event Badge */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '35px' }}>
-              <img src={logoSrc} alt="CMN" style={{ height: '55px' }} />
+              <img src={logoSrc} alt="AFOLUKUTV" style={{ height: '55px' }} />
               <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '15px', fontWeight: '800', letterSpacing: '2px', textTransform: 'uppercase' }}>
                 BUILDUP COHORT 1
               </div>
@@ -953,7 +953,7 @@ Découvrez la suite sur notre site ! 🔗 Lien en bio ou en story.
             
             {/* Header / Partner Strip */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-              <img src={logoSrc} alt="CMN" style={{ height: '50px', filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.8))' }} />
+              <img src={logoSrc} alt="AFOLUKUTV" style={{ height: '50px', filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.8))' }} />
               {tag && (
                 <span style={{ 
                   background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)', 
@@ -1118,7 +1118,7 @@ Découvrez la suite sur notre site ! 🔗 Lien en bio ou en story.
 
             {/* Footer */}
             <div style={{ borderTop: '1px solid rgba(245,158,11,0.2)', paddingTop: '15px', marginTop: '15px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ color: '#FBBF24', fontSize: '18px', fontWeight: '800', letterSpacing: '3px' }}>{footerText || 'CULTURE MEDIA'}</div>
+              <div style={{ color: '#FBBF24', fontSize: '18px', fontWeight: '800', letterSpacing: '3px' }}>{footerText || 'A FOLUKU TV'}</div>
               <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px', fontWeight: '600' }}>{partnerText || 'STATISTIQUES OFFICIELLES'}</div>
             </div>
           </div>
@@ -1146,7 +1146,7 @@ Découvrez la suite sur notre site ! 🔗 Lien en bio ou en story.
                 {partnerText}
               </div>
               <div style={{ color: '#FFF', fontSize: '38px', fontWeight: '900', letterSpacing: '2px', textShadow: '0 4px 20px rgba(0,0,0,0.8)' }}>
-                CMN NEWS
+                AFOLUKUTV
               </div>
             </div>
 
@@ -1195,7 +1195,7 @@ Découvrez la suite sur notre site ! 🔗 Lien en bio ou en story.
           
           <div style={{ position: 'relative', zIndex: 10, width: '100%', height: '100%', display: 'flex', flexDirection: 'column', padding: '100px 80px', boxSizing: 'border-box' }}>
             <div style={getLogoContainerStyle(logoPosition)}>
-              <img src={logoSrc} alt="CMN" style={{ height: '80px', filter: logoType === 'black' ? 'none' : 'drop-shadow(0 4px 10px rgba(0,0,0,0.5))' }} />
+              <img src={logoSrc} alt="AFOLUKUTV" style={{ height: '80px', filter: logoType === 'black' ? 'none' : 'drop-shadow(0 4px 10px rgba(0,0,0,0.5))' }} />
             </div>
             
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
@@ -1237,7 +1237,7 @@ Découvrez la suite sur notre site ! 🔗 Lien en bio ou en story.
             {/* Header with Logo & Tag */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                <img src={logoSrc} alt="CMN" style={{ height: '55px', filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.6))' }} />
+                <img src={logoSrc} alt="AFOLUKUTV" style={{ height: '55px', filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.6))' }} />
               </div>
               {tag && (
                 <span style={{ 
@@ -1463,7 +1463,7 @@ Découvrez la suite sur notre site ! 🔗 Lien en bio ou en story.
 
             {/* Footer */}
             <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '18px', marginTop: '18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '19px', fontWeight: '700', letterSpacing: '3px' }}>{footerText || 'CULTURE MEDIA'}</div>
+              <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '19px', fontWeight: '700', letterSpacing: '3px' }}>{footerText || 'A FOLUKU TV'}</div>
               <div style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.6)', padding: '5px 15px', borderRadius: '15px', fontSize: '15px', fontWeight: '600' }}>
                 {partnerText || 'STATISTIQUES OFFICIELLES'}
               </div>
@@ -1708,7 +1708,7 @@ Découvrez la suite sur notre site ! 🔗 Lien en bio ou en story.
                 <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '8px', fontSize: '14px' }}>Version du Logo</label>
                 <select value={activePage.logoVersion || 'new'} onChange={e => updateActivePage('logoVersion', e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #E2E8F0', marginBottom: '10px' }}>
                   <option value="new">Nouveau Logo (AFOLUKU)</option>
-                  <option value="old">Ancien Logo (Culture Media)</option>
+                  <option value="old">Ancien Logo (A FOLUKU TV)</option>
                 </select>
                 
                 <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '8px', fontSize: '14px' }}>Position du Logo</label>

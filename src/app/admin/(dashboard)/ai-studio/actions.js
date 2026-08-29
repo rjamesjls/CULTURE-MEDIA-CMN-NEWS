@@ -25,7 +25,7 @@ export async function translateArticle(frenchTitle, frenchDescription, frenchCon
   // Format dictionary
   const dictContext = dictionary?.map(d => `- Le mot "${d.source_term}" se traduit par "${d.translated_term}" (Contexte: ${d.context || 'Aucun'})`).join('\n') || 'Aucun terme spécifique.';
 
-  const prompt = `Tu es un journaliste et traducteur expert travaillant pour Culture Média CMN NEWS.
+  const prompt = `Tu es un journaliste et traducteur expert travaillant pour A FOLUKU TV.
 Ta mission est de traduire un article journalistique du Français vers le ${targetLanguage}.
 
 Voici les règles éditoriales (Knowledge Brain) que tu DOIS ABSOLUMENT respecter :

@@ -10,7 +10,7 @@ export async function generateMetadata({ params }) {
   if (!company) return { title: 'Entreprise introuvable' };
   
   return {
-    title: `${company.name} - Annuaire PRO Culture Média News`,
+    title: `${company.name} - Annuaire PRO A FOLUKU TV`,
     description: company.description,
   };
 }

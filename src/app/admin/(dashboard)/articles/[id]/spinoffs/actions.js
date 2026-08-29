@@ -210,7 +210,7 @@ export async function publishToFacebook(articleId, text) {
     .single();
 
   // Replace [LIEN_ARTICLE] or [LIEN ICI] with real URL
-  const articleUrl = article?.slug ? `https://www.cmn-news.com/article/${article.slug}` : `https://www.cmn-news.com/article/${articleId}`;
+  const articleUrl = article?.slug ? `https://www.afolukutv.com/article/${article.slug}` : `https://www.afolukutv.com/article/${articleId}`;
   const finalMessage = text.replace(/\[(LIEN_ARTICLE|LIEN ICI)\]/gi, articleUrl);
 
   try {

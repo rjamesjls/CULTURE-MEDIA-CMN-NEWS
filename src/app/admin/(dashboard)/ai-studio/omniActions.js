@@ -17,7 +17,7 @@ export async function generateOmniArticle(conversationHistoryStr) {
     const rules = await getKnowledgeRules().catch(() => []);
     const rulesContext = rules?.map(r => `- [${r.category}] ${r.title}: ${r.content}`).join('\n') || 'Aucune règle spécifique.';
 
-    const systemPrompt = `Tu es un rédacteur en chef IA de Culture Média. Ta mission est de rédiger un article journalistique complet à partir d'une brève instruction.
+    const systemPrompt = `Tu es un rédacteur en chef IA de A FOLUKU TV. Ta mission est de rédiger un article journalistique complet à partir d'une brève instruction.
     
 Règles éditoriales du média :
 ${rulesContext}

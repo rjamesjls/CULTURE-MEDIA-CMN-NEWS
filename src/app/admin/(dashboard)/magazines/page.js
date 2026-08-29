@@ -5,7 +5,7 @@ import Link from 'next/link';
 import MagazineList from './MagazineList';
 
 export const metadata = {
-  title: 'Magazines | Admin - Culture Media News',
+  title: 'Magazines | Admin - A FOLUKU TV',
 };
 
 export default async function AdminMagazinesPage() {

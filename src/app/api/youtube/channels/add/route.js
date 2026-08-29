@@ -104,7 +104,7 @@ export async function POST(request) {
 
   } catch (error) {
     console.error('Erreur ajout youtube channel:', error);
-    require('fs').writeFileSync('/Users/studiojls/.gemini/antigravity/scratch/CULTURE MEDIA/add_error.log', error.stack || error.message);
+    require('fs').writeFileSync('/Users/studiojls/.gemini/antigravity/scratch/A FOLUKU TV/add_error.log', error.stack || error.message);
     return NextResponse.json({ error: 'Erreur interne du serveur', details: error.message }, { status: 500 });
   }
 }

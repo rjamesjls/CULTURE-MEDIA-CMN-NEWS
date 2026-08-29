@@ -131,7 +131,7 @@ export default function NewsletterPopup() {
             Restez toujours informés !
           </h2>
           <p style={{ margin: 0, color: '#4b5563', fontSize: '15px', lineHeight: '1.5' }}>
-            Abonnez-vous à notre newsletter pour recevoir les dernières actualités et contenus exclusifs de Culture Media directement dans votre boîte mail.
+            Abonnez-vous à notre newsletter pour recevoir les dernières actualités et contenus exclusifs de A FOLUKU TV directement dans votre boîte mail.
           </p>
         </div>
 

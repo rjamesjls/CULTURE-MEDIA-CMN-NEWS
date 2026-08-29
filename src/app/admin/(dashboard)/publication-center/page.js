@@ -2,7 +2,7 @@ import { createClient } from '@/utils/supabase/server';
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Publication Center | CMN OS',
+  title: 'Publication Center | AFOLUKUTV OS',
 };
 
 export const revalidate = 0;
