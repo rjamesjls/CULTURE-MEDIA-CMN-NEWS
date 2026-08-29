@@ -77,7 +77,7 @@ export default async function MagazineReaderPage({ params }) {
       </div>
 
       {/* Hero Section */}
-      <div style={{ position: 'relative', width: '100%', height: '100vh', display: 'flex', alignItems: 'flex-end', paddingBottom: '10vh' }}>
+      <div style={{ position: 'relative', width: '100%', height: '100vh', display: 'flex', alignItems: 'flex-end', paddingBottom: '10vh', overflow: 'hidden' }}>
         {/* Image Background */}
         <div style={{ 
           position: 'absolute', 
@@ -86,6 +86,8 @@ export default async function MagazineReaderPage({ params }) {
           backgroundSize: 'cover', 
           backgroundPosition: 'top center',
           backgroundAttachment: 'fixed',
+          filter: 'blur(20px)',
+          transform: 'scale(1.1)',
           zIndex: 0
         }}></div>
         
