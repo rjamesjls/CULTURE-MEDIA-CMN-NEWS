@@ -10,5 +10,11 @@ export default function PublicOnly({ children }) {
     return null;
   }
   
+  // Masquer le header et footer sur les pages de lecture de Web Magazine (pour une immersion totale)
+  // Le chemin ressemble à /fr/magazine/slug-de-l-article
+  if (pathname && pathname.match(/\/[a-z]{2,3}\/magazine\/.+/)) {
+    return null;
+  }
+  
   return children;
 }

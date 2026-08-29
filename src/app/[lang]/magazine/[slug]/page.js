@@ -244,6 +244,18 @@ export default async function MagazineReaderPage({ params }) {
         .mag-content a:hover {
           color: #c026d3;
         }
+
+        /* Surcharge forte pour écraser les styles en ligne (WYSIWYG) qui mettraient le texte en noir */
+        .mag-content * {
+          color: inherit !important;
+          background-color: transparent !important;
+          font-family: inherit !important;
+        }
+        
+        .mag-content b, .mag-content strong {
+          color: #ffffff !important;
+          font-weight: bold !important;
+        }
       `}} />
     </div>
   );
