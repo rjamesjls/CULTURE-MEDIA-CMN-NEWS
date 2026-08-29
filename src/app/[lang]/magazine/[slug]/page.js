@@ -51,28 +51,25 @@ export default async function MagazineReaderPage({ params }) {
   return (
     <div className="magazine-reader" style={{ backgroundColor: '#020617', minHeight: '100vh', color: '#f8fafc', overflowX: 'hidden' }}>
       
-      {/* Bouton Retour Fixe */}
+      {/* Bouton Retour Discret */}
       <div style={{ position: 'fixed', top: '20px', left: '20px', zIndex: 100 }}>
         <Link href={`/${lang}/magazine`} className="mag-back-btn" style={{ 
-          display: 'inline-flex', 
+          display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'center',
-          gap: '8px', 
+          width: '40px',
+          height: '40px',
           color: '#ffffff', 
           textDecoration: 'none', 
-          textTransform: 'uppercase', 
-          fontSize: '0.8rem', 
-          letterSpacing: '2px', 
-          fontWeight: 'bold', 
-          background: 'rgba(2, 6, 23, 0.6)',
+          background: 'rgba(2, 6, 23, 0.4)',
           backdropFilter: 'blur(10px)',
           border: '1px solid rgba(255,255,255,0.1)', 
-          padding: '10px 20px', 
-          borderRadius: '30px',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+          borderRadius: '50%',
+          boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
+          opacity: 0.5,
           transition: 'all 0.3s ease'
         }}>
-          <i className="fas fa-arrow-left"></i> Retour
+          <i className="fas fa-arrow-left"></i>
         </Link>
       </div>
 

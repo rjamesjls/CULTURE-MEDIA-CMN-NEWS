@@ -2561,6 +2561,12 @@ body.theme-alternate .reading-progress {
   background: rgba(255,255,255,0.1) !important;
 }
 
+.mag-back-btn:hover {
+  opacity: 1 !important;
+  background: rgba(2, 6, 23, 0.8) !important;
+  transform: scale(1.1);
+}
+
 @media (max-width: 768px) {
   .magazines-grid {
     grid-template-columns: repeat(2, 1fr);
