@@ -157,11 +157,10 @@ export default async function MagazineReaderPage({ params }) {
           background-color: rgba(255,255,255,0.1);
           color: #ffffff !important;
         }
-        
         .mag-content {
-          font-family: 'Georgia', serif;
-          font-size: 1.25rem;
-          line-height: 2;
+          font-family: var(--font-body);
+          font-size: 1.15rem;
+          line-height: 1.9;
           color: #cbd5e1;
         }
 
