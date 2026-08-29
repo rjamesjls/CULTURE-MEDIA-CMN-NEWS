@@ -66,7 +66,7 @@ export default async function RootLayout({ children }) {
         {/* Scripts globaux */}
         <script src="/js/main.js" defer></script>
         <script src="/js/carousel.js" defer></script>
-        <script src="/js/theme-switcher.js" defer></script>
+        {/* <script src="/js/theme-switcher.js" defer></script> */}
       </body>
     </html>
   );
