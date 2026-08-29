@@ -11,7 +11,7 @@ export default async function AdminArticles() {
 
   let query = supabase
     .from('articles')
-    .select('id, title, category, pub_date, slug, image_url, user_id, content, status, author')
+    .select('id, title, category, pub_date, slug, image_url, user_id, content, status, author, views_count')
     .order('pub_date', { ascending: false });
 
   if (profile && profile.role === 'author') {

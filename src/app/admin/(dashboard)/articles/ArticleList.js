@@ -145,6 +145,7 @@ export default function ArticleList({ initialArticles, categories }) {
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <span style={{ fontSize: '12px', color: '#6b7280' }}>{article.pub_date ? new Date(article.pub_date).toLocaleDateString('fr-FR') : 'Date inconnue'}</span>
                     <span style={{ fontSize: '11px', color: '#9ca3af' }}>{article.author}</span>
+                    <span style={{ fontSize: '11px', color: '#10b981', marginTop: '4px', fontWeight: '600' }}><i className="fas fa-eye"></i> {article.views_count || 0}</span>
                   </div>
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <Link 
@@ -194,6 +195,7 @@ export default function ArticleList({ initialArticles, categories }) {
                 <th>Titre</th>
                 <th>Statut</th>
                 <th>Auteur</th>
+                <th>Vues</th>
                 <th>Date de pub.</th>
                 <th style={{ width: '130px', textAlign: 'right' }}>Actions</th>
               </tr>
@@ -216,6 +218,11 @@ export default function ArticleList({ initialArticles, categories }) {
                     )}
                   </td>
                   <td>{article.author}</td>
+                  <td>
+                    <span style={{ color: '#10b981', fontWeight: '600', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <i className="fas fa-eye"></i> {article.views_count || 0}
+                    </span>
+                  </td>
                   <td>{article.pub_date ? new Date(article.pub_date).toLocaleDateString('fr-FR') : 'Date inconnue'}</td>
                   <td>
                     <div className="admin-actions" style={{ justifyContent: 'flex-end', display: 'flex', gap: '5px' }}>
