@@ -129,8 +129,8 @@ export default async function MagazineReaderPage({ params }) {
             </span>
           </div>
 
-          <div style={{ marginBottom: '15px' }}>
-            <img src="/magazine-logo.png" alt="Web Magazine" style={{ height: '50px', width: 'auto', objectFit: 'contain' }} />
+          <div style={{ marginBottom: '0px', marginTop: '-40px' }}>
+            <img src="/magazine-logo.png" alt="Web Magazine" style={{ height: 'auto', width: '400px', maxWidth: '100%', objectFit: 'contain' }} />
           </div>
 
           <h1 style={{ 
