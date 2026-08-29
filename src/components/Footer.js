@@ -64,7 +64,7 @@ export default async function Footer({ lang = 'fr' }) {
               <Link href={`/${lang}/about`} className="footer-link">Qui sommes-nous</Link>
               <Link href={`/${lang}/contact`} className="footer-link">{dict.nav.contact}</Link>
               <Link href={`/${lang}/all-articles`} className="footer-link">Tous les articles</Link>
-              <Link href={`/${lang}/pro`} className="footer-link" style={{ color: 'var(--color-primary)', fontWeight: 'bold' }}>⭐ {dict.nav.pro}</Link>
+              {/* <Link href={`/${lang}/pro`} className="footer-link" style={{ color: 'var(--color-primary)', fontWeight: 'bold' }}>⭐ {dict.nav.pro}</Link> */}
             </div>
           </div>
 
