@@ -121,7 +121,7 @@ export default async function MagazineKioskPage({ params }) {
                       lineHeight: '1.2',
                       color: '#ffffff'
                     }}>
-                      <Link href={`/${lang}/article/${mag.slug}`} style={{ color: 'inherit', textDecoration: 'none' }} className="hover-text-primary">
+                      <Link href={`/${lang}/magazine/${mag.slug}`} style={{ color: 'inherit', textDecoration: 'none' }} className="hover-text-primary">
                         {getTitle(mag)}
                       </Link>
                     </h2>
@@ -135,7 +135,7 @@ export default async function MagazineKioskPage({ params }) {
                     </p>
 
                     <div style={{ marginTop: '20px' }}>
-                      <Link href={`/${lang}/article/${mag.slug}`} style={{ 
+                      <Link href={`/${lang}/magazine/${mag.slug}`} style={{ 
                         display: 'inline-flex',
                         alignItems: 'center',
                         gap: '10px',
