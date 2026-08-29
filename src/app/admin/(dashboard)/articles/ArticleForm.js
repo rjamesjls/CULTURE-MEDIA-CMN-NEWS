@@ -9,6 +9,7 @@ import { translateArticle } from '../ai-studio/actions';
 import SpeechButton from '@/components/SpeechButton';
 import TextToSpeechButton from '@/components/TextToSpeechButton';
 import 'react-quill-new/dist/quill.snow.css';
+import { supabase } from '@/lib/supabase';
 
 const CustomEditor = dynamic(() => import('../../../../components/CustomEditor'), {
   ssr: false,
