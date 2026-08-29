@@ -278,8 +278,8 @@ export default async function MagazineReaderPage({ params }) {
           background-color: transparent !important;
           font-family: inherit !important;
           white-space: normal !important;
-          word-wrap: break-word !important;
-          overflow-wrap: break-word !important;
+          word-break: normal !important;
+          overflow-wrap: normal !important;
           max-width: 100% !important;
         }
         
