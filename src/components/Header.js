@@ -85,7 +85,7 @@ export default async function Header({ lang = 'fr' }) {
               {dict.nav.pro}
             </Link> */}
 
-            {user ? (
+            {/* {user ? (
               <Link href={`/${lang}/profile`} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fff', textDecoration: 'none', fontSize: '14px', fontWeight: '600' }}>
                 <i className="fas fa-user-circle" style={{ fontSize: '18px' }}></i>
                 <span>Profil</span>
@@ -95,7 +95,7 @@ export default async function Header({ lang = 'fr' }) {
                 <i className="fas fa-sign-in-alt"></i>
                 <span>{dict.nav.login}</span>
               </Link>
-            )}
+            )} */}
 
             <SubscribeButton />
             
