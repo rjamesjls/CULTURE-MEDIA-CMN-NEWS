@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-
+import ArticleInteractions from '@/components/ArticleInteractions';
 export const revalidate = 60;
 
 export async function generateMetadata({ params }) {
@@ -164,6 +164,14 @@ export default async function MagazineReaderPage({ params }) {
           {/* Core Content */}
           <div className="mag-content" dangerouslySetInnerHTML={{ __html: getContent() }}></div>
           
+          {/* Section Partage et Interactions */}
+          <div style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+            <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', color: '#ffffff', marginBottom: '20px', textAlign: 'center' }}>
+              Partager cette édition
+            </h3>
+            <ArticleInteractions articleId={article.id} initialLikes={article.likes_count || 0} />
+          </div>
+
         </article>
       </div>
 
