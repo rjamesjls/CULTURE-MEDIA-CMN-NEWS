@@ -218,14 +218,14 @@ export default async function MagazineReaderPage({ params }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '20px' }}>
             <span style={{ 
               padding: '6px 16px', 
-              background: '#c026d3', 
+              background: '#ef4444', 
               color: '#ffffff',
               borderRadius: '20px',
               fontSize: '0.85rem',
               fontWeight: '700',
               textTransform: 'uppercase',
               letterSpacing: '1px',
-              boxShadow: '0 4px 15px rgba(192, 38, 211, 0.4)'
+              boxShadow: '0 4px 15px rgba(239, 68, 68, 0.4)'
             }}>Édition Spéciale</span>
             <span style={{ color: '#94a3b8', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <i className="far fa-calendar-alt"></i> {new Date(article.pub_date).toLocaleDateString(lang === 'bsh' ? 'bs-BA' : 'fr-FR', { month: 'long', year: 'numeric' })}
