@@ -29,6 +29,7 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
   const [description, setDescription] = useState(initialData?.description || '');
   const [imageUrl, setImageUrl] = useState(initialData?.image_url || '');
   const [content, setContent] = useState(initialData?.content || '');
+  const [isSpecialEdition, setIsSpecialEdition] = useState(initialData?.is_special_edition || false);
   
   // Multilingual State (BSH)
   const [currentLang, setCurrentLang] = useState('fr');
@@ -306,6 +307,7 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
       }
 
       formData.append('seo_metadata', JSON.stringify(mergedMetadata));
+      formData.append('is_special_edition', isSpecialEdition);
 
       const status = e.nativeEvent?.submitter?.value || 'published';
       formData.set('status', status);
@@ -708,6 +710,20 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
                     <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '5px' }}>
                       Utilisée pour l'affichage en kiosque et l'en-tête de la page de lecture. 
                       Laissez vide pour réutiliser l'image principale de l'article.
+                    </div>
+                  </div>
+                  <div className="admin-form-group" style={{ marginTop: '15px' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: '500' }}>
+                      <input 
+                        type="checkbox" 
+                        checked={isSpecialEdition}
+                        onChange={(e) => setIsSpecialEdition(e.target.checked)}
+                        style={{ width: '16px', height: '16px', accentColor: '#ef4444' }}
+                      />
+                      <span style={{ color: '#ef4444' }}>Marquer comme "Édition Spéciale"</span>
+                    </label>
+                    <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '5px', paddingLeft: '24px' }}>
+                      Cochez cette case pour afficher un badge rouge "Édition Spéciale" sur la couverture du magazine.
                     </div>
                   </div>
                 </div>

@@ -109,6 +109,8 @@ export async function saveArticle(formData) {
 
   const slug = slugify(title || 'sans-titre', { lower: true, strict: true, locale: 'fr' });
 
+  const isSpecialEdition = formData.get('is_special_edition') === 'true';
+
   const articleData = {
     title,
     description,
@@ -122,6 +124,7 @@ export async function saveArticle(formData) {
     author,
     status,
     seo_metadata,
+    is_special_edition: isSpecialEdition,
   };
 
   if (id) {

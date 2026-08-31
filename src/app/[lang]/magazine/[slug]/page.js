@@ -12,7 +12,7 @@ export async function generateMetadata({ params }) {
 
   const { data: article } = await supabase
     .from('articles')
-    .select('title, title_bsh, description, hook_bsh, image_url')
+    .select('title, title_bsh, description, hook_bsh, image_url, is_special_edition')
     .eq('slug', slug)
     .single();
 
@@ -24,7 +24,7 @@ export async function generateMetadata({ params }) {
   const getDesc = () => (lang === 'bsh' && article.hook_bsh) ? article.hook_bsh : article.description;
 
   return {
-    title: `${getTitle()} | Édition Spéciale`,
+    title: `${getTitle()}${article.is_special_edition ? ' | Édition Spéciale' : ''}`,
     description: getDesc(),
     openGraph: {
       images: [article.image_url || ''],
@@ -216,17 +216,19 @@ export default async function MagazineReaderPage({ params }) {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '20px' }}>
-            <span style={{ 
-              padding: '6px 16px', 
-              background: '#ef4444', 
-              color: '#ffffff',
-              borderRadius: '20px',
-              fontSize: '0.85rem',
-              fontWeight: '700',
-              textTransform: 'uppercase',
-              letterSpacing: '1px',
-              boxShadow: '0 4px 15px rgba(239, 68, 68, 0.4)'
-            }}>Édition Spéciale</span>
+            {article.is_special_edition && (
+              <span style={{ 
+                padding: '6px 16px', 
+                background: '#ef4444', 
+                color: '#ffffff',
+                borderRadius: '20px',
+                fontSize: '0.85rem',
+                fontWeight: '700',
+                textTransform: 'uppercase',
+                letterSpacing: '1px',
+                boxShadow: '0 4px 15px rgba(239, 68, 68, 0.4)'
+              }}>Édition Spéciale</span>
+            )}
             <span style={{ color: '#94a3b8', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <i className="far fa-calendar-alt"></i> {new Date(article.pub_date).toLocaleDateString(lang === 'bsh' ? 'bs-BA' : 'fr-FR', { month: 'long', year: 'numeric' })}
             </span>
