@@ -410,7 +410,7 @@ export default function YouTubeChartsClient() {
       if (filterPeriod === '30_days') mainTitle += ' (MOIS)';
       if (filterPeriod === '7_days') mainTitle += ' (SEMAINE)';
 
-      const sectorLabel = sectors.length === 0 ? 'TOUS SECTEURS'
+      const sectorLabel = sectors.length === 0 ? 'TOUS LES PAYS'
         : sectors.length === 1 ? sectors[0].toUpperCase()
         : sectors.join(' + ').toUpperCase();
 
@@ -583,10 +583,12 @@ export default function YouTubeChartsClient() {
               value={filterSector} onChange={(e) => setFilterSector(e.target.value)}
               className="px-4 py-2.5 text-sm bg-transparent text-gray-300 outline-none hover:text-white cursor-pointer"
             >
-              <option value="all">Tous secteurs</option>
+              <option value="all">Tous les pays</option>
               <option value="Guyane">Guyane</option>
               <option value="Suriname">Suriname</option>
               <option value="Martinique">Martinique</option>
+              <option value="Guadeloupe">Guadeloupe</option>
+              <option value="International">International</option>
             </select>
           </div>
           
@@ -780,7 +782,7 @@ export default function YouTubeChartsClient() {
                 </div>
               )}
               <div>
-                <label className="block text-xs font-medium text-gray-400 mb-2">Secteur</label>
+                <label className="block text-xs font-medium text-gray-400 mb-2">Pays</label>
                 <select 
                   value={sector} onChange={(e) => setSector(e.target.value)}
                   className="w-full px-4 py-3 bg-[#18153a] border border-[#2d295a] rounded-xl text-sm outline-none focus:border-blue-500 transition-colors text-white appearance-none"
