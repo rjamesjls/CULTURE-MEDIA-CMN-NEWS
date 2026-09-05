@@ -62,6 +62,16 @@ export async function POST(request) {
     const ytResponse = await fetch(ytUrl);
     const ytData = await ytResponse.json();
 
+    if (ytData.error) {
+      console.error('YouTube API Error:', ytData.error);
+      const message = ytData.error.message || 'Erreur API YouTube';
+      const isQuota = ytData.error.errors?.[0]?.reason === 'quotaExceeded';
+      return NextResponse.json({ 
+        error: isQuota ? 'Quota API YouTube dépassé pour aujourd\'hui.' : `Erreur YouTube: ${message}`,
+        details: ytData.error 
+      }, { status: 400 });
+    }
+
     if (!ytData.items || ytData.items.length === 0) {
       return NextResponse.json({ error: 'Chaîne introuvable sur YouTube' }, { status: 404 });
     }
