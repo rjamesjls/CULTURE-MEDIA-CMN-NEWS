@@ -31,8 +31,14 @@ export async function POST(request) {
     // Call SocialBlade API to verify existence and get initial stats
     const sbData = await fetchSocialBladeStats(username, platform);
     
+    if (sbData && sbData.error) {
+      return NextResponse.json({ error: sbData.message }, { status: 400 });
+    }
+
     if (!sbData) {
-      return NextResponse.json({ error: 'Créateur introuvable ou erreur API SocialBlade' }, { status: 404 });
+      return NextResponse.json({ 
+        error: 'Le compte n\'a pas été trouvé sur SocialBlade, ou l\'API a bloqué la requête. Vérifiez le pseudo.' 
+      }, { status: 400 });
     }
 
     const totalStats = sbData.total || {};

@@ -9,7 +9,7 @@ export async function fetchSocialBladeStats(query, platform = 'youtube') {
 
   if (!clientId || !token) {
     console.warn("API Social Blade : Clés SOCIALBLADE_CLIENT_ID ou SOCIALBLADE_CLIENT_TOKEN absentes.");
-    return null;
+    return { error: "CLÉS_MANQUANTES", message: "Veuillez configurer SOCIALBLADE_CLIENT_ID et SOCIALBLADE_CLIENT_TOKEN dans Vercel." };
   }
 
   // platform can be 'youtube', 'tiktok', 'instagram'
