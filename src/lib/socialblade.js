@@ -31,14 +31,15 @@ export async function fetchSocialBladeStats(query, platform = 'youtube') {
     });
 
     if (!res.ok) {
-      console.error(`Social Blade API Error (${res.status}):`, await res.text());
-      return null;
+      const errorText = await res.text();
+      console.error(`Social Blade API Error (${res.status}):`, errorText);
+      return { error: 'API_ERROR', status: res.status, message: `SocialBlade a refusé la requête (Code ${res.status}). Vérifiez vos clés d'API (Client ID et Token).` };
     }
 
     const data = await res.json();
     if (!data.status || data.status.error) {
       console.error("Social Blade API returned error status:", data.status);
-      return null;
+      return { error: 'API_ERROR', status: 400, message: data.status?.message || "Erreur interne SocialBlade" };
     }
 
     const daily = data.statistics?.daily || [];

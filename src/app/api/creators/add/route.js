@@ -37,7 +37,7 @@ export async function POST(request) {
 
     if (!sbData) {
       return NextResponse.json({ 
-        error: 'Le compte n\'a pas été trouvé sur SocialBlade, ou l\'API a bloqué la requête. Vérifiez le pseudo.' 
+        error: 'Le compte n\'a pas été trouvé ou erreur inconnue.' 
       }, { status: 400 });
     }
 
