@@ -3,7 +3,7 @@
  * Documentation: https://socialblade.com/v2/docs
  */
 
-export async function fetchSocialBladeChannelStats(channelQuery) {
+export async function fetchSocialBladeStats(query, platform = 'youtube') {
   const clientId = process.env.SOCIALBLADE_CLIENT_ID;
   const token = process.env.SOCIALBLADE_CLIENT_TOKEN;
 
@@ -12,8 +12,15 @@ export async function fetchSocialBladeChannelStats(channelQuery) {
     return null;
   }
 
+  // platform can be 'youtube', 'tiktok', 'instagram'
+  const validPlatforms = ['youtube', 'tiktok', 'instagram'];
+  if (!validPlatforms.includes(platform)) {
+    console.error(`Plateforme SocialBlade non supportée : ${platform}`);
+    return null;
+  }
+
   try {
-    const res = await fetch(`https://socialblade.com/v2/youtube/statistics?query=${encodeURIComponent(channelQuery)}`, {
+    const res = await fetch(`https://socialblade.com/v2/${platform}/statistics?query=${encodeURIComponent(query)}`, {
       method: 'GET',
       headers: {
         'client_id': clientId,
@@ -43,21 +50,23 @@ export async function fetchSocialBladeChannelStats(channelQuery) {
     const last7 = sortedDaily.slice(0, 7);
     const last30 = sortedDaily.slice(0, 30);
 
+    // Some platforms use 'followers' instead of 'subs', but SocialBlade often standardizes 'subs' or we must check.
     const viewsGained7d = last7.reduce((sum, day) => sum + (parseInt(day.views || 0, 10)), 0);
-    const subsGained7d = last7.reduce((sum, day) => sum + (parseInt(day.subs || 0, 10)), 0);
+    const subsGained7d = last7.reduce((sum, day) => sum + (parseInt(day.subs || day.followers || 0, 10)), 0);
 
     const viewsGained30d = last30.reduce((sum, day) => sum + (parseInt(day.views || 0, 10)), 0);
-    const subsGained30d = last30.reduce((sum, day) => sum + (parseInt(day.subs || 0, 10)), 0);
+    const subsGained30d = last30.reduce((sum, day) => sum + (parseInt(day.subs || day.followers || 0, 10)), 0);
 
     return {
       raw: data,
-      channelId: data.id?.channelid,
+      channelId: data.id?.channelid || data.id?.id,
       username: data.id?.username,
       total: data.statistics?.total || {},
       gains: {
         '7_days': { views: Math.max(0, viewsGained7d), subscribers: Math.max(0, subsGained7d) },
         '30_days': { views: Math.max(0, viewsGained30d), subscribers: Math.max(0, subsGained30d) }
       }
+
     };
   } catch (error) {
     console.error("Erreur d'appel API Social Blade:", error);

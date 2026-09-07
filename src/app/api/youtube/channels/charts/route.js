@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
-import { fetchSocialBladeChannelStats } from '@/lib/socialblade';
+import { fetchSocialBladeStats } from '@/lib/socialblade';
 
 export async function GET(request) {
   try {
@@ -40,7 +40,7 @@ export async function GET(request) {
 
       // Si l'API Social Blade est configurée et qu'on demande une période 7j/30j
       if ((period === '7_days' || period === '30_days') && process.env.SOCIALBLADE_CLIENT_ID && process.env.SOCIALBLADE_CLIENT_TOKEN) {
-        const sbData = await fetchSocialBladeChannelStats(channel.channel_id || channel.title);
+        const sbData = await fetchSocialBladeStats(channel.channel_id || channel.title, 'youtube');
         if (sbData && sbData.gains[period]) {
           viewsGained = sbData.gains[period].views;
           subsGained = sbData.gains[period].subscribers;

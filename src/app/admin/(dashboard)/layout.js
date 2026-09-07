@@ -106,6 +106,9 @@ export default async function AdminLayout({ children }) {
           <Link href="/admin/charts" className="admin-nav-link">
             <i className="fas fa-chart-bar"></i> Classements YouTube
           </Link>
+          <Link href="/admin/creators-charts" className="admin-nav-link">
+            <i className="fas fa-users-viewfinder"></i> Classements Créateurs
+          </Link>
           <Link href="/admin/knowledge-brain" className="admin-nav-link" style={{ background: 'linear-gradient(45deg, #059669 0%, #10b981 100%)', color: 'white', fontWeight: 'bold' }}>
             <i className="fas fa-brain"></i> Knowledge Brain
           </Link>
