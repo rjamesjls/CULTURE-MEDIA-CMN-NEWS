@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import Parser from 'rss-parser';
 
-export const revalidate = 1800; // Cache for 30 minutes
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
