@@ -20,7 +20,7 @@ export async function fetchSocialBladeStats(query, platform = 'youtube') {
   }
 
   try {
-    const res = await fetch(`https://socialblade.com/v2/${platform}/statistics?query=${encodeURIComponent(query)}`, {
+    const res = await fetch(`https://matrix.sbapis.com/b/${platform}/statistics?query=${encodeURIComponent(query)}`, {
       method: 'GET',
       headers: {
         'client_id': clientId,
@@ -39,7 +39,12 @@ export async function fetchSocialBladeStats(query, platform = 'youtube') {
     const data = await res.json();
     if (!data.status || data.status.error) {
       console.error("Social Blade API returned error status:", data.status);
-      return { error: 'API_ERROR', status: 400, message: data.status?.message || "Erreur interne SocialBlade" };
+      
+      let msg = data.status?.error || "Erreur interne SocialBlade";
+      if (data.status?.status === 402 || data.status?.error === 'insufficient_credits') {
+        msg = "Votre compte API SocialBlade n'a plus de crédits suffisants (insufficient_credits).";
+      }
+      return { error: 'API_ERROR', status: 400, message: msg };
     }
 
     const daily = data.statistics?.daily || [];
