@@ -11,7 +11,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { action, type, id, sector } = body;
+    const { action, type, id, sector, gender } = body;
 
     if (!action || !type || !id) {
       return NextResponse.json({ error: 'Paramètres manquants' }, { status: 400 });
@@ -41,6 +41,20 @@ export async function POST(request) {
 
       if (error) throw error;
       return NextResponse.json({ success: true, message: 'Secteur mis à jour avec succès' });
+    }
+    
+    if (action === 'update_gender') {
+      if (!gender) {
+        return NextResponse.json({ error: 'Genre manquant pour la mise à jour' }, { status: 400 });
+      }
+
+      const { error } = await supabase
+        .from(tableName)
+        .update({ gender })
+        .eq('id', id);
+
+      if (error) throw error;
+      return NextResponse.json({ success: true, message: 'Genre mis à jour avec succès' });
     }
 
     return NextResponse.json({ error: 'Action invalide' }, { status: 400 });

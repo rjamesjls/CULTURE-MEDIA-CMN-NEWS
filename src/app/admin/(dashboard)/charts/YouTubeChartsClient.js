@@ -250,6 +250,27 @@ export default function YouTubeChartsClient() {
     }
   };
 
+  const handleUpdateGender = async (id, newGender) => {
+    setManagingId(id);
+    try {
+      const res = await fetch('/api/youtube/manage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'update_gender', type: activeTab, id, gender: newGender })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setCharts(prev => prev.map(item => item.id === id ? { ...item, gender: newGender } : item));
+      } else {
+        alert("Erreur lors de la mise à jour: " + data.error);
+      }
+    } catch (error) {
+      alert("Erreur réseau");
+    } finally {
+      setManagingId(null);
+    }
+  };
+
   const handleRunCron = async () => {
     if (!confirm('Forcer la synchronisation avec l\'API YouTube ?')) return;
     try {
@@ -911,7 +932,7 @@ export default function YouTubeChartsClient() {
                     )}
                   </div>
                 </div>
-                <div className="w-1/4 text-center" onClick={e => e.stopPropagation()}>
+                <div className="w-1/3 text-center flex flex-col items-center gap-2" onClick={e => e.stopPropagation()}>
                   <select 
                     value={item.sector}
                     onChange={(e) => handleUpdateSector(item.id, e.target.value)}
@@ -923,6 +944,17 @@ export default function YouTubeChartsClient() {
                     <option value="Martinique" className="bg-[#18153a]">Martinique</option>
                     <option value="Guadeloupe" className="bg-[#18153a]">Guadeloupe</option>
                     <option value="International" className="bg-[#18153a]">International</option>
+                  </select>
+                  <select 
+                    value={item.gender || 'Non spécifié'}
+                    onChange={(e) => handleUpdateGender(item.id, e.target.value)}
+                    disabled={managingId === item.id}
+                    className="bg-transparent border border-[#2d295a] rounded-lg px-2 py-1 text-xs text-gray-400 outline-none hover:text-white cursor-pointer disabled:opacity-50"
+                  >
+                    <option value="Non spécifié" className="bg-[#18153a]">Non spécifié</option>
+                    <option value="Masculin" className="bg-[#18153a]">Masculin</option>
+                    <option value="Féminin" className="bg-[#18153a]">Féminin</option>
+                    <option value="Mixte/Groupe" className="bg-[#18153a]">Mixte / Groupe</option>
                   </select>
                 </div>
                 <div className="w-1/4 text-right pr-4">
