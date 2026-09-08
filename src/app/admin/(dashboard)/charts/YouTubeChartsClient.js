@@ -32,6 +32,7 @@ export default function YouTubeChartsClient() {
   const [url, setUrl] = useState('');
   const [artistName, setArtistName] = useState('');
   const [sector, setSector] = useState('Guyane');
+  const [gender, setGender] = useState('Non spécifié');
   const [isAdding, setIsAdding] = useState(false);
   const [addProgress, setAddProgress] = useState(null); // { current: 1, total: 5, success: 4, errors: [] }
   const [managingId, setManagingId] = useState(null); // ID of the item being updated or deleted
@@ -54,6 +55,7 @@ export default function YouTubeChartsClient() {
   
   // Filtres d'affichage
   const [filterSector, setFilterSector] = useState('all');
+  const [filterGender, setFilterGender] = useState('all');
   const [filterPeriod, setFilterPeriod] = useState('all_time');
   const [sortBy, setSortBy] = useState('views'); // Pour clips: views/likes, Pour chaînes: views/subscribers
   const [exportModal, setExportModal] = useState({ isOpen: false, isLoading: false, sectors: [] });
@@ -62,7 +64,7 @@ export default function YouTubeChartsClient() {
     setIsLoading(true);
     try {
       const endpoint = activeTab === 'clips' ? '/api/youtube/charts' : '/api/youtube/channels/charts';
-      const res = await fetch(`${endpoint}?period=${filterPeriod}&sector=${filterSector}&sort=${sortBy}`);
+      const res = await fetch(`${endpoint}?period=${filterPeriod}&sector=${filterSector}&gender=${filterGender}&sort=${sortBy}`);
       const data = await res.json();
       // API clips returns { charts: [...] }, API channels returns { success: true, data: [...] }
       const results = data.charts || data.data || [];
@@ -79,11 +81,13 @@ export default function YouTubeChartsClient() {
     if (typeof window !== 'undefined') {
       const savedPeriod = localStorage.getItem('yt_filterPeriod');
       const savedSector = localStorage.getItem('yt_filterSector');
+      const savedGender = localStorage.getItem('yt_filterGender');
       const savedSort = localStorage.getItem('yt_sortBy');
       const savedTab = localStorage.getItem('yt_activeTab');
       
       if (savedPeriod) setFilterPeriod(savedPeriod);
       if (savedSector) setFilterSector(savedSector);
+      if (savedGender) setFilterGender(savedGender);
       if (savedSort) setSortBy(savedSort);
       if (savedTab) setActiveTab(savedTab);
     }
@@ -107,11 +111,12 @@ export default function YouTubeChartsClient() {
     if (typeof window !== 'undefined') {
       localStorage.setItem('yt_filterPeriod', filterPeriod);
       localStorage.setItem('yt_filterSector', filterSector);
+      localStorage.setItem('yt_filterGender', filterGender);
       localStorage.setItem('yt_sortBy', sortBy);
       localStorage.setItem('yt_activeTab', activeTab);
     }
     fetchCharts();
-  }, [filterPeriod, filterSector, sortBy, activeTab]);
+  }, [filterPeriod, filterSector, filterGender, sortBy, activeTab]);
 
   const handleAdd = async (e) => {
     e.preventDefault();
@@ -136,8 +141,8 @@ export default function YouTubeChartsClient() {
       
       try {
         const bodyPayload = activeTab === 'clips' 
-          ? { url: currentLink, sector, artistName: links.length === 1 ? artistName : '' } 
-          : { input: currentLink, sector };
+          ? { url: currentLink, sector, gender, artistName: links.length === 1 ? artistName : '' } 
+          : { input: currentLink, sector, gender };
           
         const res = await fetch(endpoint, {
           method: 'POST',
@@ -594,6 +599,19 @@ export default function YouTubeChartsClient() {
           
           <div className="flex items-center bg-[#18153a] border border-[#2d295a] rounded-xl overflow-hidden">
             <select 
+              value={filterGender} onChange={(e) => setFilterGender(e.target.value)}
+              className="px-4 py-2.5 text-sm bg-transparent text-gray-300 outline-none hover:text-white cursor-pointer"
+            >
+              <option value="all">Tous les genres</option>
+              <option value="Masculin">Masculin</option>
+              <option value="Féminin">Féminin</option>
+              <option value="Mixte/Groupe">Mixte / Groupe</option>
+              <option value="Non spécifié">Non spécifié</option>
+            </select>
+          </div>
+          
+          <div className="flex items-center bg-[#18153a] border border-[#2d295a] rounded-xl overflow-hidden">
+            <select 
               value={filterPeriod} onChange={(e) => setFilterPeriod(e.target.value)}
               className="px-4 py-2.5 text-sm bg-transparent text-gray-300 outline-none hover:text-white cursor-pointer"
             >
@@ -792,6 +810,18 @@ export default function YouTubeChartsClient() {
                   <option value="Martinique">Martinique</option>
                   <option value="Guadeloupe">Guadeloupe</option>
                   <option value="International">International</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-400 mb-2">Genre de l'artiste</label>
+                <select 
+                  value={gender} onChange={(e) => setGender(e.target.value)}
+                  className="w-full px-4 py-3 bg-[#18153a] border border-[#2d295a] rounded-xl text-sm outline-none focus:border-blue-500 transition-colors text-white appearance-none"
+                >
+                  <option value="Non spécifié">Non spécifié</option>
+                  <option value="Masculin">Masculin</option>
+                  <option value="Féminin">Féminin</option>
+                  <option value="Mixte/Groupe">Mixte / Groupe</option>
                 </select>
               </div>
               <button 

@@ -39,7 +39,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 
-    const { input, sector } = await request.json();
+    const { input, sector, gender } = await request.json();
 
     if (!input || !sector) {
       return NextResponse.json({ error: 'L\'URL/Handle de la chaîne et le secteur sont requis' }, { status: 400 });
@@ -91,6 +91,7 @@ export async function POST(request) {
         channel_id: channelId,
         title: snippet.title,
         sector: sector,
+        gender: gender || null,
         thumbnail_url: thumbnail
       }, { onConflict: 'channel_id' })
       .select()

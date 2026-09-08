@@ -8,6 +8,7 @@ export async function GET(request) {
     
     const { searchParams } = new URL(request.url);
     const sector = searchParams.get('sector') || 'all';
+    const gender = searchParams.get('gender') || 'all';
     const period = searchParams.get('period') || 'all_time';
     const sortBy = searchParams.get('sort') || searchParams.get('sortBy') || 'views';
 
@@ -22,6 +23,10 @@ export async function GET(request) {
 
     if (sector !== 'all') {
       query = query.eq('sector', sector);
+    }
+    
+    if (gender !== 'all') {
+      query = query.eq('gender', gender);
     }
 
     const { data: videos, error } = await query;
