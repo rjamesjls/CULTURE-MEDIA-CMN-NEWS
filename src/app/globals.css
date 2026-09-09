@@ -1527,7 +1527,27 @@ textarea.input {
 }
 
 .article-body p {
+    margin-bottom: 1.2em;
+}
+
+.article-body p:last-child {
     margin-bottom: 0;
+}
+
+.article-body ul {
+    list-style-type: disc;
+    padding-left: 1.5em;
+    margin-bottom: 1.2em;
+}
+
+.article-body ol {
+    list-style-type: decimal;
+    padding-left: 1.5em;
+    margin-bottom: 1.2em;
+}
+
+.article-body li {
+    margin-bottom: 0.5em;
 }
 
 .article-body strong {
