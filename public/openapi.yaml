@@ -1,0 +1,96 @@
+openapi: 3.1.0
+info:
+  title: A FOLUKU TV Editorial API
+  description: API to manage articles and drafts on A FOLUKU TV.
+  version: 1.0.0
+servers:
+  - url: https://www.afolukutv.com/api/gpt
+    description: Production API
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: http
+      scheme: bearer
+security:
+  - ApiKeyAuth: []
+paths:
+  /articles:
+    get:
+      operationId: listArticles
+      summary: Retrieves a list of articles.
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [draft, published]
+          description: Filter articles by status (draft or published)
+      responses:
+        '200':
+          description: A list of articles
+    post:
+      operationId: createArticle
+      summary: Creates a new article (draft by default)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+                - content
+                - category_id
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                content:
+                  type: string
+                category_id:
+                  type: string
+                image_url:
+                  type: string
+                seo_title:
+                  type: string
+                seo_description:
+                  type: string
+                slug:
+                  type: string
+                status:
+                  type: string
+                  enum: [draft, published]
+                  default: draft
+      responses:
+        '200':
+          description: Article successfully created
+  /articles/status:
+    patch:
+      operationId: updateArticleStatus
+      summary: Update the status of an article (publish, draft, unpublish, delete)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - article_id
+                - action
+              properties:
+                article_id:
+                  type: string
+                action:
+                  type: string
+                  enum: [publish, draft, unpublish, delete]
+      responses:
+        '200':
+          description: Article status updated
+  /categories:
+    get:
+      operationId: listCategories
+      summary: Get the list of categories and their IDs to use when creating an article
+      responses:
+        '200':
+          description: A list of categories
