@@ -22,7 +22,7 @@ export async function GET(request) {
   try {
     let query = supabase
       .from('articles')
-      .select('id, title, status, pub_date, slug, category_id, categories(name)')
+      .select('id, title, status, pub_date, slug, category, author')
       .order('pub_date', { ascending: false })
       .limit(20);
 
@@ -44,10 +44,10 @@ export async function POST(request) {
 
   try {
     const body = await request.json();
-    const { title, description, content, category_id, image_url, seo_title, seo_description, slug, status } = body;
+    const { title, description, content, category, image_url, seo_title, seo_description, slug, status } = body;
 
-    if (!title || !content || !category_id) {
-      return NextResponse.json({ error: 'title, content, and category_id are required' }, { status: 400 });
+    if (!title || !content || !category) {
+      return NextResponse.json({ error: 'title, content, and category are required' }, { status: 400 });
     }
 
     // Default to draft to protect from accidental publishing
@@ -58,7 +58,7 @@ export async function POST(request) {
       title,
       description: description || '',
       content,
-      category_id,
+      category,
       image_url: image_url || null,
       status: articleStatus,
       slug: finalSlug,
