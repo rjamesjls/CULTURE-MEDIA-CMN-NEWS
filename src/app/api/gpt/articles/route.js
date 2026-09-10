@@ -8,9 +8,13 @@ const supabase = createClient(
 
 function checkAuth(request) {
   const authHeader = request.headers.get('authorization');
-  if (!authHeader || !authHeader.startsWith('Bearer ')) return false;
-  const token = authHeader.split(' ')[1];
-  return token === process.env.GPT_API_SECRET;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.split(' ')[1];
+    if (token === process.env.GPT_API_SECRET) return true;
+  }
+  const customHeader = request.headers.get('x-api-key');
+  if (customHeader && customHeader === process.env.GPT_API_SECRET) return true;
+  return false;
 }
 
 export async function GET(request) {
