@@ -39,9 +39,12 @@ export async function PATCH(request) {
       .update({ status: newStatus })
       .eq('id', article_id)
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
+    if (!data) {
+      return NextResponse.json({ error: 'Article introuvable avec cet ID' }, { status: 404 });
+    }
 
     return NextResponse.json({ success: true, status: newStatus, article: data });
   } catch (error) {
