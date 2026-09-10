@@ -11,6 +11,7 @@ components:
     ApiKeyAuth:
       type: http
       scheme: bearer
+  schemas: {}
 security:
   - ApiKeyAuth: []
 paths:
