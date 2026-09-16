@@ -78,6 +78,9 @@ export default function CustomEditor({ value, onChange, style, className }) {
           },
         },
       },
+      clipboard: {
+        matchVisual: false,
+      }
     }),
     []
   );
