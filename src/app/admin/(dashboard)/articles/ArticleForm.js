@@ -551,7 +551,7 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
           )}
 
           <div className="admin-form-group">
-            <label className="admin-form-label">Titre de l'article</label>
+            <label className="admin-form-label">Nom du projet (Titre interne)</label>
             <input 
               type="text" 
               name={`title_${currentLang}`} // just to prevent standard submit conflict if needed, though we manually control it
@@ -764,13 +764,59 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
             ></textarea>
           </div>
 
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', backgroundColor: '#f3f4f6', padding: '15px', borderRadius: '8px', flexWrap: 'wrap' }}>
+            <button 
+              type="submit" 
+              name="status"
+              value="published"
+              className="admin-btn admin-btn-primary" 
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Enregistrement...' : 'Publier immédiatement'}
+            </button>
+            <button 
+              type="submit" 
+              name="status"
+              value="pending"
+              className="admin-btn" 
+              style={{ backgroundColor: '#fef08a', color: '#854d0e', border: '1px solid #fde047' }}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Enregistrement...' : 'Soumettre pour validation'}
+            </button>
+            <button 
+              type="submit" 
+              name="status"
+              value="draft"
+              className="admin-btn" 
+              style={{ backgroundColor: '#e5e7eb', color: '#4b5563', border: '1px solid #d1d5db' }}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Enregistrement...' : (initialData?.status === 'published' ? 'Repasser en brouillon' : 'Enregistrer le brouillon')}
+            </button>
+            <button type="button" onClick={() => router.push('/admin/articles')} className="admin-btn" style={{ backgroundColor: '#fff', color: '#9ca3af', marginLeft: 'auto', border: '1px solid #d1d5db' }}>
+              Annuler
+            </button>
+          </div>
+
           <div className="admin-form-group" style={{ marginBottom: '20px' }}>
-            <label className="admin-form-label">Contenu de l'article</label>
+            <label className="admin-form-label">Contenu de l'article (Éditeur Complet)</label>
             <CustomEditor 
               value={displayedContent} 
               onChange={(val) => handleFieldChange('content', val)} 
-              style={{ height: '300px' }}
+              style={{ minHeight: '800px', height: 'auto', backgroundColor: '#fff' }}
             />
+            {/* Ajout d'un peu de style global pour que l'éditeur s'étende automatiquement */}
+            <style jsx global>{`
+              .ql-container.ql-snow {
+                min-height: 800px;
+                height: auto !important;
+              }
+              .ql-editor {
+                min-height: 800px;
+                font-size: 16px; 
+              }
+            `}</style>
           </div>
 
           {/* --- ASSISTANT IA MODIFICATION --- */}
@@ -828,41 +874,6 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
             )}
           </div>
           {/* --- FIN ASSISTANT IA MODIFICATION --- */}
-
-          <div style={{ display: 'flex', gap: '10px', marginTop: '20px', borderTop: '1px solid #e5e7eb', paddingTop: '20px', flexWrap: 'wrap' }}>
-            <button 
-              type="submit" 
-              name="status"
-              value="published"
-              className="admin-btn admin-btn-primary" 
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Enregistrement...' : 'Publier immédiatement'}
-            </button>
-            <button 
-              type="submit" 
-              name="status"
-              value="pending"
-              className="admin-btn" 
-              style={{ backgroundColor: '#fef08a', color: '#854d0e', border: '1px solid #fde047' }}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Enregistrement...' : 'Soumettre pour validation'}
-            </button>
-            <button 
-              type="submit" 
-              name="status"
-              value="draft"
-              className="admin-btn" 
-              style={{ backgroundColor: '#e5e7eb', color: '#4b5563', border: '1px solid #d1d5db' }}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Enregistrement...' : (initialData?.status === 'published' ? 'Repasser en brouillon' : 'Enregistrer le brouillon')}
-            </button>
-            <button type="button" onClick={() => router.push('/admin/articles')} className="admin-btn" style={{ backgroundColor: '#f3f4f6', color: '#9ca3af', marginLeft: 'auto', border: 'none' }}>
-              Annuler
-            </button>
-          </div>
         </form>
       </div>
 
