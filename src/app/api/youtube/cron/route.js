@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { createClient } from '@supabase/supabase-js';
 
 export async function GET(request) {
   try {
@@ -9,7 +9,11 @@ export async function GET(request) {
        // On peut l'ignorer pour l'instant ou rajouter une sécurité
     }
 
-    const supabase = await createClient();
+    // Use Service Role to bypass RLS for cron inserts
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    );
 
     // Récupérer toutes les vidéos suivies
     const { data: videos, error: dbError } = await supabase
