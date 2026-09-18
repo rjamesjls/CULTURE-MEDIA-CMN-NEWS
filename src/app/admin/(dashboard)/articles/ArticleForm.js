@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import { saveArticle } from '../../actions';
+import { saveArticle, createCategory } from '../../actions';
 import { generateArticleDraft, adjustArticleDraft, generateSuperArticle } from '../ai-generator/actions';
 import { translateArticle } from '../ai-studio/actions';
 import SpeechButton from '@/components/SpeechButton';
@@ -24,6 +24,10 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
   // Controlled states for live preview
   const [title, setTitle] = useState(initialData?.title || '');
   const [category, setCategory] = useState(initialData?.category || (categories[0]?.name || ''));
+  const [categoriesList, setCategoriesList] = useState(categories);
+  const [showAddCategory, setShowAddCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [articleFormat, setArticleFormat] = useState(initialData?.seo_metadata?.article_format || 'standard');
   const [author, setAuthor] = useState(initialData?.author || 'La Rédaction');
   const [description, setDescription] = useState(initialData?.description || '');
@@ -106,6 +110,28 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
       setAiEditError("Une erreur inattendue est survenue.");
     } finally {
       setIsAiEditing(false);
+    }
+  };
+
+  const handleAddCategory = async () => {
+    if (!newCategoryName.trim()) return;
+    setIsAddingCategory(true);
+    try {
+      const formData = new FormData();
+      formData.append('name', newCategoryName.trim());
+      const res = await createCategory(formData);
+      if (res.success) {
+        const newCat = { id: Date.now(), name: newCategoryName.trim() };
+        // Insert at the beginning or sort it. We'll just push to the list
+        setCategoriesList(prev => [...prev, newCat].sort((a, b) => a.name.localeCompare(b.name)));
+        setCategory(newCategoryName.trim());
+        setNewCategoryName('');
+        setShowAddCategory(false);
+      }
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setIsAddingCategory(false);
     }
   };
 
@@ -564,14 +590,52 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
 
           <div className="admin-form-row">
             <div className="admin-form-group">
-              <label className="admin-form-label">Catégorie</label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <label className="admin-form-label" style={{ marginBottom: 0 }}>Catégorie</label>
+                <button 
+                  type="button" 
+                  onClick={() => setShowAddCategory(!showAddCategory)}
+                  style={{ background: 'none', border: 'none', color: '#10b981', cursor: 'pointer', fontSize: '13px' }}
+                >
+                  {showAddCategory ? 'Fermer' : '+ Nouvelle catégorie'}
+                </button>
+              </div>
+              
+              {showAddCategory && (
+                <div style={{ display: 'flex', gap: '5px', marginTop: '5px', marginBottom: '5px' }}>
+                  <input 
+                    type="text" 
+                    className="admin-form-control" 
+                    placeholder="Nom de la catégorie" 
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddCategory();
+                      }
+                    }}
+                  />
+                  <button 
+                    type="button" 
+                    className="admin-btn" 
+                    style={{ backgroundColor: '#10b981', color: 'white', padding: '0 15px' }}
+                    onClick={handleAddCategory}
+                    disabled={isAddingCategory}
+                  >
+                    {isAddingCategory ? '...' : 'Ajouter'}
+                  </button>
+                </div>
+              )}
+
               <select 
                 name="category" 
                 className="admin-form-control" 
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
+                style={{ marginTop: '5px' }}
               >
-                {categories.map((cat) => (
+                {categoriesList.map((cat) => (
                   <option key={cat.id} value={cat.name}>{cat.name}</option>
                 ))}
               </select>

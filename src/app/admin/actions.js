@@ -151,10 +151,17 @@ export async function saveArticle(formData) {
 }
 
 export async function createCategory(formData) {
+  const { getUserProfile } = await import('@/utils/supabase/auth');
+  const { createClient } = await import('@/utils/supabase/server');
+  
+  const profile = await getUserProfile();
+  if (!profile) throw new Error("Non autorisé");
+
   const name = formData.get('name');
   const slug = slugify(name, { lower: true, strict: true, locale: 'fr' });
 
-  const { error } = await supabase.from('categories').insert([{ name, slug }]);
+  const supabaseServer = await createClient();
+  const { error } = await supabaseServer.from('categories').insert([{ name, slug }]);
   if (error) {
     if (error.code === '23505') throw new Error('Cette catégorie existe déjà.');
     throw new Error(error.message);
@@ -166,7 +173,14 @@ export async function createCategory(formData) {
 }
 
 export async function deleteCategory(id) {
-  const { error } = await supabase.from('categories').delete().eq('id', id);
+  const { getUserProfile } = await import('@/utils/supabase/auth');
+  const { createClient } = await import('@/utils/supabase/server');
+  
+  const profile = await getUserProfile();
+  if (!profile) throw new Error("Non autorisé");
+
+  const supabaseServer = await createClient();
+  const { error } = await supabaseServer.from('categories').delete().eq('id', id);
   if (error) throw new Error(error.message);
   revalidatePath('/', 'layout');
   revalidatePath('/admin/categories');
