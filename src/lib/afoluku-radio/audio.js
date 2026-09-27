@@ -1,3 +1,4 @@
+import {CameraReceiver} from './camera-transport.js';
 import {LiveUploader} from './live-uploader.js';
 export async function api(url, method = 'GET', data) { const r = await fetch(url, { method, headers: data ? { 'Content-Type': 'application/json' } : undefined, body: data ? JSON.stringify(data) : undefined, cache: 'no-store' }); const result = await r.json(); if (!r.ok)
     throw Object.assign(new Error(result.error || 'La requête a échoué.'), {status: r.status}); return result; }
@@ -167,7 +168,8 @@ export class ListenerAudio {
     disposed = false;
     latest = 0;
     onError = () => { };
-    constructor(video) {
+    constructor(video, cameraVideo) {
+        this.cameraVideo = cameraVideo;
         this.media = new ProgrammeMedia(video);
         this.gain = this.context.createGain();
         this.gain.connect(this.context.destination);
@@ -180,7 +182,7 @@ export class ListenerAudio {
             return; const generation = this.generation; void api('/api/afoluku-radio/station').then(s => { if (generation === this.generation && !this.disposed)
             return this.sync(s); }).catch(() => { }); }, () => this.onError('Lecture impossible. Utilisez MP3 pour l’audio ou MP4 H.264/AAC pour la vidéo.'));
     }
-    isPlaying() { return !this.disposed && this.context.state === 'running' && (this.session ? this.sources.size > 0 && this.nextTime > this.context.currentTime : !!this.key && !this.audio.paused && !this.audio.ended && this.audio.readyState >= 3); }
+    isPlaying() { return !this.disposed && this.context.state === 'running' && (this.cameraReceiver ? this.cameraReceiver.ready : this.session ? this.sources.size > 0 && this.nextTime > this.context.currentTime : !!this.key && !this.audio.paused && !this.audio.ended && this.audio.readyState >= 3); }
     async resume() { if (!this.disposed)
         await this.context.resume(); }
     setProgrammeAudible(audible, at = this.context.currentTime) {
@@ -217,6 +219,17 @@ export class ListenerAudio {
         }
     }
     async apply(state, generation) {
+        if (state.camera) {
+            if (this.cameraReceiver?.session !== state.camera.session) {
+                this.cameraReceiver?.close();
+                this.clearLive(); this.audio.pause(); this.key = '';
+                const receiver = this.cameraReceiver = new CameraReceiver(this.context, this.spectrum, this.cameraVideo, message => this.onError(message));
+                try { await receiver.connect(state.camera.session); }
+                catch(error) { receiver.close(); if(this.cameraReceiver===receiver)this.cameraReceiver=null; throw error; }
+            }
+            return;
+        }
+        if(this.cameraReceiver){this.cameraReceiver.close();this.cameraReceiver=null;}
         const cancelled = () => generation !== this.generation || this.disposed;
         await this.resume();
         if (cancelled())
@@ -296,7 +309,7 @@ export class ListenerAudio {
             }
         if (!cancelled() && this.session) this.clearLive();
     }
-    stop() { this.generation++; this.pending = null; this.latest = 0; this.clearLive(); this.audio.pause(); this.key = ''; }
+    stop() { this.cameraReceiver?.close(); this.cameraReceiver=null; this.generation++; this.pending = null; this.latest = 0; this.clearLive(); this.audio.pause(); this.key = ''; }
     destroy() { this.stop(); this.disposed = true; this.media.destroy(); void this.context.close(); }
 }
 export async function readFile(file, video = false) {

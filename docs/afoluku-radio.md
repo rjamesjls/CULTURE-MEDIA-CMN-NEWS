@@ -61,3 +61,26 @@ Références : [limites des fonctions Vercel](https://vercel.com/docs/functions/
 La régie et la bibliothèque proposent **Importer depuis un lien** : coller un lien HTTPS direct vers un fichier audio/vidéo public (50 Mo maximum), puis saisir éventuellement un titre. Le navigateur télécharge le fichier sans cookies ni référent ; l’import existant vérifie la durée, stocke une copie dans Supabase et calcule la forme d’onde lorsque le format le permet. Le média rejoint la bibliothèque sans modifier la programmation à l’antenne.
 
 L’hébergeur du fichier doit autoriser les téléchargements depuis un autre site (CORS). Sinon, télécharger le fichier sur son appareil puis utiliser l’import local. Les pages de partage, liens YouTube, fichiers protégés par connexion et flux continus ne sont pas des fichiers importables. Le téléchargement est annulable, limité à 50 Mo réels et à deux minutes ; aucun proxy serveur vers une URL arbitraire n’est ajouté.
+
+
+## Caméra directement depuis la régie
+
+Le bouton « Activer ma caméra » demande uniquement l’accès à la caméra et affiche un aperçu privé. « Passer la caméra à l’antenne » publie la caméra et le mélange audio de la régie via LiveKit. Les commandes existantes du micro restent nécessaires pour prendre la parole. OBS n’est pas requis.
+
+Configurer un projet LiveKit Cloud (ou un serveur LiveKit avec TLS), puis ajouter dans les variables **serveur** Vercel du projet :
+
+- `LIVEKIT_URL` : adresse `wss://…` du projet.
+- `LIVEKIT_API_KEY` : clé API du projet.
+- `LIVEKIT_API_SECRET` : secret associé, sans préfixe `NEXT_PUBLIC_`.
+
+Redéployer après ajout des variables. Aucune valeur ne doit être publiée dans GitHub ou dans une conversation. Aucun abonnement ni projet LiveKit n’est créé automatiquement par l’application.
+
+Sans configuration, l’aperçu local fonctionne ; le bouton de diffusion explique les trois variables manquantes. La table privée `afoluku_radio.camera_state` est initialisée au premier démarrage autorisé via la connexion serveur existante. Seuls les administrateurs actifs reçoivent un droit de publication ; les visiteurs ont des jetons de lecture seuls, limités à la session en cours. Les secrets restent au serveur.
+
+Chaque direct a une salle distincte. Le studio confirme sa présence toutes les cinq secondes ; sans confirmation pendant vingt secondes, la radio revient au programme habituel. Arrêter le direct coupe les pistes publiées et ferme la salle. Fermer la caméra éteint aussi l’aperçu. Un départ de la page interrompt le direct. Le bouton général d’arrêt de la radio termine également la caméra.
+
+Le bouton d’enregistrement actuel capture toujours **l’audio uniquement**, y compris pendant un direct caméra. Il ne produit pas de replay vidéo.
+
+Validation à effectuer après configuration réelle : ouvrir la régie et un second navigateur auditeur, publier caméra + micro, vérifier musique/voix/image, couper/réactiver la vidéo, arrêter/reprendre, puis fermer la régie pour vérifier le retour au programme. Les tests locaux couvrent les droits, l’expiration, l’aperçu et le transport simulé ; ils ne remplacent pas ce test réseau avec les identifiants du projet.
+
+Documentation LiveKit : https://docs.livekit.io/frontends/reference/tokens-grants/
