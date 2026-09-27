@@ -127,3 +127,7 @@ Les cadres publics et les exports portrait sont en **1080 × 1350 (4:5)**. Le MP
 Anton habille les grands titres, Montserrat Black 900 le badge blanc **#MUSIQUE** sur rouge arrondi, et Poppins les informations (gras et fin). Les polices sont servies localement et chargées explicitement avant la capture vidéo. Le cadre du média suit les proportions de la source : image unique entière, sans étirement ni recadrage, coins arrondis et sans bandes ajoutées à l’intérieur du cadre. Le fond bleu nuit reste visible autour des vidéos dont le format diffère de la zone disponible.
 
 Slogan : **A MEDIA FU WI**. Promesse : **WI MEDIA, WI KULTURU, WI TOLI**. Ces textes figurent dans le cadre exporté et en pied de page publique. Les licences des nouvelles polices sont dans `public/afoluku-radio/fonts/`.
+
+### Boucle et file après une timeline
+
+Le mode boucle fonctionne aussi sur une timeline : le programme recommence à la fin, avec ses intervalles prévus. Le réglage affiché suit l’état enregistré de la radio. Ajouter, retirer ou réordonner des titres dans « À venir » pendant une timeline transforme la suite en file continue, sans interrompre le titre actuel. Les montages et leur attribution au morceau source sont conservés, tout comme le brouillon de timeline. Un message dans la file explique que ses horaires fixes seront remplacés par cet enchaînement.

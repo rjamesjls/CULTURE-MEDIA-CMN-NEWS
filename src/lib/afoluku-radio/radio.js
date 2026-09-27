@@ -1,12 +1,23 @@
+export function timelineClock(tracks, startedAt, loop, now) {
+    const length = Math.max(0, ...tracks.map(t => t.timelineStart + t.duration));
+    const elapsed = (now - startedAt) / 1000;
+    const cycle = loop && length > 0 && elapsed >= 0 ? Math.floor(elapsed / length) : 0;
+    return { position: elapsed - cycle * length, cycleStart: startedAt + cycle * length * 1000 };
+}
+// An edited queue plays consecutively; the saved timeline remains available separately.
+export function queueTrack(track) {
+    return { id: track.id, title: track.title, duration: track.duration,
+        ...(track.mime ? { mime: track.mime } : {}), ...(track.sourceId ? { sourceId: track.sourceId } : {}) };
+}
 export function locate(tracks, startedAt, loop, now) {
     if (!startedAt || !tracks.length || tracks.some(t => !Number.isFinite(t.duration) || t.duration <= 0))
         return null;
     if (tracks[0].timelineStart !== undefined) {
-        const elapsed=(now-startedAt)/1000;
+        const {position:elapsed,cycleStart}=timelineClock(tracks,startedAt,loop,now);
         const index=tracks.findIndex(t=>elapsed>=t.timelineStart && elapsed<t.timelineStart+t.duration);
         if(index<0)return null;
         const t=tracks[index],offset=elapsed-t.timelineStart;
-        return {...t,index,offset,endsAt:startedAt+(t.timelineStart+t.duration)*1000,key:`${t.id}:${Math.round(startedAt+t.timelineStart*1000)}`};
+        return {...t,index,offset,endsAt:cycleStart+(t.timelineStart+t.duration)*1000,key:`${t.id}:${Math.round(cycleStart+t.timelineStart*1000)}`};
     }
     const total = tracks.reduce((sum, t) => sum + t.duration, 0);
     const elapsed = Math.max(0, (now - startedAt) / 1000);
@@ -27,7 +38,11 @@ export function locate(tracks, startedAt, loop, now) {
 export const seconds = (n) => `${Math.floor(n / 60)}:${String(Math.floor(n % 60)).padStart(2, '0')}`;
 // The queue is the next pass through the programme, excluding the current occurrence.
 export function upcoming(tracks, startedAt, loop, now) {
-    if(startedAt && tracks[0]?.timelineStart !== undefined)return tracks.filter(t=>startedAt+t.timelineStart*1000>now);
+    if(startedAt && tracks[0]?.timelineStart !== undefined) {
+        const {position}=timelineClock(tracks,startedAt,loop,now);
+        const future=tracks.filter(t=>t.timelineStart>position);
+        return loop ? [...future,...tracks.filter(t=>t.timelineStart+t.duration<=position)] : future;
+    }
     const current = locate(tracks, startedAt, loop, now);
     if (!startedAt)
         return tracks;
@@ -38,9 +53,9 @@ export function upcoming(tracks, startedAt, loop, now) {
 export function replaceUpcoming(tracks, startedAt, loop, now, next) {
     const current = locate(tracks, startedAt, loop, now);
     if (!current)
-        return { tracks: next, startedAt: 0 };
-    const playing = { id: current.id, title: current.title, duration: current.duration, ...(current.mime ? { mime: current.mime } : {}) };
-    return { tracks: [playing, ...next], startedAt: Math.round(current.endsAt - current.duration * 1000) };
+        return { tracks: next.map(queueTrack), startedAt: 0 };
+    const playing = queueTrack(current);
+    return { tracks: [playing, ...next.map(queueTrack)], startedAt: Math.round(current.endsAt - current.duration * 1000) };
 }
 // Rebase on the current occurrence so a loop change never rewinds or ends a later cycle.
 export function rebaseProgramme(tracks, startedAt, loop, now) {

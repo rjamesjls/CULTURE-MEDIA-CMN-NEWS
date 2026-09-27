@@ -50,6 +50,14 @@ try{
  const c=await call('uploads','POST',{purpose:'cover',mime:'image/png',size:png.length,trackId:track});objects.set(c.data.path,{data:png,mime:'image/png'});assert.equal((await finish(c.data.id)).status,200);assert.equal((await cover.DELETE(request('DELETE'),{params:Promise.resolve({id:track})})).status,200);
  const playlist=await call('playlists','POST',{name:'Tests'});assert.equal(playlist.status,201);const p=(await call('studio')).data.playlists[0];assert.equal((await call('playlists','PUT',{...p,trackIds:[track]})).status,200);
  let state=(await call('station')).data;state=(await call('station','POST',{action:'queue-update',revision:state.revision,currentKey:null,trackIds:[track]})).data;state=(await call('station','POST',{action:'queue-start',revision:state.revision,currentKey:null,loop:true})).data;assert.equal(state.current.id,track);assert.equal(state.active,true);
+ const started=await call('station','POST',{action:'start',playlistId:p.id,loop:true});
+ assert.equal(started.status,200,JSON.stringify(started.data));state=started.data;
+ // Toggle on an existing PostgreSQL station.
+ for (const enabled of [false, true]) {
+  const changed=await call('station','POST',{action:'loop',loop:enabled});
+  assert.equal(changed.status,200,JSON.stringify(changed.data));
+  state=changed.data;assert.equal(state.loop,enabled);assert.equal(state.current.id,track);
+ }
  const old=state.revision;state=(await call('station','POST',{action:'pause',revision:old})).data;assert.equal(state.paused,true);now+=2000;assert.equal((await call('station')).data.current.offset,state.current.offset);assert.equal((await call('station','POST',{action:'resume',revision:old})).status,409);state=(await call('station','POST',{action:'resume',revision:state.revision})).data;assert.equal(state.paused,false);
  const occurrence=state.current.streamKey;
  const seek=async payload=>call('station','POST',{action:'seek',revision:state.revision,currentKey:state.current.key,...payload});
@@ -64,6 +72,8 @@ try{
  state=(await seek({delta:-10})).data;assert.equal(state.current.offset,0);
  state=(await call('station','POST',{action:'resume',revision:state.revision})).data;
  now+=360000;state=(await call('station')).data;
+ const keyBeforeToggle=state.current.key, offsetBeforeToggle=state.current.offset;
+ for(const enabled of [false,true]){const changed=await call('station','POST',{action:'loop',loop:enabled});assert.equal(changed.status,200,JSON.stringify(changed.data));state=changed.data;assert.equal(state.current.key,keyBeforeToggle);assert.equal(state.current.offset,offsetBeforeToggle);}
  const loopOccurrence=state.current.streamKey;
  state=(await seek({position:30})).data;assert.equal(state.current.offset,30);assert.equal(state.current.streamKey,loopOccurrence);
  state=(await seek({position:0})).data;

@@ -4,7 +4,7 @@ import {createClient} from '@/utils/supabase/server';
 
 import {activateScheduledTimeline,pendingTimeline} from './timeline-server';
 import { cameraState } from './camera-server';
-import { locate, upcoming, streamKey } from './radio';
+import { timelineClock, locate, upcoming, streamKey } from './radio';
 export class ApiError extends Error {
     status;
     constructor(status, message) {
@@ -59,7 +59,7 @@ export async function state() {
     }
     const camera = await cameraState();
     const snapshot=JSON.parse(row.snapshot);
-    return { scheduledTimeline: await pendingTimeline(), timeline: snapshot[0]?.timelineStart !== undefined ? { startedAt:row.started_at, position:((row.paused_at||now)-row.started_at)/1000, entries:snapshot } : null, serverNow: now, camera, active: (!!current && !row.paused_at) || !!live || !!camera, paused: !!row.paused_at, playlistName: row.playlist_name, loop: !!row.loop, current, live, revision: row.revision, upcoming: upcoming(JSON.parse(row.snapshot), row.started_at, !!row.loop, row.paused_at || now).map(t => ({ ...t, coverUrl: visuals.get(t.sourceId || t.id)?.coverUrl, coverType: visuals.get(t.sourceId || t.id)?.coverType, mime: visuals.get(t.id)?.mime })) };
+    return { scheduledTimeline: await pendingTimeline(), timeline: snapshot[0]?.timelineStart !== undefined ? { startedAt:row.started_at, position:timelineClock(snapshot,row.started_at,!!row.loop,row.paused_at||now).position, entries:snapshot } : null, serverNow: now, camera, active: (!!current && !row.paused_at) || !!live || !!camera, paused: !!row.paused_at, playlistName: row.playlist_name, loop: !!row.loop, current, live, revision: row.revision, upcoming: upcoming(JSON.parse(row.snapshot), row.started_at, !!row.loop, row.paused_at || now).map(t => ({ ...t, coverUrl: visuals.get(t.sourceId || t.id)?.coverUrl, coverType: visuals.get(t.sourceId || t.id)?.coverType, mime: visuals.get(t.id)?.mime })) };
 }
 export function trackVisuals(t) { return { coverType: (/\.(mp4|webm)$/.test(t.cover_key || '') ? 'video' : 'image'), coverUrl: t.cover_key ? `/api/afoluku-radio/tracks/${t.id}/cover?v=${t.cover_key.split('/').pop()}` : null, peaks: JSON.parse(t.peaks || '[]') }; }
 export async function getTracks() { return (await db().prepare('SELECT * FROM tracks ORDER BY created_at DESC').all()).results.map(t => ({ id: t.id, title: t.title, duration: t.duration, bytes: t.bytes, mime: t.mime, contentKind: t.content_kind, musicGenre: t.music_genre, ...trackVisuals(t) })); }

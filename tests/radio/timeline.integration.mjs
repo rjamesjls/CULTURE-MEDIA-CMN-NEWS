@@ -123,6 +123,17 @@ try {
     ).status,
     409,
   );
+  // Timeline loop keeps its gaps, advances the cycle and can be disabled mid-cycle.
+  r=await call(station,"POST",{action:"loop",loop:true});
+  assert.equal(r.status,200,JSON.stringify(r));state=r.data;
+  const firstCycle=state.current.key;
+  now+=105000;state=(await call(station,"GET")).data;
+  assert.equal(state.current.id,a);assert.equal(state.current.offset,5);
+  assert.notEqual(state.current.key,firstCycle);assert.equal(state.timeline.position,5);
+  const secondCycle=state.current.key;
+  r=await call(station,"POST",{action:"loop",loop:false});
+  assert.equal(r.status,200,JSON.stringify(r));state=r.data;
+  assert.equal(state.current.key,secondCycle);assert.equal(state.current.offset,5);
   const before = state.current.key;
   const future = now + 120000;
   draft = (
@@ -232,6 +243,18 @@ try {
     stats.tracks.some((t) => t.id === rendered),
     false,
   );
+  // Editing À venir after a rendered timeline preserves the current audio and source attribution.
+  state=(await call(station,"GET")).data;
+  const playingKey=state.current.key, playingOffset=state.current.offset;
+  r=await call(station,"POST",{action:"queue-update",revision:state.revision,currentKey:playingKey,trackIds:[b,a,b]});
+  assert.equal(r.status,200,JSON.stringify(r));state=r.data;
+  assert.equal(state.current.key,playingKey);assert.equal(state.current.offset,playingOffset);
+  assert.equal(state.current.streamTrackId,a);assert.equal(state.timeline,null);
+  assert.deepEqual(state.upcoming.map(t=>t.id),[b,a,b]);
+  r=await call(station,"POST",{action:"queue-update",revision:state.revision,currentKey:playingKey,trackIds:[a,b,b]});
+  assert.equal(r.status,200,JSON.stringify(r));state=r.data;
+  assert.deepEqual(state.upcoming.map(t=>t.id),[a,b,b]);
+  r=await call(station,"POST",{action:"loop",loop:true});assert.equal(r.status,200,JSON.stringify(r));
   console.log(
     "PASS timeline API: authorization, CAS, scheduled activation, gaps, pause/resume, previous, cancellation, source protection, mandatory rendered cuts.",
   );

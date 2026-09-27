@@ -74,7 +74,11 @@ test("scheduled playout is silent before start and in gaps, and picks the exact 
     ["b"],
   );
   assert.equal(locate(tracks, start, false, start + 65000).offset, 5);
-  assert.equal(locate(tracks, start, true, start + 80000), null);
+  const repeated=locate(tracks,start,true,start+80000);
+  assert.equal(repeated.id,'a');assert.equal(repeated.offset,10);
+  assert.equal(repeated.endsAt,start+100000);
+  assert.notEqual(repeated.key,locate(tracks,start,true,start+10000).key);
+  assert.deepEqual(upcoming(tracks,start,true,start+105000).map(t=>t.id),['b','a']);
   assert.equal(upcoming(tracks, start, false, start + 80000).length, 0);
 });
 test("draft validation rejects duplicate identities and invalid edit references", () => {

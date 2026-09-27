@@ -16,7 +16,7 @@ export default function BroadcastQueue({ station, playlists, playlistId, disable
         onError(''); try {
         const result = await api('/api/afoluku-radio/station', 'POST', { action, revision: basis.revision, currentKey: basis.current?.key || null, ...extra });
         onState(result);
-        onNotice(action === 'queue-load' ? 'La playlist remplace les titres à venir.' : action === 'queue-start' ? 'La file est à l’antenne.' : 'Ordre de passage enregistré.');
+        onNotice(action === 'queue-load' ? 'La playlist remplace les titres à venir.' : action === 'queue-start' ? 'La file est à l’antenne.' : basis.timeline ? 'Ordre enregistré. Les passages à venir s’enchaînent désormais sans horaire fixe ; la timeline préparée est conservée.' : 'Ordre de passage enregistré.');
     }
     catch (e) {
         onError(e.message);
@@ -87,7 +87,7 @@ export default function BroadcastQueue({ station, playlists, playlistId, disable
     let delay = station.current ? station.current.duration - station.current.offset : 0;
     return <section className="broadcast-queue" aria-label="Titres à venir" onDragOver={e => dragOver(e, queue.length)} onDrop={e => void drop(e, queue.length)} onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget))
         setOver(null); }}>
- <div className="queue-heading"><div><div className="eyebrow">ORDRE DE PASSAGE</div><h2>À venir <span className="count">{queue.length}</span></h2><p>Glissez vos morceaux ici, puis organisez leur passage.</p></div><div className="queue-tools"><button className="secondary" disabled={locked || !playlistId || !playlists.find(p => p.id === playlistId)?.trackIds.length} title="Remplacer À venir par les titres de cette playlist" onClick={() => void change('queue-load', { playlistId })}><ListMusic size={17}/>Charger la playlist</button><button className="secondary" disabled={locked} onClick={() => input.current?.click()}><Upload size={17}/>Importer ici</button></div></div>
+ <div className="queue-heading"><div><div className="eyebrow">ORDRE DE PASSAGE</div><h2>À venir <span className="count">{queue.length}</span></h2><p>{station.timeline ? "Glissez vos morceaux ici. Modifier cette file remplace les horaires fixes par un enchaînement continu, sans changer votre timeline enregistrée." : "Glissez vos morceaux ici, puis organisez leur passage."}</p></div><div className="queue-tools"><button className="secondary" disabled={locked || !playlistId || !playlists.find(p => p.id === playlistId)?.trackIds.length} title="Remplacer À venir par les titres de cette playlist" onClick={() => void change('queue-load', { playlistId })}><ListMusic size={17}/>Charger la playlist</button><button className="secondary" disabled={locked} onClick={() => input.current?.click()}><Upload size={17}/>Importer ici</button></div></div>
  <input ref={input} type="file" hidden multiple accept="audio/*,video/mp4,video/webm,.mp3,.m4a,.wav,.ogg,.flac,.mp4,.webm" onChange={e => { if (e.target.files)
         void importToQueue(Array.from(e.target.files)); }}/>
  <div className={`queue-dropzone ${over !== null ? 'drop-active' : ''}`}>
