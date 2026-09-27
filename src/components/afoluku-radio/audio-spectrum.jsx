@@ -70,11 +70,11 @@ export default function AudioSpectrum({ getAnalyser, active, hint, hideTitle = f
             ctx.clearRect(0, 0, width, height);
             const pad = 12, usable = width - pad * 2, base = height - 15, amplitude = height - 38, step = usable / count;
             const gradient = ctx.createLinearGradient(0, height, 0, 0);
-            gradient.addColorStop(0, '#557633');
-            gradient.addColorStop(.55, '#b2d952');
-            gradient.addColorStop(1, '#e4fa8a');
+            gradient.addColorStop(0, '#e21c2a');
+            gradient.addColorStop(.55, '#ffd21c');
+            gradient.addColorStop(1, '#fff0a1');
             ctx.fillStyle = gradient;
-            ctx.strokeStyle = '#c8eb69';
+            ctx.strokeStyle = '#ffd21c';
             ctx.lineWidth = 2;
             ctx.lineCap = 'round';
             if (model === 'circle') {

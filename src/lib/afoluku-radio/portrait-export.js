@@ -1,3 +1,4 @@
+import { loadPortraitFonts } from './brand-fonts.js';
 import { encodeRadioMedia } from './media-export.js';
 import { drawPortrait, portraitImage, PORTRAIT_WIDTH, PORTRAIT_HEIGHT } from './portrait.js';
 export function validateExcerpt(start,end,duration){
@@ -25,6 +26,7 @@ async function capturePortrait({source,start,end,settings,canvas,signal,onProgre
  function waitEvent(name){return new Promise((resolve,reject)=>{const timeout=setTimeout(()=>finish(new Error('Le média met trop de temps à répondre. Réessayez.')),30000);const ready=()=>finish(),bad=()=>finish(new Error('Ce média ne peut pas être lu pour l’export.')),cancel=()=>finish(new DOMException('Export annulé.','AbortError'));function finish(error){clearTimeout(timeout);media.removeEventListener(name,ready);media.removeEventListener('error',bad);signal?.removeEventListener('abort',cancel);error?reject(error):resolve();}media.addEventListener(name,ready,{once:true});media.addEventListener('error',bad,{once:true});signal?.addEventListener('abort',cancel,{once:true});if(signal?.aborted)cancel();});}
  try{
   if(signal?.aborted)throw new DOMException('Export annulé.','AbortError');
+  await loadPortraitFonts();
   const metadata=waitEvent('loadedmetadata');media.src=source.url;media.load();await metadata;
   if(start>0){const seek=waitEvent('seeked');media.currentTime=start;await seek;}
   const [logo,artwork]=await Promise.all([portraitImage(settings.logoUrl),portraitImage(source.coverType==='video'?null:source.coverUrl)]);

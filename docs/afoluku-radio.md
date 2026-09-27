@@ -86,11 +86,11 @@ Validation à effectuer après configuration réelle : ouvrir la régie et un se
 Documentation LiveKit : https://docs.livekit.io/frontends/reference/tokens-grants/
 
 
-## Cadre public 3:4 et export d’extraits
+## Cadre public 4:5 et export d’extraits
 
-Dans Antenne, « Afficher le cadre public en 3:4 » active la présentation portrait pour tous les auditeurs (actualisation des paramètres sous environ cinq secondes). La présentation existante reste le choix par défaut. Le cadre 1080 × 1440 conserve un seul logo en haut, le titre « Extrait Radio », « cette semaine » en petit, le badge blanc sur rouge « #musique », le média, son titre, la programmation, le spectre et les temps de lecture. Sans pochette ni vidéo, le mot Radio remplace le second logo. Les commandes d’écoute restent sous le cadre.
+Dans Antenne, « Afficher le cadre public en 4:5 » active la présentation portrait pour tous les auditeurs (actualisation des paramètres sous environ cinq secondes). La présentation existante reste le choix par défaut. Le cadre 1080 × 1350 conserve un seul logo en haut, le titre « Extrait Radio », « cette semaine » en petit, le badge blanc sur rouge « #MUSIQUE », le média, son titre, la programmation, le spectre et les temps de lecture. Sans pochette ni vidéo, le mot Radio remplace le second logo. Les commandes d’écoute restent sous le cadre.
 
-« Exporter un extrait » sous Antenne utilise le fichier du titre courant. Le même bouton dans « Mes enregistrements » utilise une prise audio terminée dans la régie. Choisir **Audio MP3** ou **Vidéo MP4 · 1080 × 1440**, saisir Début et Fin en minutes:secondes ou en secondes, puis « Préparer l’extrait ». Le MP3 est encodé à 192 kbit/s ; le MP4 utilise H.264/AAC et contient l’habillage portrait et le son. Un enregistrement audio ne contient pas l’historique des images ou des changements de titres de l’émission : l’extrait utilise le nom de la prise et l’habillage actuel de la radio. Le téléchargement original de la prise complète reste disponible séparément.
+« Exporter un extrait » sous Antenne utilise le fichier du titre courant. Le même bouton dans « Mes enregistrements » utilise une prise audio terminée dans la régie. Choisir **Audio MP3** ou **Vidéo MP4 · 1080 × 1350**, saisir Début et Fin en minutes:secondes ou en secondes, puis « Préparer l’extrait ». Le MP3 est encodé à 192 kbit/s ; le MP4 utilise H.264/AAC et contient l’habillage portrait et le son. Un enregistrement audio ne contient pas l’historique des images ou des changements de titres de l’émission : l’extrait utilise le nom de la prise et l’habillage actuel de la radio. Le téléchargement original de la prise complète reste disponible séparément.
 
 L’export se fait localement dans le navigateur avec un lecteur distinct de l’antenne (10 minutes maximum par extrait). La vidéo est capturée en temps réel puis encodée ; garder l’onglet visible jusqu’à la fin. Le MP3 est découpé et encodé directement. La préparation est annulable et ne déplace pas la diffusion. Le téléchargement est proposé après génération, avec prévisualisation. Les fichiers ne sont pas envoyés au serveur. Télécharger les prises et exports avant de quitter la régie. Les sources sont limitées à 256 Mo ; sur un appareil peu puissant, privilégier les extraits courts.
 
@@ -118,3 +118,12 @@ L’activation future est atomique, fondée sur l’horloge du serveur lors du p
 Les instantanés publiés incluent les médias préparés, leur source, leur durée finale et leur décalage dans la timeline. Le titre et la pochette restent ceux de la source. Les streams créditent la musique d’origine, sans fragmenter le classement entre ses différents montages ; les contenus hors musique restent exclus.
 
 Les tables privées `afoluku_radio.timeline_draft` et `afoluku_radio.timeline_pending` sont initialisées par le serveur au premier accès administrateur. Les rôles anon/authenticated n’ont aucun accès direct. Aucune variable Vercel supplémentaire ni migration manuelle n’est nécessaire avec le compte de connexion radio existant autorisé à créer des tables. Les routes contrôlent les droits administrateur, l’origine des écritures, les durées, les médias disponibles et les versions du brouillon/de l’antenne.
+
+
+## Charte graphique de la radio
+
+Les cadres publics et les exports portrait sont en **1080 × 1350 (4:5)**. Le MP4 conserve cette résolution réelle et un encodage H.264/AAC ; la définition du fichier source limite naturellement les détails disponibles. L’habillage utilise le bleu nuit, le noir, le jaune et le rouge, sans kaki, y compris les modèles de spectre de la régie et du lecteur public.
+
+Anton habille les grands titres, Montserrat Black 900 le badge blanc **#MUSIQUE** sur rouge arrondi, et Poppins les informations (gras et fin). Les polices sont servies localement et chargées explicitement avant la capture vidéo. Le cadre du média suit les proportions de la source : image unique entière, sans étirement ni recadrage, coins arrondis et sans bandes ajoutées à l’intérieur du cadre. Le fond bleu nuit reste visible autour des vidéos dont le format diffère de la zone disponible.
+
+Slogan : **A MEDIA FU WI**. Promesse : **WI MEDIA, WI KULTURU, WI TOLI**. Ces textes figurent dans le cadre exporté et en pied de page publique. Les licences des nouvelles polices sont dans `public/afoluku-radio/fonts/`.
