@@ -491,7 +491,7 @@ textarea.input {
   width: auto;
 }
 
-.nav-menu { display: none !important;
+.nav-menu {
   display: flex;
   align-items: center;
   gap: var(--space-4);
@@ -721,7 +721,7 @@ textarea.input {
     grid-template-columns: 1fr;
   }
   
-  .nav-menu { display: none !important;
+  .nav-menu {
     position: fixed;
     top: 70px;
     left: -100%;
@@ -746,7 +746,7 @@ textarea.input {
     display: none !important;
   }
   
-  .nav-menu { display: none !important;
+  .nav-menu {
     display: none !important;
   }
   
@@ -2618,7 +2618,7 @@ body.theme-alternate .reading-progress {
   right: 0;
   background: #111310;
   border-top: 1px solid #3c492e;
-  display: flex;
+  display: none;
   justify-content: space-around;
   align-items: center;
   padding: 8px 0 calc(8px + env(safe-area-inset-bottom, 0px));
@@ -2641,8 +2641,13 @@ body.theme-alternate .reading-progress {
   color: #f6cf28;
 }
 
-body {
-  padding-bottom: 70px;
+@media (max-width: 768px) {
+  .mobile-bottom-nav {
+    display: flex;
+  }
+  body {
+    padding-bottom: 70px;
+  }
 }
 
 /* Side Drawer for Categories */
