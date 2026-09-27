@@ -2593,3 +2593,15 @@ body.theme-alternate .reading-progress {
     gap: 15px;
   }
 }
+
+@media (max-width: 768px) {
+  .header-container {
+    justify-content: flex-end;
+    position: relative;
+  }
+  .logo-link {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}

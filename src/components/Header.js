@@ -27,45 +27,12 @@ export default async function Header({ lang = 'fr' }) {
           <FlashTicker />
         </FlashTickerWrapper>
         <div className="header-container">
-          <Link href={`/${lang}`} className="logo-link" style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none' }}>
+          <Link href={`/${lang}`} className="logo-link">
             <img 
-              src="/assets/logo.png" 
+              src="/afoluku-radio/logo.png" 
               alt="A FOLUKU TV" 
               className="header-logo" 
-              style={{ 
-                borderRadius: '50%', 
-                border: '2px solid rgba(255, 255, 255, 0.8)', 
-                objectFit: 'cover',
-                backgroundColor: '#fff',
-                width: '45px',
-                height: '45px',
-                padding: '2px'
-              }} 
             />
-            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-              <span style={{ 
-                fontFamily: 'var(--font-heading)', 
-                fontSize: '22px', 
-                fontWeight: '900', 
-                color: 'var(--color-white, #FFFFFF)', 
-                letterSpacing: '-0.5px',
-                whiteSpace: 'nowrap',
-                lineHeight: '1.1'
-              }}>
-                A FOLUKU <span style={{ color: 'var(--color-primary)' }}>TV</span>
-              </span>
-              <span style={{
-                fontFamily: 'var(--font-body)',
-                fontSize: '13px',
-                fontWeight: '400',
-                color: 'var(--color-white, #FFFFFF)',
-                letterSpacing: '1px',
-                whiteSpace: 'nowrap',
-                opacity: 0.8
-              }}>
-                AFOLUKUTV
-              </span>
-            </div>
           </Link>
 
           <nav className="nav-menu" id="navMenu">
