@@ -88,7 +88,10 @@
 .afoluku-radio-app .radio-seek-form label { display: grid; gap: 5px; font-size: 12px; }
 .afoluku-radio-app .radio-seek-form input { width: 150px; max-width: 100%; }
 
-.afoluku-radio-app .radio-recorder { border: 1px solid #723239; background: #23191c; padding: 16px; border-radius: 12px; margin-bottom: 20px; }
+.afoluku-radio-app .radio-recorder { min-width: 0; max-width: 100%; }
+.afoluku-radio-app .radio-recorder .radio-import-actions { justify-content: flex-start; }
+.afoluku-radio-app .record-details { margin-top: 10px; max-width: 560px; }
+.afoluku-radio-app .record-details summary { cursor: pointer; font-size: 13px; color: var(--foreground); }
 .afoluku-radio-app .record-timer { color: #ff737d; font-weight: 700; font-variant-numeric: tabular-nums; }
 .afoluku-radio-app .record-active { background: #b91c36; color: #fff; }
 .afoluku-radio-app .record-take { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 12px; }

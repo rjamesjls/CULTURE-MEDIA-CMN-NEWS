@@ -4,7 +4,7 @@ import { Circle, Square, Download } from 'lucide-react';
 import { recordMix } from '@/lib/afoluku-radio/recording';
 import { seconds } from '@/lib/afoluku-radio/radio';
 
-export default function RadioRecorder({ prepare, disabled }) {
+export default function RadioRecorder({ prepare, disabled, before, after }) {
     const recorder = useRef(null), starting = useRef(false), mounted = useRef(false), urls = useRef([]);
     const [status, setStatus] = useState('idle'), [elapsed, setElapsed] = useState(0);
     const [takes, setTakes] = useState([]), [error, setError] = useState('');
@@ -49,12 +49,17 @@ export default function RadioRecorder({ prepare, disabled }) {
         finally { starting.current = false; }
     }
     return <section className="radio-recorder" aria-label="Enregistrement de la radio">
-        <div className="transport">
-            {status === 'recording' ? <button className="primary record-active" onClick={() => { setStatus('stopping'); recorder.current?.stop(); }}><Square size={17}/>Arrêter l’enregistrement</button> : <button className="secondary" disabled={disabled || status !== 'idle'} onClick={() => void start()}><Circle size={17}/>{status === 'starting' ? 'Préparation…' : status === 'stopping' ? 'Finalisation…' : 'Enregistrer la radio'}</button>}
+        <div className="radio-import-actions">
+            {before}
+            {status === 'recording' ? <button className="primary record-active" onClick={() => { setStatus('stopping'); recorder.current?.stop(); }}><Square size={17}/>Arrêter l’enregistrement</button> : <button className="primary" title="Enregistrer le son de l’antenne" disabled={disabled || status !== 'idle'} onClick={() => void start()}><Circle size={18}/>{status === 'starting' ? 'Préparation…' : status === 'stopping' ? 'Finalisation…' : 'Enregistrer la radio'}</button>}
+            {after}
             {status !== 'idle' && <span className="record-timer" role="status">● REC {seconds(elapsed)}</span>}
         </div>
-        <p className="help">Enregistre le son de l’antenne : musique, jingles et micro de cette régie. Gardez cette page ouverte jusqu’au téléchargement. Audio uniquement.</p>
         {error && <p className="notice error" role="alert">{error}</p>}
+        {(status !== 'idle' || takes.length > 0 || error) && <details className="record-details">
+        <summary>{takes.length ? `Mes enregistrements (${takes.length})` : 'Enregistrement en cours'}</summary>
+        <p className="help">Enregistre le son de l’antenne : musique, jingles et micro de cette régie. Gardez cette page ouverte jusqu’au téléchargement. Audio uniquement.</p>
         {takes.map(take => <div className="record-take" key={take.url}><audio controls src={take.url} preload="metadata" aria-label={`Réécouter ${take.name}`}/><a className="secondary" href={take.url} download={take.name} onClick={() => setTakes(old => old.map(t => t.url === take.url ? { ...t, saved: true } : t))}><Download size={16}/>Télécharger · {(take.bytes / 1024 / 1024).toFixed(1)} Mo</a><span className="help">{take.name}</span></div>)}
+        </details>}
     </section>;
 }
