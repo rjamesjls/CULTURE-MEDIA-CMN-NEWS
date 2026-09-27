@@ -44,7 +44,7 @@ export class HoldToTalk {
         this.cancelTimer();
         this.actions.change('draining');
         // Keep transmitting music briefly so the last spoken segment reaches listeners.
-        this.timer = setTimeout(() => { this.timer = null; void this.end(); }, 3000);
+        this.timer = setTimeout(() => { this.timer = null; void this.end(); }, 6000);
     }
     async end() {
         if (this.operation || !this.open)

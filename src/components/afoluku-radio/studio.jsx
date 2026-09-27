@@ -87,6 +87,8 @@ export default function Studio() {
         const d = new AudioDesk(programmeVideo.current || undefined);
         d.monitor.gain.value = monitorRef.current ? volume / 100 : 0;
         d.setDuckLevel(settingsRef.current.duckVolume / 100);
+        d.onLiveWarning = message => setError(message);
+        d.onLiveRecovered = () => { setError(''); setNotice('Connexion du direct rétablie.'); };
         d.onError = message => { if (sessionRef.current)
             void stopLive(message);
         else

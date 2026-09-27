@@ -10,16 +10,16 @@ function setup(t,start=async()=>{},stop=async()=>{}){
 }
 test('release before connection completes never opens the microphone',async t=>{
  const gate=deferred(),s=setup(t,()=>gate.promise);s.talk.press();s.talk.release();gate.resolve();await settle();assert.ok(s.gates.every(value=>value===false));
- t.mock.timers.tick(3000);await settle();assert.equal(s.stops,1);assert.equal(s.statuses.at(-1),'idle');
+ t.mock.timers.tick(6000);await settle();assert.equal(s.stops,1);assert.equal(s.statuses.at(-1),'idle');
 });
 test('release mutes immediately; another press reuses the draining session',async t=>{
  const s=setup(t);s.talk.press();await settle();assert.equal(s.gates.at(-1),true);
  s.talk.release();assert.equal(s.gates.at(-1),false);t.mock.timers.tick(2000);assert.equal(s.stops,0);
- s.talk.press();assert.equal(s.gates.at(-1),true);t.mock.timers.tick(3000);assert.equal(s.stops,0);assert.equal(s.starts,1);
- s.talk.release();t.mock.timers.tick(3000);await settle();assert.equal(s.stops,1);
+ s.talk.press();assert.equal(s.gates.at(-1),true);t.mock.timers.tick(6000);assert.equal(s.stops,0);assert.equal(s.starts,1);
+ s.talk.release();t.mock.timers.tick(6000);await settle();assert.equal(s.stops,1);
 });
 test('a press during teardown waits for it before opening a new session',async t=>{
- const gate=deferred(),s=setup(t,async()=>{},()=>gate.promise);s.talk.press();await settle();s.talk.release();t.mock.timers.tick(3000);await settle();
+ const gate=deferred(),s=setup(t,async()=>{},()=>gate.promise);s.talk.press();await settle();s.talk.release();t.mock.timers.tick(6000);await settle();
  s.talk.press();assert.equal(s.gates.at(-1),false);assert.equal(s.starts,1);gate.resolve();await settle();assert.equal(s.starts,2);assert.equal(s.gates.at(-1),true);
 });
 test('unmount during startup and repeated release cannot leave the microphone open',async t=>{

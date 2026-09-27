@@ -51,6 +51,7 @@ export default function Listener({compact=false,href="/fr/radio"}) {
                 return;
             }
             polling.current = true;
+            const started = performance.now();
             try {
                 const state = await api('/api/afoluku-radio/station');
                 if (!alive)
@@ -71,7 +72,7 @@ export default function Listener({compact=false,href="/fr/radio"}) {
             finally {
                 polling.current = false;
                 if (alive)
-                    timer = setTimeout(poll, interval);
+                    timer = setTimeout(poll, Math.max(50, interval - (performance.now() - started)));
             }
         }
         void poll();

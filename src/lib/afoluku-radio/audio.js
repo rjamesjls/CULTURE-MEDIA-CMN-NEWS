@@ -1,3 +1,4 @@
+import {LiveUploader} from './live-uploader.js';
 export async function api(url, method = 'GET', data) { const r = await fetch(url, { method, headers: data ? { 'Content-Type': 'application/json' } : undefined, body: data ? JSON.stringify(data) : undefined, cache: 'no-store' }); const result = await r.json(); if (!r.ok)
     throw Object.assign(new Error(result.error || 'La requête a échoué.'), {status: r.status}); return result; }
 export function wav(samples, rate) { const buffer = new ArrayBuffer(44 + samples.length * 2); const view = new DataView(buffer); const str = (o, s) => { for (let i = 0; i < s.length; i++)
@@ -55,10 +56,9 @@ export class AudioDesk {
     latestState = 0;
     disposed = false;
     previewOperation = 0;
-    pending = 0;
-    chain = Promise.resolve();
-    seq = 0;
-    failed = false;
+    uploader = null;
+    onLiveWarning = () => {};
+    onLiveRecovered = () => {};
     onError = () => { };
     onPreviewEnd = () => { };
     constructor(video) { this.media = new ProgrammeMedia(video); this.context = new AudioContext(); this.audio.preload = 'auto'; this.music = this.context.createGain(); this.monitor = this.context.createGain(); this.mix = this.context.createGain(); this.spectrum = this.context.createAnalyser(); this.spectrum.fftSize = 2048; this.spectrum.smoothingTimeConstant = .78; this.mix.connect(this.spectrum); this.micGain = this.context.createGain(); this.micGain.gain.value = 0; this.analyser = this.context.createAnalyser(); this.silent = this.context.createGain(); this.silent.gain.value = 0; this.spectrum.connect(this.silent); this.silent.connect(this.context.destination); this.music.connect(this.monitor); this.monitor.connect(this.context.destination); this.monitor.gain.value = .7; this.music.connect(this.mix); this.micGain.connect(this.mix); this.media.connect(this.context, this.music, () => { if (this.key === 'preview') {
@@ -115,46 +115,27 @@ export class AudioDesk {
     async startLive(session, talking = true) {
         if (!this.micSource)
             throw new Error('Préparez le microphone avant de prendre l’antenne.');
-        await this.context.audioWorklet.addModule('/afoluku-radio/pcm-worklet.js?v=2');
+        await this.context.audioWorklet.addModule('/afoluku-radio/pcm-worklet.js?v=3');
         if (this.disposed)
             throw new Error('Le studio a été fermé.');
         this.session = session;
-        this.seq = 0;
-        this.pending = 0;
-        this.failed = false;
-        this.chain = Promise.resolve();
+        this.uploader?.stop();
+        this.uploader = new LiveUploader(session, {
+            warning: message => this.onLiveWarning(message),
+            recovered: () => this.onLiveRecovered(),
+            fatal: message => this.onError(message),
+        });
         this.setTalking(talking);
         this.micSource.connect(this.micGain);
         this.worklet = new AudioWorkletNode(this.context, 'radio-pcm');
         this.mix.connect(this.worklet);
         this.worklet.connect(this.silent);
-        this.worklet.port.onmessage = e => { if (this.session !== session || this.failed)
-            return; const seq = this.seq++; const payload = wav(e.data.samples, e.data.rate); if (++this.pending > 4) {
-            this.failed = true;
-            this.onError('Connexion trop lente pour le direct. Retour à la programmation.');
-            return;
-        } this.chain = this.chain.then(async () => { if (this.session !== session || this.failed)
-            return; let success = false; for (let attempt = 0; attempt < 2; attempt++) {
-            try {
-                const r = await fetch(`/api/afoluku-radio/live/${session}/${seq}`, { method: 'PUT', headers: { 'Content-Type': 'audio/wav' }, body: payload, signal: AbortSignal.timeout(7000) });
-                if (!r.ok) {
-                    const d = await r.json();
-                    throw new Error(d.error || 'Envoi audio impossible.');
-                }
-                success = true;
-                break;
-            }
-            catch (error) {
-                if (attempt === 1)
-                    throw error;
-            }
-        } if (success)
-            this.pending--; }).catch(error => { if (this.session === session && !this.failed) {
-            this.failed = true;
-            this.onError(error.message || 'Le direct a été interrompu.');
-        } }); };
+        this.worklet.port.onmessage = e => {
+            if (this.session === session)
+                this.uploader?.enqueue(wav(e.data.samples, e.data.rate));
+        };
     }
-    stopLive() { this.setTalking(false); this.session = null; if (this.worklet) {
+    stopLive() { this.uploader?.stop(); this.uploader = null; this.setTalking(false); this.session = null; if (this.worklet) {
         this.worklet.port.onmessage = null;
         this.worklet.disconnect();
         this.mix.disconnect(this.worklet);
@@ -174,6 +155,7 @@ export class ListenerAudio {
     media;
     get audio() { return this.media.current; }
     gain;
+    programmeGain;
     key = '';
     session = '';
     last = -1;
@@ -192,14 +174,21 @@ export class ListenerAudio {
         this.spectrum.fftSize = 2048;
         this.spectrum.smoothingTimeConstant = .78;
         this.spectrum.connect(this.gain);
-        this.media.connect(this.context, this.spectrum, () => { if (!this.key)
+        this.programmeGain = this.context.createGain();
+        this.programmeGain.connect(this.spectrum);
+        this.media.connect(this.context, this.programmeGain, () => { if (!this.key)
             return; const generation = this.generation; void api('/api/afoluku-radio/station').then(s => { if (generation === this.generation && !this.disposed)
             return this.sync(s); }).catch(() => { }); }, () => this.onError('Lecture impossible. Utilisez MP3 pour l’audio ou MP4 H.264/AAC pour la vidéo.'));
     }
     isPlaying() { return !this.disposed && this.context.state === 'running' && (this.session ? this.sources.size > 0 && this.nextTime > this.context.currentTime : !!this.key && !this.audio.paused && !this.audio.ended && this.audio.readyState >= 3); }
     async resume() { if (!this.disposed)
         await this.context.resume(); }
-    clearLive() { for (const source of this.sources) {
+    setProgrammeAudible(audible, at = this.context.currentTime) {
+        const gain = this.programmeGain.gain;
+        gain.cancelScheduledValues(this.context.currentTime);
+        gain.setValueAtTime(audible ? 1 : 0, at);
+    }
+    clearLive() { this.setProgrammeAudible(true); for (const source of this.sources) {
         try {
             source.stop();
         }
@@ -233,44 +222,53 @@ export class ListenerAudio {
         if (cancelled())
             return;
         if (state.live) {
-            this.audio.pause();
-            this.key = '';
             const live = state.live;
-            if (live.session !== this.session || live.seq - this.last > 4) {
+            // Retain ordinary delays instead of dropping speech whenever four chunks lag.
+            // Only resynchronise beyond the server's twelve-chunk retention window.
+            if (live.session !== this.session || live.seq - this.last >= 12) {
                 this.clearLive();
                 this.session = live.session;
-                this.last = live.seq - 1;
-                this.nextTime = this.context.currentTime + .5;
+                this.last = Math.max(-1, live.seq - 2);
             }
             const session = this.session;
-            for (let seq = this.last + 1; seq <= live.seq; seq++) {
-                const r = await fetch(`/api/afoluku-radio/live/${session}/${seq}`, { cache: 'no-store', signal: AbortSignal.timeout(7000) });
-                if (cancelled())
-                    return;
-                if (!r.ok)
-                    throw new Error('Le direct se reconnecte…');
-                const data = await r.arrayBuffer();
-                if (cancelled())
-                    return;
-                const buffer = await this.context.decodeAudioData(data);
-                if (cancelled())
-                    return;
+            const sequences = Array.from({length: Math.max(0, live.seq - this.last)}, (_, i) => this.last + i + 1);
+            // Fetch/decode together: one slow round trip per batch, not per second of sound.
+            const buffers = await Promise.all(sequences.map(async seq => {
+                const response = await fetch(`/api/afoluku-radio/live/${session}/${seq}`, {cache: 'no-store', signal: AbortSignal.timeout(7000)});
+                if (!response.ok) throw new Error('Le direct se reconnecte…');
+                const data = await response.arrayBuffer();
+                if (cancelled()) return null;
+                return this.context.decodeAudioData(data);
+            }));
+            if (cancelled() || this.session !== session) return;
+            if (buffers.length) {
+                // Keep the programme audible while the first batch buffers. The source
+                // remains loaded (muted during speech) so returning to it cannot reload it.
+                if (this.nextTime < this.context.currentTime + .05) {
+                    this.nextTime = this.context.currentTime + 1.2;
+                    this.setProgrammeAudible(false, this.nextTime);
+                }
+            }
+            for (let i = 0; i < buffers.length; i++) {
+                const buffer = buffers[i];
                 const source = this.context.createBufferSource();
                 source.buffer = buffer;
                 source.connect(this.spectrum);
-                this.nextTime = Math.max(this.nextTime, this.context.currentTime + .1);
                 source.start(this.nextTime);
                 this.nextTime += buffer.duration;
                 this.sources.add(source);
-                source.onended = () => { this.sources.delete(source); source.disconnect(); };
-                this.last = seq;
+                source.onended = () => {
+                    this.sources.delete(source); source.disconnect();
+                    if (!this.sources.size && this.session === session && !this.disposed)
+                        this.setProgrammeAudible(true);
+                };
+                this.last = sequences[i];
             }
             return;
         }
-        if (this.session)
-            this.clearLive();
         const c = state.current;
         if (!c) {
+            this.clearLive();
             this.audio.pause();
             this.key = '';
             return;
@@ -284,6 +282,7 @@ export class ListenerAudio {
         else if (state.paused || Math.abs(this.audio.currentTime - c.offset) > 3)
             this.audio.currentTime = c.offset;
         if (state.paused) {
+            this.clearLive();
             this.audio.pause();
             return;
         }
@@ -295,6 +294,7 @@ export class ListenerAudio {
                 if (!cancelled())
                     throw error;
             }
+        if (!cancelled() && this.session) this.clearLive();
     }
     stop() { this.generation++; this.pending = null; this.latest = 0; this.clearLive(); this.audio.pause(); this.key = ''; }
     destroy() { this.stop(); this.disposed = true; this.media.destroy(); void this.context.close(); }
