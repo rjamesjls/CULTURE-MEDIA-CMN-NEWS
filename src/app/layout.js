@@ -1,6 +1,7 @@
 import './globals.css';
 import Header from '@/components/Header';
 import HeaderWrapper from '@/components/HeaderWrapper';
+import BottomNavServer from '@/components/BottomNavServer';
 import Footer from '@/components/Footer';
 import NewsletterPopup from '@/components/NewsletterPopup';
 import PublicOnly from '@/components/PublicOnly';
@@ -66,6 +67,7 @@ export default async function RootLayout({ children }) {
         <PublicOnly>
           <Footer lang={lang} />
           <NewsletterPopup lang={lang} />
+          <BottomNavServer lang={lang} />
         </PublicOnly>
         {/* Scripts globaux */}
         <script src="/js/main.js" defer></script>
