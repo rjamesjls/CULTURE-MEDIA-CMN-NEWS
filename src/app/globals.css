@@ -491,7 +491,7 @@ textarea.input {
   width: auto;
 }
 
-.nav-menu {
+.nav-menu { display: none !important;
   display: flex;
   align-items: center;
   gap: var(--space-4);
@@ -721,7 +721,7 @@ textarea.input {
     grid-template-columns: 1fr;
   }
   
-  .nav-menu {
+  .nav-menu { display: none !important;
     position: fixed;
     top: 70px;
     left: -100%;
@@ -746,7 +746,7 @@ textarea.input {
     display: none !important;
   }
   
-  .nav-menu {
+  .nav-menu { display: none !important;
     display: none !important;
   }
   
@@ -2618,7 +2618,7 @@ body.theme-alternate .reading-progress {
   right: 0;
   background: #111310;
   border-top: 1px solid #3c492e;
-  display: none;
+  display: flex;
   justify-content: space-around;
   align-items: center;
   padding: 8px 0 calc(8px + env(safe-area-inset-bottom, 0px));
@@ -2641,14 +2641,8 @@ body.theme-alternate .reading-progress {
   color: #f6cf28;
 }
 
-@media (max-width: 768px) {
-  .mobile-bottom-nav {
-    display: flex;
-  }
-  body {
-    padding-bottom: 70px;
-  }
-  /* Hide header on radio page on mobile? Wait, we already completely hide header on radio page using HeaderWrapper. */
+body {
+  padding-bottom: 70px;
 }
 
 /* Side Drawer for Categories */
