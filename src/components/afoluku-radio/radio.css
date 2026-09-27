@@ -164,3 +164,10 @@
 .afoluku-radio-app .listener-video{background:transparent;border:0;border-radius:16px;overflow:hidden;display:flex;flex-direction:column;align-items:center}
 .afoluku-radio-app .listener-video[hidden]{display:none}
 .afoluku-radio-app .listener-video video{display:block;aspect-ratio:auto;width:auto;max-width:100%;height:auto;max-height:70vh;object-fit:contain;border-radius:16px;background:transparent}
+
+.afoluku-radio-app .public-track-progress{display:flex;align-items:center;gap:12px;width:100%;margin:18px 0;color:#d8deed;font-size:13px;font-variant-numeric:tabular-nums}
+.afoluku-radio-app .public-track-progress span{flex-shrink:0}
+.afoluku-radio-app .public-track-progress progress{flex:1;min-width:0;width:100%;height:8px;border:0;border-radius:999px;overflow:hidden;background:#24314c;accent-color:#ffd21c;appearance:none}
+.afoluku-radio-app .public-track-progress progress::-webkit-progress-bar{background:#24314c;border-radius:999px}
+.afoluku-radio-app .public-track-progress progress::-webkit-progress-value{background:#ffd21c;border-radius:999px}
+.afoluku-radio-app .public-track-progress progress::-moz-progress-bar{background:#ffd21c;border-radius:999px}

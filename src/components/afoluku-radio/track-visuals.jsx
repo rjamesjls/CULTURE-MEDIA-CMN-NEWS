@@ -1,6 +1,7 @@
 'use client';
 import { useLayoutEffect, useEffect, useId, useState, useRef, useMemo } from 'react';
 import { Music2, AudioLines, Video } from 'lucide-react';
+import { seconds } from '@/lib/afoluku-radio/radio';
 export function TrackArtwork({ src, type = 'image', animate = false, title = '', className = '' }) {
     const [failedSrc, setFailedSrc] = useState(null);
     const failed=!!src&&failedSrc===src;
@@ -23,9 +24,9 @@ export function TrackArtwork({ src, type = 'image', animate = false, title = '',
     }, [src, type, animate, failed]);
     return <div className={`track-artwork ${className}`}>{src && !failed ? (type === 'video' ? <><video ref={video} src={src} muted loop playsInline preload="metadata" aria-label={title ? `Pochette vidéo de ${title}` : 'Pochette vidéo'} onError={() => setFailedSrc(src)}/><Video className="video-cover-mark" aria-hidden="true"/></> : <img src={src} alt={title ? `Pochette de ${title}` : 'Pochette du morceau'} draggable={false} loading="lazy" onError={() => setFailedSrc(src)}/>) : <Music2 aria-hidden="true"/>}</div>;
 }
-export function Waveform({ peaks, progress = 0, playback, readPosition, compact = false, label = 'Forme d’onde du morceau' }) {
+export function Waveform({ peaks, progress = 0, playback, readPosition, compact = false, progressFallback = false, label = 'Forme d’onde du morceau' }) {
     const clip = useId().replace(/:/g, '');
-    const mask = useRef(null), cursor = useRef(null);
+    const mask = useRef(null), cursor = useRef(null), progressBar = useRef(null), elapsedTime = useRef(null);
     const shown = useRef({ key: '', value: 0 }), position = useRef(readPosition);
     useLayoutEffect(() => { position.current = readPosition; });
     const duration = playback?.duration || 0, offset = playback?.offset || 0, key = playback?.key || '', paused = !!playback?.paused;
@@ -33,10 +34,10 @@ export function Waveform({ peaks, progress = 0, playback, readPosition, compact 
     const hasPeaks = !!peaks?.length;
     const bars = useMemo(() => peaks?.map((p, i) => { const h = Math.max(1, Math.min(1, Math.max(0, p)) * 62); return <rect key={i} x={i * 512 / peaks.length} y={(64 - h) / 2} width={Math.max(1, 512 / peaks.length - 1.5)} height={h} rx=".8"/>; }), [peaks]);
     useEffect(() => {
-        if (!hasPeaks)
+        if (!hasPeaks && !progressFallback)
             return;
         const clamp = (n) => Math.max(0, Math.min(1, n));
-        const paint = (fraction) => { mask.current?.setAttribute('width', String(512 * fraction)); cursor.current?.setAttribute('x1', String(512 * fraction)); cursor.current?.setAttribute('x2', String(512 * fraction)); cursor.current?.setAttribute('opacity', fraction > 0 && fraction < 1 ? '1' : '0'); };
+        const paint = (fraction) => { if (progressBar.current) { progressBar.current.value = fraction; progressBar.current.setAttribute('aria-valuetext', `${seconds(fraction * duration)} sur ${seconds(duration)}`); } if (elapsedTime.current) elapsedTime.current.textContent = seconds(fraction * duration); mask.current?.setAttribute('width', String(512 * fraction)); cursor.current?.setAttribute('x1', String(512 * fraction)); cursor.current?.setAttribute('x2', String(512 * fraction)); cursor.current?.setAttribute('opacity', fraction > 0 && fraction < 1 ? '1' : '0'); };
         if (compact || duration <= 0 || paused) {
             paint(value);
             return;
@@ -66,7 +67,9 @@ export function Waveform({ peaks, progress = 0, playback, readPosition, compact 
         const animate = (now) => { draw(now); frame = requestAnimationFrame(animate); };
         frame = requestAnimationFrame(animate);
         return () => cancelAnimationFrame(frame);
-    }, [hasPeaks, compact, duration, offset, key, value, paused]);
+    }, [hasPeaks, progressFallback, compact, duration, offset, key, value, paused]);
+    if (!hasPeaks && progressFallback)
+        return <div className="public-track-progress"><span ref={elapsedTime} aria-label="Temps écoulé">{seconds(value * duration)}</span><progress ref={progressBar} max={1} value={value} aria-label="Progression du morceau" aria-valuetext={`${seconds(value * duration)} sur ${seconds(duration)}`}/><span aria-label="Durée totale">{seconds(duration)}</span></div>;
     if (!hasPeaks)
         return compact ? null : <div className="wave-empty"><AudioLines size={18}/><span>Forme d’onde non calculée</span></div>;
     return <svg className={`waveform ${compact ? 'waveform-small' : ''}`} viewBox="0 0 512 64" preserveAspectRatio="none" role="img" aria-label={`${label}${value ? `, progression ${Math.round(value * 100)} %` : ''}`}><title>{label}</title><defs><clipPath id={clip}><rect ref={mask} width="0" height="64"/></clipPath></defs><g className="wave-unplayed">{bars}</g><g className="wave-played" clipPath={`url(#${clip})`}>{bars}</g><line ref={cursor} x1="0" x2="0" y1="0" y2="64" opacity="0" className="wave-cursor"/></svg>;
