@@ -8,6 +8,8 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
+import AdminWrapper from './AdminWrapper';
+
 export default async function AdminLayout({ children }) {
   const profile = await getUserProfile();
 
@@ -68,7 +70,7 @@ export default async function AdminLayout({ children }) {
   const isAdmin = profile.role === 'admin';
 
   return (
-    <div className="admin-wrapper">
+    <AdminWrapper>
       {/* Admin Sidebar */}
       <aside className="admin-sidebar">
         <div className="admin-brand">
@@ -221,6 +223,6 @@ export default async function AdminLayout({ children }) {
           {children}
         </div>
       </main>
-    </div>
+    </AdminWrapper>
   );
 }

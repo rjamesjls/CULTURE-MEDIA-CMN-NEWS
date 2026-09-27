@@ -322,3 +322,8 @@
   font-size: 16px !important;
   min-height: 250px;
 }
+
+.hide-sidebar .admin-sidebar {
+  display: none !important;
+}
+
