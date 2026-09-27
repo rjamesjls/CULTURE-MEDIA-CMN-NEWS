@@ -308,7 +308,7 @@ export default function Studio() {
         setStation(await api('/api/afoluku-radio/station'));
         throw e;
     } }
-    function allowFileDrop(e) { if (!disabled && e.dataTransfer.types.includes('Files')) {
+    function allowFileDrop(e) { if (!disabled && Array.from(e.dataTransfer.types).includes('Files')) {
         e.preventDefault();
         e.dataTransfer.dropEffect = 'copy';
     } }
@@ -324,10 +324,10 @@ export default function Studio() {
     else {
         e.dataTransfer.setData(TRACK_DRAG, t.id);
         e.dataTransfer.effectAllowed = 'copy';
-    } }} onDragEnd={() => { playlistDrag.current = null; }} onDragOver={e => { if (inPlaylist && !disabled && e.dataTransfer.types.includes('application/x-afoluku-playlist')) {
+    } }} onDragEnd={() => { playlistDrag.current = null; }} onDragOver={e => { if (inPlaylist && !disabled && Array.from(e.dataTransfer.types).includes('application/x-afoluku-playlist')) {
         e.preventDefault();
         e.dataTransfer.dropEffect = 'move';
-    } }} onDrop={e => { if (!inPlaylist || disabled || !e.dataTransfer.types.includes('application/x-afoluku-playlist'))
+    } }} onDrop={e => { if (!inPlaylist || disabled || !Array.from(e.dataTransfer.types).includes('application/x-afoluku-playlist'))
         return; e.preventDefault(); const origin = playlistDrag.current; if (!origin || origin.playlist.id !== playlist.id || origin.playlist.version !== playlist.version) {
         setError('La playlist a changé. Recommencez le déplacement.');
         return;

@@ -34,7 +34,7 @@ export default function BroadcastQueue({ station, playlists, playlistId, disable
     async function update(next, basis = station) { await change('queue-update', { trackIds: next.map(t => t.id) }, basis); }
     function accepts(e) { return !locked && Array.from(e.dataTransfer.types).some(t => [QUEUE_DRAG, TRACK_DRAG, 'Files'].includes(t)); }
     function dragOver(e, index) { if (!accepts(e))
-        return; e.preventDefault(); e.stopPropagation(); setOver(index); e.dataTransfer.dropEffect = e.dataTransfer.types.includes(QUEUE_DRAG) ? 'move' : 'copy'; }
+        return; e.preventDefault(); e.stopPropagation(); setOver(index); e.dataTransfer.dropEffect = Array.from(e.dataTransfer.types).includes(QUEUE_DRAG) ? 'move' : 'copy'; }
     async function importToQueue(files, index) { const basis = station; if (locked)
         return; setSaving(true); onError(''); try {
         const ids = await onImport(files);
@@ -65,7 +65,7 @@ export default function BroadcastQueue({ station, playlists, playlistId, disable
             await importToQueue(Array.from(e.dataTransfer.files), index);
             return;
         }
-        if (e.dataTransfer.types.includes(QUEUE_DRAG)) {
+        if (Array.from(e.dataTransfer.types).includes(QUEUE_DRAG)) {
             const origin = drag.current;
             if (!origin)
                 return;

@@ -96,7 +96,7 @@ export async function POST(req) {
         }
         if (data.action === 'start') {
             const p = await playlistSnapshot(id(data.playlistId));
-            await db().prepare('INSERT INTO station(id,snapshot,playlist_name,started_at,loop,revision) VALUES (1,?,?,?,?,1) ON CONFLICT(id) DO UPDATE SET snapshot=excluded.snapshot,playlist_name=excluded.playlist_name,started_at=excluded.started_at,loop=excluded.loop,paused_at=0,stream_clock_shift=0,revision=station.revision+1').bind(JSON.stringify(p.tracks), p.name, now, data.loop ? 1 : 0).run();
+            await db().prepare('INSERT INTO station(id,snapshot,playlist_name,started_at,loop,revision) VALUES (1,?,?,?,?,1) ON CONFLICT(id) DO UPDATE SET snapshot=excluded.snapshot,playlist_name=excluded.playlist_name,started_at=excluded.started_at,loop=excluded.loop,paused_at=0,stream_clock_shift=0,revision=revision+1').bind(JSON.stringify(p.tracks), p.name, now, data.loop ? 1 : 0).run();
         }
         if (data.action === 'stop') {
             await cancelScheduledTimeline();
@@ -106,7 +106,7 @@ export async function POST(req) {
         if (data.action === 'loop') {
             check(typeof data.loop === 'boolean', 'Choisissez un mode de lecture valide.');
             const rebased = rebaseProgramme(tracks, row.started_at, !!row.loop, clock);
-            const result = await db().prepare('INSERT INTO station(id,snapshot,started_at,loop,revision) VALUES (1,?,?,?,1) ON CONFLICT(id) DO UPDATE SET snapshot=excluded.snapshot,started_at=excluded.started_at,loop=excluded.loop,revision=station.revision+1 WHERE station.revision=?').bind(JSON.stringify(rebased.tracks), rebased.startedAt, data.loop ? 1 : 0, row.revision).run();
+            const result = await db().prepare('INSERT INTO station(id,snapshot,started_at,loop,revision) VALUES (1,?,?,?,1) ON CONFLICT(id) DO UPDATE SET snapshot=excluded.snapshot,started_at=excluded.started_at,loop=excluded.loop,revision=revision+1 WHERE revision=?').bind(JSON.stringify(rebased.tracks), rebased.startedAt, data.loop ? 1 : 0, row.revision).run();
             if (!result.meta.changes)
                 throw new ApiError(409, 'La programmation a changé. Actualisez puis recommencez.');
         }
