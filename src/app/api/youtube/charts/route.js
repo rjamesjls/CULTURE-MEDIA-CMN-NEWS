@@ -9,6 +9,7 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const sector = searchParams.get('sector') || 'all';
     const gender = searchParams.get('gender') || 'all';
+    const songType = searchParams.get('songType') || 'all';
     const period = searchParams.get('period') || 'all_time';
     const sortBy = searchParams.get('sort') || searchParams.get('sortBy') || 'views';
 
@@ -25,6 +26,10 @@ export async function GET(request) {
       query = query.eq('sector', sector);
     }
     
+    if (songType !== 'all') {
+      query = query.eq('song_type', songType);
+    }
+
     if (gender !== 'all') {
       query = query.eq('gender', gender);
     }

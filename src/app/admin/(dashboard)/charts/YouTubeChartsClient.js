@@ -33,6 +33,7 @@ export default function YouTubeChartsClient() {
   const [artistName, setArtistName] = useState('');
   const [sector, setSector] = useState('Guyane');
   const [gender, setGender] = useState('Non spécifié');
+  const [songType, setSongType] = useState('Non spécifié');
   const [isAdding, setIsAdding] = useState(false);
   const [addProgress, setAddProgress] = useState(null); // { current: 1, total: 5, success: 4, errors: [] }
   const [managingId, setManagingId] = useState(null); // ID of the item being updated or deleted
@@ -56,6 +57,7 @@ export default function YouTubeChartsClient() {
   // Filtres d'affichage
   const [filterSector, setFilterSector] = useState('all');
   const [filterGender, setFilterGender] = useState('all');
+  const [filterSongType, setFilterSongType] = useState('all');
   const [filterPeriod, setFilterPeriod] = useState('all_time');
   const [sortBy, setSortBy] = useState('views'); // Pour clips: views/likes, Pour chaînes: views/subscribers
   const [exportModal, setExportModal] = useState({ isOpen: false, isLoading: false, sectors: [] });
@@ -64,7 +66,7 @@ export default function YouTubeChartsClient() {
     setIsLoading(true);
     try {
       const endpoint = activeTab === 'clips' ? '/api/youtube/charts' : '/api/youtube/channels/charts';
-      const res = await fetch(`${endpoint}?period=${filterPeriod}&sector=${filterSector}&gender=${filterGender}&sort=${sortBy}`);
+      const res = await fetch(`${endpoint}?period=${filterPeriod}&sector=${filterSector}&gender=${filterGender}&songType=${filterSongType}&sort=${sortBy}`);
       const data = await res.json();
       // API clips returns { charts: [...] }, API channels returns { success: true, data: [...] }
       const results = data.charts || data.data || [];
@@ -82,12 +84,14 @@ export default function YouTubeChartsClient() {
       const savedPeriod = localStorage.getItem('yt_filterPeriod');
       const savedSector = localStorage.getItem('yt_filterSector');
       const savedGender = localStorage.getItem('yt_filterGender');
+      const savedSongType = localStorage.getItem('yt_filterSongType');
       const savedSort = localStorage.getItem('yt_sortBy');
       const savedTab = localStorage.getItem('yt_activeTab');
       
       if (savedPeriod) setFilterPeriod(savedPeriod);
       if (savedSector) setFilterSector(savedSector);
       if (savedGender) setFilterGender(savedGender);
+      if (savedSongType) setFilterSongType(savedSongType);
       if (savedSort) setSortBy(savedSort);
       if (savedTab) setActiveTab(savedTab);
     }
@@ -112,11 +116,12 @@ export default function YouTubeChartsClient() {
       localStorage.setItem('yt_filterPeriod', filterPeriod);
       localStorage.setItem('yt_filterSector', filterSector);
       localStorage.setItem('yt_filterGender', filterGender);
+      localStorage.setItem('yt_filterSongType', filterSongType);
       localStorage.setItem('yt_sortBy', sortBy);
       localStorage.setItem('yt_activeTab', activeTab);
     }
     fetchCharts();
-  }, [filterPeriod, filterSector, filterGender, sortBy, activeTab]);
+  }, [filterPeriod, filterSector, filterGender, filterSongType, sortBy, activeTab]);
 
   const handleAdd = async (e) => {
     e.preventDefault();
@@ -141,8 +146,8 @@ export default function YouTubeChartsClient() {
       
       try {
         const bodyPayload = activeTab === 'clips' 
-          ? { url: currentLink, sector, gender, artistName: links.length === 1 ? artistName : '' } 
-          : { input: currentLink, sector, gender };
+          ? { url: currentLink, sector, gender, song_type: songType, artistName: links.length === 1 ? artistName : '' } 
+          : { input: currentLink, sector, gender, song_type: songType };
           
         const res = await fetch(endpoint, {
           method: 'POST',
@@ -261,6 +266,27 @@ export default function YouTubeChartsClient() {
       const data = await res.json();
       if (data.success) {
         setCharts(prev => prev.map(item => item.id === id ? { ...item, gender: newGender } : item));
+      } else {
+        alert("Erreur lors de la mise à jour: " + data.error);
+      }
+    } catch (error) {
+      alert("Erreur réseau");
+    } finally {
+      setManagingId(null);
+    }
+  };
+
+  const handleUpdateSongType = async (id, newSongType) => {
+    setManagingId(id);
+    try {
+      const res = await fetch('/api/youtube/manage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'update_song_type', type: activeTab, id, song_type: newSongType })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setCharts(prev => prev.map(item => item.id === id ? { ...item, song_type: newSongType } : item));
       } else {
         alert("Erreur lors de la mise à jour: " + data.error);
       }
@@ -633,6 +659,19 @@ export default function YouTubeChartsClient() {
           
           <div className="flex items-center bg-[#18153a] border border-[#2d295a] rounded-xl overflow-hidden">
             <select 
+              value={filterSongType} onChange={(e) => setFilterSongType(e.target.value)}
+              className="px-4 py-2.5 text-sm bg-transparent text-gray-300 outline-none hover:text-white cursor-pointer"
+            >
+              <option value="all">Tous les types</option>
+              <option value="Artiste Gospel">Artiste Gospel</option>
+              <option value="Artiste Traditionnel">Artiste Traditionnel</option>
+              <option value="Artiste Urbain">Artiste Urbain</option>
+              <option value="Non spécifié">Non spécifié</option>
+            </select>
+          </div>
+
+          <div className="flex items-center bg-[#18153a] border border-[#2d295a] rounded-xl overflow-hidden">
+            <select 
               value={filterPeriod} onChange={(e) => setFilterPeriod(e.target.value)}
               className="px-4 py-2.5 text-sm bg-transparent text-gray-300 outline-none hover:text-white cursor-pointer"
             >
@@ -845,6 +884,18 @@ export default function YouTubeChartsClient() {
                   <option value="Mixte/Groupe">Mixte / Groupe</option>
                 </select>
               </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-400 mb-2">Type de chanson</label>
+                <select 
+                  value={songType} onChange={(e) => setSongType(e.target.value)}
+                  className="w-full px-4 py-3 bg-[#18153a] border border-[#2d295a] rounded-xl text-sm outline-none focus:border-blue-500 transition-colors text-white appearance-none"
+                >
+                  <option value="Non spécifié">Non spécifié</option>
+                  <option value="Artiste Gospel">Artiste Gospel</option>
+                  <option value="Artiste Traditionnel">Artiste Traditionnel</option>
+                  <option value="Artiste Urbain">Artiste Urbain</option>
+                </select>
+              </div>
               <button 
                 type="submit" disabled={isAdding || !url.trim()}
                 className="w-full py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl font-bold shadow-[0_0_20px_rgba(79,70,229,0.4)] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -949,12 +1000,23 @@ export default function YouTubeChartsClient() {
                     value={item.gender || 'Non spécifié'}
                     onChange={(e) => handleUpdateGender(item.id, e.target.value)}
                     disabled={managingId === item.id}
-                    className="bg-transparent border border-[#2d295a] rounded-lg px-2 py-1 text-xs text-gray-400 outline-none hover:text-white cursor-pointer disabled:opacity-50"
+                    className="bg-transparent border border-[#2d295a] rounded-lg px-2 py-1 text-xs text-gray-400 outline-none hover:text-white cursor-pointer disabled:opacity-50 mt-1"
                   >
                     <option value="Non spécifié" className="bg-[#18153a]">Non spécifié</option>
                     <option value="Masculin" className="bg-[#18153a]">Masculin</option>
                     <option value="Féminin" className="bg-[#18153a]">Féminin</option>
                     <option value="Mixte/Groupe" className="bg-[#18153a]">Mixte / Groupe</option>
+                  </select>
+                  <select 
+                    value={item.song_type || 'Non spécifié'}
+                    onChange={(e) => handleUpdateSongType(item.id, e.target.value)}
+                    disabled={managingId === item.id}
+                    className="bg-transparent border border-[#2d295a] rounded-lg px-2 py-1 text-xs text-gray-400 outline-none hover:text-white cursor-pointer disabled:opacity-50 mt-1"
+                  >
+                    <option value="Non spécifié" className="bg-[#18153a]">Non spécifié</option>
+                    <option value="Artiste Gospel" className="bg-[#18153a]">Artiste Gospel</option>
+                    <option value="Artiste Traditionnel" className="bg-[#18153a]">Artiste Traditionnel</option>
+                    <option value="Artiste Urbain" className="bg-[#18153a]">Artiste Urbain</option>
                   </select>
                 </div>
                 <div className="w-1/4 text-right pr-4">

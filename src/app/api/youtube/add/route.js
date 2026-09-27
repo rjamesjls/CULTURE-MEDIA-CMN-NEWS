@@ -15,7 +15,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 
-    const { url, sector, artistName, gender } = await request.json();
+    const { url, sector, artistName, gender, song_type } = await request.json();
 
     if (!url || !sector) {
       return NextResponse.json({ error: 'URL et secteur sont requis' }, { status: 400 });
@@ -67,6 +67,7 @@ export async function POST(request) {
         published_at: snippet.publishedAt,
         sector: sector,
         gender: gender || null,
+        song_type: song_type || null,
         thumbnail_url: thumbnail
       })
       .select()
