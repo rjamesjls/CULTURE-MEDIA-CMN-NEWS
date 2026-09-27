@@ -1,0 +1,60 @@
+'use client';
+import { useEffect, useRef, useState } from 'react';
+import { Circle, Square, Download } from 'lucide-react';
+import { recordMix } from '@/lib/afoluku-radio/recording';
+import { seconds } from '@/lib/afoluku-radio/radio';
+
+export default function RadioRecorder({ prepare, disabled }) {
+    const recorder = useRef(null), starting = useRef(false), mounted = useRef(false), urls = useRef([]);
+    const [status, setStatus] = useState('idle'), [elapsed, setElapsed] = useState(0);
+    const [takes, setTakes] = useState([]), [error, setError] = useState('');
+    useEffect(() => {
+        mounted.current = true;
+        const allocatedUrls = urls.current;
+        return () => { mounted.current = false; recorder.current?.stop(); allocatedUrls.forEach(URL.revokeObjectURL); };
+    }, []);
+    useEffect(() => {
+        if (status !== 'recording') return;
+        const start = Date.now();
+        const timer = setInterval(() => setElapsed((Date.now() - start) / 1000), 500);
+        return () => clearInterval(timer);
+    }, [status]);
+    useEffect(() => {
+        if (status === 'idle' && !takes.some(t => !t.saved)) return;
+        const warn = event => { event.preventDefault(); event.returnValue = ''; };
+        window.addEventListener('beforeunload', warn);
+        return () => window.removeEventListener('beforeunload', warn);
+    }, [status, takes]);
+    async function start() {
+        if (recorder.current || starting.current) return;
+        starting.current = true; setStatus('starting'); setError(''); setElapsed(0);
+        try {
+            const desk = await prepare();
+            if (!mounted.current) return;
+            const name = `AFOLUKU-RADIO-${new Date().toISOString().replace(/[:.]/g, '-')}`;
+            recorder.current = recordMix(desk, {
+                error: message => mounted.current && setError(message),
+                limit: message => mounted.current && setError(message),
+                complete: (blob, extension) => {
+                    recorder.current = null;
+                    if (!mounted.current) return;
+                    setStatus('idle');
+                    if (!blob.size) { setError('Aucun son enregistré. Relancez une prise.'); return; }
+                    const url = URL.createObjectURL(blob); urls.current.push(url);
+                    setTakes(old => [{ url, name: `${name}.${extension}`, bytes: blob.size, saved: false }, ...old]);
+                },
+            });
+            setStatus('recording');
+        } catch (e) { if (mounted.current) { setError(e.message); setStatus('idle'); } }
+        finally { starting.current = false; }
+    }
+    return <section className="radio-recorder" aria-label="Enregistrement de la radio">
+        <div className="transport">
+            {status === 'recording' ? <button className="primary record-active" onClick={() => { setStatus('stopping'); recorder.current?.stop(); }}><Square size={17}/>Arrêter l’enregistrement</button> : <button className="secondary" disabled={disabled || status !== 'idle'} onClick={() => void start()}><Circle size={17}/>{status === 'starting' ? 'Préparation…' : status === 'stopping' ? 'Finalisation…' : 'Enregistrer la radio'}</button>}
+            {status !== 'idle' && <span className="record-timer" role="status">● REC {seconds(elapsed)}</span>}
+        </div>
+        <p className="help">Enregistre le son de l’antenne : musique, jingles et micro de cette régie. Gardez cette page ouverte jusqu’au téléchargement. Audio uniquement.</p>
+        {error && <p className="notice error" role="alert">{error}</p>}
+        {takes.map(take => <div className="record-take" key={take.url}><audio controls src={take.url} preload="metadata" aria-label={`Réécouter ${take.name}`}/><a className="secondary" href={take.url} download={take.name} onClick={() => setTakes(old => old.map(t => t.url === take.url ? { ...t, saved: true } : t))}><Download size={16}/>Télécharger · {(take.bytes / 1024 / 1024).toFixed(1)} Mo</a><span className="help">{take.name}</span></div>)}
+    </section>;
+}

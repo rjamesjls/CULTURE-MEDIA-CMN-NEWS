@@ -14,6 +14,7 @@ import {uploadRadioFile} from '@/lib/afoluku-radio/upload';
 import { api, AudioDesk, readFile } from '@/lib/afoluku-radio/audio';
 import UrlImport from './url-import';
 import SeekControls from './seek-controls';
+import RadioRecorder from './recorder';
 import { seekLocal } from '@/lib/afoluku-radio/seek';
 import { Link2 } from 'lucide-react';
 import TrackEditor from './track-editor';
@@ -225,6 +226,13 @@ export default function Studio() {
     }
     else
         await enableMonitor(); }
+    async function prepareRecording() {
+        const current = await api('/api/afoluku-radio/station');
+        if (current.live && current.live.session !== sessionRef.current)
+            throw new Error('Lancez l’enregistrement depuis la régie qui diffuse le micro en direct.');
+        await activatePreview(current);
+        return ensure();
+    }
     async function seekProgramme(request) {
         const before = stationRef.current;
         const current = await api('/api/afoluku-radio/station', 'POST', { action: 'seek', revision: before.revision, currentKey: before.current?.key, ...request });
@@ -312,6 +320,7 @@ export default function Studio() {
     return <SidebarProvider className="studio"><Sidebar collapsible="none" className="rail"><Link href="/admin/webradio" className="brand">AFOLUKU<span>RADIO / STUDIO</span></Link><div className="rail-label">VOTRE ESPACE</div><nav aria-label="Navigation de la régie">{[['studio', Radio, 'Régie radio'], ['library', Music2, 'Bibliothèque'], ['playlists', ListMusic, 'Playlists'], ['ranking', Trophy, 'Classement'], ['settings', Settings, 'Paramètres']].map(([id, Icon, label]) => <button key={id} className={view === id ? 'selected' : ''} aria-current={view === id ? 'page' : undefined} title={label} onClick={() => setView(id)}><Icon />{label}</button>)}</nav><div className="rail-bottom"><div className="station-icon"><Radio /></div><b>AFOLUKU RADIO</b><span>La web radio d’AFOLUKU TV</span></div></Sidebar><div className="workspace"><header className="topbar"><AudienceCount enabled={authorized}/><Link href="/fr/radio" target="_blank" rel="noopener">Page d’écoute <ArrowUpRight size={16}/></Link></header><main><input ref={input} type="file" multiple accept="audio/*,video/mp4,video/webm,.mp3,.m4a,.wav,.ogg,.flac,.mp4,.webm" hidden onChange={e => { if (e.target.files)
         void importFiles(Array.from(e.target.files)); }}/><div className={`heading ${view === 'studio' ? 'studio-heading' : ''}`}><div><div className="eyebrow">AFOLUKU RADIO / {view === 'studio' ? 'RÉGIE' : view === 'library' ? 'BIBLIOTHÈQUE' : view === 'ranking' ? 'CLASSEMENT' : view === 'settings' ? 'PARAMÈTRES' : 'PLAYLISTS'}</div><h1>{view === 'studio' ? 'Régie radio' : view === 'library' ? 'Tous vos médias' : view === 'ranking' ? 'Classement des streams' : view === 'settings' ? 'Paramètres' : 'Votre programmation'}<span>.</span></h1><p>{view === 'settings' ? 'Personnalisez votre radio et votre confort d’écoute.' : view === 'ranking' ? 'Les titres les plus écoutés sur AFOLUKU RADIO.' : view === 'playlists' ? 'Composez l’ordre de passage de vos morceaux.' : 'Votre musique et votre voix, au même endroit.'}</p></div>{view === 'playlists' ? <button className="primary" disabled={disabled} onClick={() => { setName(''); setNameDialog('new'); }}><Plus size={18}/>Créer une playlist</button> : view === 'ranking' || view === 'settings' ? null : uploadButton()}</div>
  {error && <div className="notice error" role="alert">{error} <button className="ghost" aria-label="Réessayer le chargement" onClick={() => void run(refresh)}><RefreshCw size={16}/></button></div>}{needsLogin && <div className="notice"><Link href="/admin/login?next=%2Fadmin%2Fwebradio">Se reconnecter à la régie</Link></div>}{notice && <div className="notice" role="status">{notice}</div>}{upload && <div className="notice upload-progress"><div className="row"><Upload size={17}/><span>Importation {upload.done + 1}/{upload.total} : {upload.name}</span></div><Progress value={upload.done / upload.total * 100} className="mt-3"/></div>}
+ <RadioRecorder prepare={prepareRecording} disabled={disabled}/>
  <div hidden={view !== 'studio'} className="studio-deck-area">
  <div className="studio-previews">
  <section className="media-deck preview-deck" aria-label="Préécoute locale"><header className="deck-heading"><span>PREVIEW</span><span className="badge">{previewTrack ? previewPaused ? 'EN PAUSE' : 'PRÉÉCOUTE' : 'PRÊT'}</span></header><div className="deck-stage"><video ref={previewVideo} hidden={!isVideo(previewTrack?.mime)} playsInline preload="metadata" aria-label="Vidéo en préécoute"/><div className="deck-audio" hidden={isVideo(previewTrack?.mime)}><TrackArtwork src={previewTrack?.coverUrl} type={previewTrack?.coverType} animate={!!previewTrack && !previewPaused} title={previewTrack?.title} className="onair-cover"/><AudioSpectrum hideTitle getAnalyser={() => previewDesk.current?.spectrum || null} active={!!previewTrack && !previewPaused} hint="Choisissez un titre à préécouter dans la bibliothèque."/></div></div><div className="deck-caption"><Headphones size={16}/><span>{previewTrack?.title || 'Aucun média en préécoute'}</span></div></section>
