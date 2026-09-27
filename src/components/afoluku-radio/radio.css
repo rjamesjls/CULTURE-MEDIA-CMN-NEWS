@@ -39,3 +39,5 @@
 
 .afoluku-radio-app input, .afoluku-radio-app select, .afoluku-radio-app textarea { color: #fff !important; background: #2c3327 !important; border: 1px solid #4a5440; padding: 8px 12px; border-radius: 6px; }
 .afoluku-radio-app input[type=range], .afoluku-radio-app input[type=checkbox] { background: transparent !important; }
+
+.afoluku-radio-app option { color: #fff !important; background: #2c3327 !important; }
