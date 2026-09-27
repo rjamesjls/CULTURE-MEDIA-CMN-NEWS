@@ -743,7 +743,11 @@ textarea.input {
   }
   
   .menu-toggle {
-    display: flex;
+    display: none !important;
+  }
+  
+  .nav-menu {
+    display: none !important;
   }
   
   .search-bar {
