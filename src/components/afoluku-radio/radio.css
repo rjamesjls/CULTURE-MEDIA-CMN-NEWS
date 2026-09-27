@@ -81,3 +81,9 @@
 .afoluku-radio-app { padding-bottom: 70px; }
 
 .afoluku-radio-app .radio-import-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px; }
+
+.afoluku-radio-app .radio-seek { margin: 14px 0; }
+.afoluku-radio-app .radio-seek-time { font-variant-numeric: tabular-nums; color: var(--foreground); }
+.afoluku-radio-app .radio-seek-form { display: flex; align-items: flex-end; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.afoluku-radio-app .radio-seek-form label { display: grid; gap: 5px; font-size: 12px; }
+.afoluku-radio-app .radio-seek-form input { width: 150px; max-width: 100%; }

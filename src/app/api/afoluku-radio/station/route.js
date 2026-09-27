@@ -6,12 +6,31 @@ export async function POST(req) {
     return handle(async () => {
         await admin(req);
         const data = await body(req);
-        check(['start', 'stop', 'pause', 'resume', 'next', 'loop', 'queue-update', 'queue-load', 'queue-start'].includes(data.action), 'Action inconnue.');
+        check(['seek', 'start', 'stop', 'pause', 'resume', 'next', 'loop', 'queue-update', 'queue-load', 'queue-start'].includes(data.action), 'Action inconnue.');
         const row = await stationRow();
         const now = Date.now();
         const tracks = JSON.parse(row.snapshot);
         const clock = row.paused_at || now;
         const current = locate(tracks, row.started_at, !!row.loop, clock);
+        if (data.action === 'seek') {
+            if (data.revision !== row.revision || data.currentKey !== current?.key)
+                throw new ApiError(409, 'Le titre a changé. Actualisez puis recommencez.');
+            check(current, 'Aucun titre à déplacer.');
+            const relative = Object.hasOwn(data, 'delta');
+            const value = relative ? data.delta : data.position;
+            check(typeof value === 'number' && Number.isFinite(value), 'Position invalide.');
+            check(relative ? Math.abs(value) <= 3600 : value >= 0 && value < current.duration, 'Choisissez une position dans la durée du titre.');
+            if (row.live_session) {
+                const live = await db().prepare('SELECT updated_at FROM live_sessions WHERE id=?').bind(row.live_session).first();
+                if (live && now - live.updated_at < 15000)
+                    throw new ApiError(409, 'Terminez la prise de parole avant de déplacer la musique à l’antenne.');
+            }
+            const position = Math.max(0, Math.min(current.duration - 0.05, relative ? current.offset + value : value));
+            const shift = Math.round((current.offset - position) * 1000);
+            const result = await db().prepare('UPDATE station SET started_at=?,stream_clock_shift=?,revision=revision+1 WHERE id=1 AND revision=?').bind(row.started_at + shift, row.stream_clock_shift + shift, row.revision).run();
+            if (!result.meta.changes)
+                throw new ApiError(409, 'La programmation a changé. Actualisez puis recommencez.');
+        }
         if (data.action === 'pause' || data.action === 'resume') {
             if (data.revision !== row.revision)
                 throw new ApiError(409, 'La programmation a changé. Actualisez puis recommencez.');
