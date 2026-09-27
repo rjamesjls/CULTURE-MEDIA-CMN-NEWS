@@ -106,3 +106,16 @@
 .afoluku-radio-app .radio-camera { padding: 16px; border: 1px solid #333; border-radius: 12px; margin-bottom: 18px; }
 .afoluku-radio-app .camera-preview { width: 320px; max-width: 100%; aspect-ratio: 16/9; object-fit: contain; background: #000; margin-top: 12px; border-radius: 8px; }
 .afoluku-radio-app .listener-camera video { width: 100%; aspect-ratio: 16/9; object-fit: contain; background: #000; }
+
+.afoluku-radio-app .portrait-stage { display: block; width: 100%; height: auto; aspect-ratio: 3/4; border-radius: 8px; }
+.afoluku-radio-app .listener-information[hidden] { display: none !important; }
+.afoluku-radio-app .listener-portrait .listener-brand { display: none; }
+.afoluku-radio-app .listener-portrait .listener-card { padding: 0; border: 0; background: transparent; }
+.afoluku-radio-app .listener-portrait .listener-card > button { margin-top: 16px; }
+
+.afoluku-radio-app .portrait-export { max-width: 640px !important; max-height: 90vh; overflow-y: auto; }
+.afoluku-radio-app .portrait-times { display: flex; flex-wrap: wrap; gap: 16px; margin: 16px 0; }
+.afoluku-radio-app .portrait-times label { display: grid; gap: 6px; flex: 1; min-width: 120px; }
+.afoluku-radio-app .portrait-times input { width: 100%; }
+.afoluku-radio-app .portrait-export-canvas { display: block; max-width: 100%; width: 240px; aspect-ratio: 3/4; height: auto; margin: 12px auto; }
+.afoluku-radio-app .portrait-export-canvas[hidden] { display:none; }

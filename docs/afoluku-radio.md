@@ -84,3 +84,12 @@ Le bouton d’enregistrement actuel capture toujours **l’audio uniquement**, y
 Validation à effectuer après configuration réelle : ouvrir la régie et un second navigateur auditeur, publier caméra + micro, vérifier musique/voix/image, couper/réactiver la vidéo, arrêter/reprendre, puis fermer la régie pour vérifier le retour au programme. Les tests locaux couvrent les droits, l’expiration, l’aperçu et le transport simulé ; ils ne remplacent pas ce test réseau avec les identifiants du projet.
 
 Documentation LiveKit : https://docs.livekit.io/frontends/reference/tokens-grants/
+
+
+## Cadre public 3:4 et export d’extraits
+
+Dans Antenne, « Afficher le cadre public en 3:4 » active la présentation portrait pour tous les auditeurs (actualisation des paramètres sous environ cinq secondes). La présentation existante reste le choix par défaut. Le cadre intègre le logo, le nom de la radio, le statut, le média, le titre, la programmation, le spectre et les temps de lecture. Les commandes d’écoute restent sous le cadre. Le bouton permet de revenir au format habituel sans recréer le lecteur audio.
+
+« Exporter un extrait 3:4 » sous Antenne utilise le fichier du titre courant. Le même bouton dans « Mes enregistrements » utilise une prise audio terminée dans la régie. Saisir Début et Fin en minutes:secondes ou en secondes, puis « Préparer la vidéo ». La vidéo 720 × 960 contient le son de cet intervalle et un cadre généré avec le logo et les informations de la source. Un enregistrement audio ne contient pas l’historique des images ou des changements de titres de l’émission : l’extrait utilise le nom de la prise et l’habillage actuel de la radio.
+
+L’export se fait dans le navigateur avec un lecteur distinct de l’antenne, en temps réel (10 minutes maximum par extrait). Garder l’onglet visible jusqu’à la fin. La préparation est annulable ; elle ne déplace ni n’interrompt la diffusion. Le téléchargement est proposé après génération, avec prévisualisation vidéo. Format WebM/Opus sur Chrome/Edge, ou MP4 si proposé en repli par le navigateur. Les fichiers restent locaux, sans stockage automatique des exports sur le serveur. Télécharger les enregistrements et exports avant de quitter la régie.

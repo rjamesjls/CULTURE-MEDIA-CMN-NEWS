@@ -72,9 +72,9 @@ try{
  assert.equal((await classify.PUT(request('PUT',{contentKind:'jingle',musicGenre:null}),{params:Promise.resolve({id:track})})).status,200);assert.equal((await call('streams')).data.total,0);
  const live=await call('live','POST',{action:'start'});assert.equal(live.status,200);const {wav}=await import('../../src/lib/afoluku-radio/audio.js');const bytes=wav(new Float32Array(48000),48000);const liveReq=new Request('https://afolukutv.test/api/live',{method:'PUT',headers:{'Content-Type':'audio/wav','Content-Length':String(bytes.byteLength)},body:bytes});assert.equal((await segments.PUT(liveReq,{params:Promise.resolve({session:live.data.session,seq:'0'})})).status,200);assert.equal((await call('station')).data.live.session,live.data.session);state=(await call('station')).data;assert.equal((await seek({position:10})).status,409);assert.equal((await call('live','POST',{action:'stop',session:live.data.session})).status,200);
  const videoSettings=(await call('settings')).data;
- assert.equal(videoSettings.videoEnabled,true);
+ assert.equal(videoSettings.videoEnabled,true);assert.equal(videoSettings.publicPortrait,false);
  assert.equal((await call('settings','PUT',{...videoSettings,videoEnabled:'false'})).status,400);
- const hiddenVideo=await call('settings','PUT',{...videoSettings,videoEnabled:false});assert.equal(hiddenVideo.status,200);
+ const hiddenVideo=await call('settings','PUT',{...videoSettings,videoEnabled:false,publicPortrait:true});assert.equal(hiddenVideo.status,200);assert.equal((await call('settings')).data.publicPortrait,true);
  assert.equal((await call('settings')).data.videoEnabled,false);
  assert.equal((await call('settings','PUT',{...videoSettings,videoEnabled:true})).status,409);
  assert.equal((await call('settings','PUT',{...hiddenVideo.data,videoEnabled:true})).status,200);

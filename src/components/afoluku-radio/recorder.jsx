@@ -4,7 +4,7 @@ import { Circle, Square, Download } from 'lucide-react';
 import { recordMix } from '@/lib/afoluku-radio/recording';
 import { seconds } from '@/lib/afoluku-radio/radio';
 
-export default function RadioRecorder({ prepare, disabled, before, after }) {
+export default function RadioRecorder({ prepare, disabled, before, after, onExport }) {
     const recorder = useRef(null), starting = useRef(false), mounted = useRef(false), urls = useRef([]);
     const [status, setStatus] = useState('idle'), [elapsed, setElapsed] = useState(0);
     const [takes, setTakes] = useState([]), [error, setError] = useState('');
@@ -31,6 +31,7 @@ export default function RadioRecorder({ prepare, disabled, before, after }) {
         try {
             const desk = await prepare();
             if (!mounted.current) return;
+            const startedAt = Date.now();
             const name = `AFOLUKU-RADIO-${new Date().toISOString().replace(/[:.]/g, '-')}`;
             recorder.current = recordMix(desk, {
                 error: message => mounted.current && setError(message),
@@ -41,7 +42,7 @@ export default function RadioRecorder({ prepare, disabled, before, after }) {
                     setStatus('idle');
                     if (!blob.size) { setError('Aucun son enregistré. Relancez une prise.'); return; }
                     const url = URL.createObjectURL(blob); urls.current.push(url);
-                    setTakes(old => [{ url, name: `${name}.${extension}`, bytes: blob.size, saved: false }, ...old]);
+                    setTakes(old => [{ url, name: `${name}.${extension}`, bytes: blob.size, title: `Émission du ${new Date(startedAt).toLocaleString('fr-FR')}`, duration: (Date.now() - startedAt) / 1000, saved: false }, ...old]);
                 },
             });
             setStatus('recording');
@@ -59,7 +60,7 @@ export default function RadioRecorder({ prepare, disabled, before, after }) {
         {(status !== 'idle' || takes.length > 0 || error) && <details className="record-details">
         <summary>{takes.length ? `Mes enregistrements (${takes.length})` : 'Enregistrement en cours'}</summary>
         <p className="help">Enregistre le son de l’antenne : musique, jingles et micro de cette régie. Gardez cette page ouverte jusqu’au téléchargement. Audio uniquement.</p>
-        {takes.map(take => <div className="record-take" key={take.url}><audio controls src={take.url} preload="metadata" aria-label={`Réécouter ${take.name}`}/><a className="secondary" href={take.url} download={take.name} onClick={() => setTakes(old => old.map(t => t.url === take.url ? { ...t, saved: true } : t))}><Download size={16}/>Télécharger · {(take.bytes / 1024 / 1024).toFixed(1)} Mo</a><span className="help">{take.name}</span></div>)}
+        {takes.map(take => <div className="record-take" key={take.url}><audio controls src={take.url} preload="metadata" aria-label={`Réécouter ${take.name}`}/><a className="secondary" href={take.url} download={take.name} onClick={() => setTakes(old => old.map(t => t.url === take.url ? { ...t, saved: true } : t))}><Download size={16}/>Télécharger · {(take.bytes / 1024 / 1024).toFixed(1)} Mo</a><button className="secondary" onClick={() => onExport?.({url:take.url,title:take.title || take.name,duration:take.duration,subtitle:'Extrait d’émission'})}>Exporter un extrait 3:4</button><span className="help">{take.name}</span></div>)}
         </details>}
     </section>;
 }
