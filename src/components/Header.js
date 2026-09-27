@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 import FlashTicker from './FlashTicker';
+import FlashTickerWrapper from './FlashTickerWrapper';
 import SubscribeButton from './SubscribeButton';
 import LanguageSwitcher from './LanguageSwitcher';
 import { getDictionary } from '@/i18n/dictionaries';
@@ -22,7 +23,9 @@ export default async function Header({ lang = 'fr' }) {
   return (
     <>
       <header className="header" id="header" suppressHydrationWarning>
-        <FlashTicker />
+        <FlashTickerWrapper>
+          <FlashTicker />
+        </FlashTickerWrapper>
         <div className="header-container">
           <Link href={`/${lang}`} className="logo-link" style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none' }}>
             <img 
