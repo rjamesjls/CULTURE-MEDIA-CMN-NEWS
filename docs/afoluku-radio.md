@@ -1,0 +1,55 @@
+# AFOLUKU RADIO dans AFOLUKU TV
+
+Cette intégration porte la régie de la version Sites `c862448f70bbf7d287ca0187859da8e1d1fbe520` dans le dépôt Next.js. Elle ne charge pas le site ChatGPT dans une iframe et ne dépend ni de son authentification, ni de D1, ni de R2.
+
+## Accès
+
+- Écoute : `/fr/radio` et `/bsh/radio`. L’interface radio reste en français pour cette livraison.
+- Régie : `/admin/webradio`, avec la connexion Supabase déjà utilisée par le site. Le profil doit avoir `role = admin` et `status = active`. Le contrôle est effectué sur la page et sur chaque opération d’administration.
+- Un lien Radio est ajouté au menu. Le petit lecteur du site utilise la nouvelle programmation et continue à jouer pendant la navigation interne ordinaire. Il s’arrête quand on ouvre le lecteur complet pour éviter deux lectures simultanées.
+- La régie conserve PREVIEW et ANTENNE indépendants, audio/vidéo, playlists, file réordonnable, boucle, pause/reprise, micro continu ou maintien pour parler, pochettes, logo, spectres, auditeurs, classement et catégories.
+
+## Activation sur Vercel et Supabase
+
+Projets indiqués par le propriétaire : Supabase **AFOLUKU TV** ; Vercel **culture-media-cmn-news** dans l’équipe `jamess-projects-94d545c9`.
+
+Utiliser les valeurs réelles du projet existant, dans les variables d’environnement sécurisées de Vercel (et dans un fichier `.env.local` ignoré par Git pour les outils locaux). Aucun secret ne doit être ajouté au dépôt ou à la conversation.
+
+| Variable | Utilisation |
+| --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | URL du projet Supabase déjà utilisée par le site |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Clé publique existante |
+| `SUPABASE_SERVICE_ROLE_KEY` | Clé serveur de Storage ; jamais préfixée `NEXT_PUBLIC_` |
+| `RADIO_DATABASE_URL` | Connexion PostgreSQL Supabase via le pooler en mode transaction, avec TLS ; compte serveur autorisé à gérer le schéma radio |
+
+Le pool utilise trois connexions maximum par instance et des requêtes explicitement qualifiées avec le schéma `afoluku_radio` (sans dépendre de paramètres de session dans le pooler transactionnel). Les requêtes sont paramétrées ; aucun endpoint n’accepte de SQL. Ne pas utiliser une connexion de navigateur ou le rôle `anon` pour cette variable.
+
+1. Appliquer `supabase/migrations/20260927120000_afoluku_radio.sql` dans le projet Supabase, par l’outil habituel de migrations ou l’éditeur SQL. L’équivalent local est `node --env-file=.env.local scripts/setup-afoluku-radio.mjs`.
+2. Vérifier que le bucket `afoluku-radio` est privé. Le script le crée avec une limite de 50 Mo et des types audio/vidéo/image définis.
+3. Configurer les variables pour l’environnement Vercel concerné, puis déployer la branche en prévisualisation.
+4. Se connecter avec un administrateur actif, importer un audio et une vidéo, lancer une file, puis contrôler `/fr/radio` dans une autre fenêtre et sur un téléphone. Tester le casque et le micro avec HTTPS.
+5. Après validation, intégrer la branche au déploiement du domaine.
+
+La migration ajoute un schéma séparé et ne supprime ni les articles, ni les profils, ni les anciennes tables `public.radio_*`. RLS est activé et aucun accès direct au schéma n’est accordé à `anon` ou `authenticated`. Les lectures publiques passent par les endpoints limités de l’application ; les mutations de gestion exigent un administrateur actif et vérifient l’origine.
+
+## Transfert des contenus
+
+La publication Sites et Supabase possèdent des stockages séparés. Le code seul ne transfère pas les fichiers, playlists ou historiques de la radio Sites. Cette reprise doit être organisée avant de remplacer cette radio en production ; elle n’a pas été exécutée par cette modification.
+
+Pour la **première radio déjà présente dans ce dépôt** (`public.radio_tracks`, bucket `webradio`), l’outil `node --env-file=.env.local scripts/import-legacy-radio.mjs` liste les titres à reprendre sans écrire. Ajouter `--apply` copie les fichiers et les pochettes compatibles et crée les titres absents dans la nouvelle bibliothèque. Les titres déjà présents sont ignorés ; les anciennes données restent conservées. Les URLs externes, durées inconnues et formats non compatibles sont signalés. L’outil ne lance pas la diffusion et ne reconstitue pas de streams historiques. Il faut classer les jingles/publicités et composer les playlists après reprise.
+
+## Stockage et limites
+
+Les imports se font directement du navigateur vers Supabase au moyen d’une autorisation temporaire créée après vérification des droits. Vercel reçoit seulement les métadonnées et la confirmation. Le serveur contrôle la taille réellement stockée et la signature des images/vidéos ; une confirmation répétée ne crée pas de doublon. Les pistes et pochettes sont servies par redirection vers une URL signée pour que la vidéo puisse utiliser les requêtes Range de Storage. Les lecteurs Web Audio utilisent CORS.
+
+Les segments micro WAV de 1 seconde passent par l’API (moins de 1,2 Mo chacun), sont stockés dans Supabase et les anciens segments sont supprimés progressivement. Le direct nécessite un onglet régie actif. La latence réelle dépend du réseau, des régions Vercel/Supabase et du navigateur ; elle doit être mesurée sur le déploiement. Le passage automatique des titres repose sur l’horloge serveur, sans tâche cron.
+
+Les imports abandonnés restent dans Storage et dans `afoluku_radio.uploads`. Avant une exploitation importante, prévoir une tâche de nettoyage des tickets expirés, en supprimant uniquement les objets d’un ticket sans `result_json` et jamais un média finalisé. Les statistiques conservent les mêmes limites que la version Sites : navigateurs actifs estimés, streams après 30 secondes, musique uniquement.
+
+## Validation réalisée
+
+- `npm run test:radio` : tests de lecture/micro et scénarios API sur un vrai moteur PostgreSQL local PGlite ; migration réexécutable, rôles, origine, conflits de version, fichier de 6 Mo, confirmation répétée, redirections, pochettes/logo, programmation, audience, classement et direct.
+- `npm run build` : compilation complète avec des valeurs Supabase fictives uniquement pour le build ; aucune base de production n’a été contactée pour ces tests.
+- Storage et la session Supabase sont simulés dans les tests locaux, sans accès réseau externe. Le stockage réel, les cookies, le décodage vidéo, le rendu visuel et le microphone matériel restent à vérifier dans l’environnement Vercel de prévisualisation.
+
+Références : [limites des fonctions Vercel](https://vercel.com/docs/functions/limitations), [imports signés Supabase](https://supabase.com/docs/reference/javascript/file-buckets-uploadtosignedurl).

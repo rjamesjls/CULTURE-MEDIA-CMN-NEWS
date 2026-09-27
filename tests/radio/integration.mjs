@@ -1,0 +1,45 @@
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import {postgres,identity,objects} from './runtime.mjs';
+import './register.mjs';
+process.env.RADIO_DATABASE_URL='postgresql://local-test-only';
+await postgres.exec("CREATE ROLE anon;CREATE ROLE authenticated;CREATE SCHEMA storage;CREATE TABLE storage.buckets(id text PRIMARY KEY,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);");
+const migration=await readFile(new URL('../../supabase/migrations/20260927120000_afoluku_radio.sql',import.meta.url),'utf8');
+await postgres.exec(migration);await postgres.exec(migration);await postgres.exec('SET search_path TO public,pg_catalog');
+const {radioDatabase:db,postgresSql}=await import('../../src/lib/afoluku-radio/postgres.js');
+assert.equal(postgresSql("SELECT '?' AS literal,cover_key IS ? FROM tracks WHERE id=?"),"SELECT '?' AS literal,cover_key IS NOT DISTINCT FROM $1 FROM afoluku_radio.tracks WHERE id=$2");
+const routes={};for(const name of ['station','playlists','tracks','settings','settings/logo','streams','listeners','live','studio','uploads'])routes[name]=await import(`../../src/app/api/afoluku-radio/${name}/route.js`);
+const complete=await import('../../src/app/api/afoluku-radio/uploads/[id]/route.js');
+const classify=await import('../../src/app/api/afoluku-radio/tracks/[id]/classification/route.js');
+const audio=await import('../../src/app/api/afoluku-radio/audio/[id]/route.js');
+const cover=await import('../../src/app/api/afoluku-radio/tracks/[id]/cover/route.js');
+const segments=await import('../../src/app/api/afoluku-radio/live/[session]/[seq]/route.js');
+const nativeFetch=globalThis.fetch;globalThis.fetch=async url=>{if(!String(url).startsWith('https://radio-storage.test/'))throw new Error('External network forbidden in tests');const obj=objects.get(String(url).slice('https://radio-storage.test/'.length));if(!obj)return new Response(null,{status:404});return new Response(obj.data.slice(0,64),{status:206,headers:{'content-range':`bytes 0-${Math.min(63,obj.data.length-1)}/${obj.data.length}`,'content-type':obj.mime}})};
+const request=(method,data,headers={})=>new Request('https://afolukutv.test/api/radio',{method,headers:{...(data?{'Content-Type':'application/json'}:{}),...headers},body:data?JSON.stringify(data):undefined});
+async function call(name,method='GET',data,headers={}){const r=await routes[name][method](request(method,data,headers));return {status:r.status,data:await r.json()}}
+const finish=id=>complete.POST(request('POST',{}),{params:Promise.resolve({id})});
+const png=new Uint8Array(Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aF9kAAAAASUVORK5CYII=','base64'));
+let now=1800000000000;const realNow=Date.now;Date.now=()=>now;
+try{
+ identity.user=null;assert.equal((await call('studio')).status,401);identity.user={id:'00000000-0000-4000-8000-000000000001'};
+ identity.profile={role:'author',status:'active'};assert.equal((await call('studio')).status,403);identity.profile={role:'admin',status:'suspended'};assert.equal((await call('studio')).status,403);identity.profile={role:'admin',status:'active'};
+ assert.equal((await call('playlists','POST',{name:'Wrong origin'},{Origin:'https://evil.test'})).status,403);
+ assert.equal((await call('studio')).status,200);
+ const initial=(await call('settings')).data;assert.equal(initial.name,'AFOLUKU RADIO');const configured=await call('settings','PUT',{...initial,duckVolume:15,previewVolume:45});assert.equal(configured.status,200);assert.equal((await call('settings','PUT',initial)).status,409);
+ assert.equal((await call('uploads','POST',{purpose:'track',mime:'audio/mpeg',size:60*1024*1024,title:'too big',duration:120})).status,400);
+ const uploaded=await call('uploads','POST',{purpose:'track',mime:'audio/mpeg',size:6*1024*1024,title:'Titre test',duration:180});assert.equal(uploaded.status,200);objects.set(uploaded.data.path,{data:new Uint8Array(6*1024*1024),mime:'audio/mpeg'});
+ let response=await finish(uploaded.data.id);assert.equal(response.status,200);const track=(await response.json()).id;assert.equal((await(await finish(uploaded.data.id)).json()).id,track);assert.equal((await db.prepare('SELECT COUNT(*) AS count FROM tracks').first()).count,1);
+ response=await audio.GET(request('GET'),{params:Promise.resolve({id:track})});assert.equal(response.status,307);assert.ok(response.headers.get('location').includes(track));
+ const logo=await call('uploads','POST',{purpose:'logo',mime:'image/png',size:png.length,version:configured.data.version});objects.set(logo.data.path,{data:png,mime:'image/png'});assert.equal((await finish(logo.data.id)).status,200);assert.ok((await call('settings')).data.logoUrl.includes('/api/afoluku-radio/settings/logo'));
+ const c=await call('uploads','POST',{purpose:'cover',mime:'image/png',size:png.length,trackId:track});objects.set(c.data.path,{data:png,mime:'image/png'});assert.equal((await finish(c.data.id)).status,200);assert.equal((await cover.DELETE(request('DELETE'),{params:Promise.resolve({id:track})})).status,200);
+ const playlist=await call('playlists','POST',{name:'Tests'});assert.equal(playlist.status,201);const p=(await call('studio')).data.playlists[0];assert.equal((await call('playlists','PUT',{...p,trackIds:[track]})).status,200);
+ let state=(await call('station')).data;state=(await call('station','POST',{action:'queue-update',revision:state.revision,currentKey:null,trackIds:[track]})).data;state=(await call('station','POST',{action:'queue-start',revision:state.revision,currentKey:null,loop:true})).data;assert.equal(state.current.id,track);assert.equal(state.active,true);
+ const old=state.revision;state=(await call('station','POST',{action:'pause',revision:old})).data;assert.equal(state.paused,true);now+=2000;assert.equal((await call('station')).data.current.offset,state.current.offset);assert.equal((await call('station','POST',{action:'resume',revision:old})).status,409);state=(await call('station','POST',{action:'resume',revision:state.revision})).data;assert.equal(state.paused,false);
+ const viewerId=crypto.randomUUID(),sessionId=crypto.randomUUID();await call('listeners','POST',{viewerId,sessionId,sequence:1,active:true});assert.equal((await call('listeners')).data.count,1);now+=46000;assert.equal((await call('listeners')).data.count,0);
+ for(let i=1;i<=8;i++){state=(await call('station')).data;assert.equal((await call('streams','POST',{viewerId,sessionId,sequence:i,active:true,trackId:track,occurrence:state.current.streamKey})).status,200);now+=5000;}assert.equal((await call('streams')).data.total,1);
+ assert.equal((await classify.PUT(request('PUT',{contentKind:'jingle',musicGenre:null}),{params:Promise.resolve({id:track})})).status,200);assert.equal((await call('streams')).data.total,0);
+ const live=await call('live','POST',{action:'start'});assert.equal(live.status,200);const {wav}=await import('../../src/lib/afoluku-radio/audio.js');const bytes=wav(new Float32Array(48000),48000);const liveReq=new Request('https://afolukutv.test/api/live',{method:'PUT',headers:{'Content-Type':'audio/wav','Content-Length':String(bytes.byteLength)},body:bytes});assert.equal((await segments.PUT(liveReq,{params:Promise.resolve({session:live.data.session,seq:'0'})})).status,200);assert.equal((await call('station')).data.live.session,live.data.session);assert.equal((await call('live','POST',{action:'stop',session:live.data.session})).status,200);
+ await call('station','POST',{action:'stop'});state=(await call('station')).data;await call('station','POST',{action:'queue-update',revision:state.revision,currentKey:null,trackIds:[]});assert.equal((await call('tracks','DELETE',{id:track})).status,200);
+ const grants=await postgres.query("SELECT has_schema_privilege('anon','afoluku_radio','USAGE') AS anonymous,has_schema_privilege('authenticated','afoluku_radio','USAGE') AS signed_in");assert.equal(grants.rows[0].anonymous,false);assert.equal(grants.rows[0].signed_in,false);
+ console.log('PASS: PostgreSQL migration twice, auth/roles/origin, settings CAS, direct 6 MB upload and idempotent completion, storage redirects, logo/cover, queue/pause/resume, presence expiry, stream threshold/music-only, microphone segments, cleanup and private schema.');
+}finally{Date.now=realNow;globalThis.fetch=nativeFetch;await postgres.close()}
