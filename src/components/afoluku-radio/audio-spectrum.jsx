@@ -5,13 +5,15 @@ import { NativeSelect, NativeSelectOption } from '@/components/afoluku-radio/ui'
 const models = [['bars', 'Barres'], ['curve', 'Courbe'], ['mirror', 'Miroir'], ['circle', 'Cercle'], ['dots', 'Points']];
 const preference = 'afoluku-spectrum-model';
 const valid = (value) => models.some(([id]) => id === value);
-export default function AudioSpectrum({ getAnalyser, active, hint, hideTitle = false }) {
+export default function AudioSpectrum({ getAnalyser, active, hint, hideTitle = false, allowModelSelection = true, showFrequencyLabels = true }) {
     const settings = useRadioSettings();
-    const [model, setModel] = useState('bars');
+    const [selectedModel, setModel] = useState('bars');
+    const model = allowModelSelection ? selectedModel : settings.spectrumModel;
     const id = useId();
     const canvas = useRef(null), source = useRef(getAnalyser);
     useLayoutEffect(() => { source.current = getAnalyser; });
     useEffect(() => {
+        if (!allowModelSelection) return;
         try {
             const saved = localStorage.getItem(preference);
             // Restore the browser’s saved visualisation after hydration.
@@ -23,7 +25,7 @@ export default function AudioSpectrum({ getAnalyser, active, hint, hideTitle = f
             setModel(event.newValue); };
         window.addEventListener('storage', sync);
         return () => window.removeEventListener('storage', sync);
-    }, [settings.spectrumModel]);
+    }, [settings.spectrumModel, allowModelSelection]);
     function choose(value) { if (!valid(value))
         return; setModel(value); try {
         localStorage.setItem(preference, value);
@@ -126,8 +128,8 @@ export default function AudioSpectrum({ getAnalyser, active, hint, hideTitle = f
         return () => { cancelAnimationFrame(frame); observer.disconnect(); };
     }, [model, active]);
     return <section className="audio-spectrum" aria-label="Spectre audio">
-  <div className="spectrum-heading" style={hideTitle ? { justifyContent: 'flex-end' } : undefined}><label className={hideTitle ? 'sr-only' : undefined} htmlFor={id}>{hideTitle ? 'Style de visualisation' : 'Spectre audio'}</label><NativeSelect id={id} aria-label="Modèle de spectre" value={model} onChange={e => choose(e.target.value)}>{models.map(([value, label]) => <NativeSelectOption key={value} value={value}>{label}</NativeSelectOption>)}</NativeSelect></div>
+  {allowModelSelection && <div className="spectrum-heading" style={hideTitle ? { justifyContent: 'flex-end' } : undefined}><label className={hideTitle ? 'sr-only' : undefined} htmlFor={id}>{hideTitle ? 'Style de visualisation' : 'Spectre audio'}</label><NativeSelect id={id} aria-label="Modèle de spectre" value={model} onChange={e => choose(e.target.value)}>{models.map(([value, label]) => <NativeSelectOption key={value} value={value}>{label}</NativeSelectOption>)}</NativeSelect></div>}
   <div className="spectrum-stage"><img className={`spectrum-watermark ${settings.logoUrl !== '/afoluku-radio/logo.png' ? 'custom-watermark' : ''}`} src={settings.logoUrl} alt="" aria-hidden="true" width={718} height={251} draggable={false}/><canvas ref={canvas} role="img" aria-label={`Spectre audio — ${models.find(([id]) => id === model)?.[1]}. Les fréquences graves à aiguës réagissent au son.`}/></div>
-  <div className="spectrum-caption">{active ? <><span>{model === 'circle' ? 'Graves → aigus, sens horaire' : 'Graves'}</span><span>{model === 'circle' ? 'Départ en haut' : 'Aigus'}</span></> : <span>{hint}</span>}</div>
+  {(!active || showFrequencyLabels) && <div className="spectrum-caption">{active ? <><span>{model === 'circle' ? 'Graves → aigus, sens horaire' : 'Graves'}</span><span>{model === 'circle' ? 'Départ en haut' : 'Aigus'}</span></> : <span>{hint}</span>}</div>}
  </section>;
 }
