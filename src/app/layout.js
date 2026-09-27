@@ -1,5 +1,6 @@
 import './globals.css';
 import Header from '@/components/Header';
+import HeaderWrapper from '@/components/HeaderWrapper';
 import Footer from '@/components/Footer';
 import NewsletterPopup from '@/components/NewsletterPopup';
 import PublicOnly from '@/components/PublicOnly';
@@ -57,7 +58,9 @@ export default async function RootLayout({ children }) {
       </head>
       <body>
         <PublicOnly>
-          <Header lang={lang} />
+          <HeaderWrapper>
+            <Header lang={lang} />
+          </HeaderWrapper>
         </PublicOnly>
         <main>{children}</main>
         <PublicOnly>
