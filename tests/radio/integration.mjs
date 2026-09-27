@@ -65,6 +65,13 @@ try{
  for(let i=1;i<=8;i++){state=(await call('station')).data;assert.equal((await call('streams','POST',{viewerId,sessionId,sequence:i,active:true,trackId:track,occurrence:state.current.streamKey})).status,200);now+=5000;}assert.equal((await call('streams')).data.total,1);
  assert.equal((await classify.PUT(request('PUT',{contentKind:'jingle',musicGenre:null}),{params:Promise.resolve({id:track})})).status,200);assert.equal((await call('streams')).data.total,0);
  const live=await call('live','POST',{action:'start'});assert.equal(live.status,200);const {wav}=await import('../../src/lib/afoluku-radio/audio.js');const bytes=wav(new Float32Array(48000),48000);const liveReq=new Request('https://afolukutv.test/api/live',{method:'PUT',headers:{'Content-Type':'audio/wav','Content-Length':String(bytes.byteLength)},body:bytes});assert.equal((await segments.PUT(liveReq,{params:Promise.resolve({session:live.data.session,seq:'0'})})).status,200);assert.equal((await call('station')).data.live.session,live.data.session);state=(await call('station')).data;assert.equal((await seek({position:10})).status,409);assert.equal((await call('live','POST',{action:'stop',session:live.data.session})).status,200);
+ const videoSettings=(await call('settings')).data;
+ assert.equal(videoSettings.videoEnabled,true);
+ assert.equal((await call('settings','PUT',{...videoSettings,videoEnabled:'false'})).status,400);
+ const hiddenVideo=await call('settings','PUT',{...videoSettings,videoEnabled:false});assert.equal(hiddenVideo.status,200);
+ assert.equal((await call('settings')).data.videoEnabled,false);
+ assert.equal((await call('settings','PUT',{...videoSettings,videoEnabled:true})).status,409);
+ assert.equal((await call('settings','PUT',{...hiddenVideo.data,videoEnabled:true})).status,200);
  await call('station','POST',{action:'stop'});state=(await call('station')).data;await call('station','POST',{action:'queue-update',revision:state.revision,currentKey:null,trackIds:[]});assert.equal((await call('tracks','DELETE',{id:track})).status,200);
  const grants=await postgres.query("SELECT has_schema_privilege('anon','afoluku_radio','USAGE') AS anonymous,has_schema_privilege('authenticated','afoluku_radio','USAGE') AS signed_in");assert.equal(grants.rows[0].anonymous,false);assert.equal(grants.rows[0].signed_in,false);
  console.log('PASS: PostgreSQL migration twice, auth/roles/origin, settings CAS, direct 6 MB upload and idempotent completion, storage redirects, logo/cover, queue/pause/resume, presence expiry, stream threshold/music-only, microphone segments, cleanup and private schema.');
