@@ -5,6 +5,7 @@ import NewsletterPopup from '@/components/NewsletterPopup';
 import PublicOnly from '@/components/PublicOnly';
 import Script from 'next/script';
 import { headers } from 'next/headers';
+import RadioPlayer from '@/components/RadioPlayer';
 
 export const metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'https://www.culturemedia.news'), // Remplacez par le vrai nom de domaine
@@ -67,6 +68,9 @@ export default async function RootLayout({ children }) {
         <script src="/js/main.js" defer></script>
         <script src="/js/carousel.js" defer></script>
         {/* <script src="/js/theme-switcher.js" defer></script> */}
+        <PublicOnly>
+          <RadioPlayer />
+        </PublicOnly>
       </body>
     </html>
   );
