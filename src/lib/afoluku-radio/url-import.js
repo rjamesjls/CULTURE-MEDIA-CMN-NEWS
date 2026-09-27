@@ -1,6 +1,6 @@
 import {fileMime} from './track-media.js';
 
-export const MAX_URL_IMPORT_BYTES = 50 * 1024 * 1024;
+export const MAX_URL_IMPORT_BYTES = 100 * 1024 * 1024;
 const extensions = {
     'audio/mpeg': 'mp3', 'audio/mp4': 'm4a', 'audio/wav': 'wav',
     'audio/x-wav': 'wav', 'audio/ogg': 'ogg', 'audio/flac': 'flac',
@@ -47,7 +47,7 @@ export async function downloadMediaUrl(value, {signal, onProgress = () => {}} = 
         const mediaType = fileMime({name: filename, type: mime});
         if (!extensions[mediaType]) throw new Error('Format non pris en charge. Utilisez un fichier MP3, M4A, WAV, OGG, FLAC, AAC, MP4 ou WebM.');
         const declaredSize = Number(response.headers.get('content-length'));
-        if (declaredSize > MAX_URL_IMPORT_BYTES) throw new Error('Ce fichier dépasse la limite de 50 Mo.');
+        if (declaredSize > MAX_URL_IMPORT_BYTES) throw new Error('Ce fichier dépasse la limite de 100 Mo.');
         if (!response.body) throw new Error('Ce lien ne contient aucun fichier téléchargeable.');
         reader = response.body.getReader();
         const chunks = [];
@@ -56,7 +56,7 @@ export async function downloadMediaUrl(value, {signal, onProgress = () => {}} = 
             const {done, value: chunk} = await reader.read();
             if (done) break;
             size += chunk.byteLength;
-            if (size > MAX_URL_IMPORT_BYTES) throw new Error('Ce fichier dépasse la limite de 50 Mo.');
+            if (size > MAX_URL_IMPORT_BYTES) throw new Error('Ce fichier dépasse la limite de 100 Mo.');
             chunks.push(chunk);
             onProgress(size);
         }

@@ -14,3 +14,18 @@ export const radioBucket={
  async delete(keys){const {error}=await radioStorage().remove(Array.isArray(keys)?keys:[keys]);if(error)throw error;},
  async get(key){const response=await fetch(await signedMediaUrl(key,60),{cache:'no-store'});if(response.status===404||response.status===400)return null;if(!response.ok)throw new Error('Lecture du média impossible.');return {body:response.body,size:Number(response.headers.get('content-length')),httpMetadata:{contentType:response.headers.get('content-type')}};}
 };
+
+let capacityReady;
+export async function ensureRadioUploadCapacity(size) {
+ if(size<=50*1024*1024)return;
+ radioStorage();
+ capacityReady ||= (async()=>{
+  const {data:bucket,error}=await service.storage.getBucket(RADIO_BUCKET);
+  if(error)throw error;
+  if(bucket.file_size_limit !== null && Number(bucket.file_size_limit)<100*1024*1024){
+   const {error:updateError}=await service.storage.updateBucket(RADIO_BUCKET,{public:false,fileSizeLimit:100*1024*1024,allowedMimeTypes:bucket.allowed_mime_types});
+   if(updateError)throw new Error('Le stockage Supabase refuse la limite de 100 Mo. Vérifiez sa limite globale de taille des fichiers, puis réessayez.');
+  }
+ })().catch(error=>{capacityReady=undefined;throw error;});
+ await capacityReady;
+}

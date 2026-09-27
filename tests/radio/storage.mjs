@@ -4,3 +4,5 @@ export const radioBucket={async put(key,data,options){objects.set(key,{data:new 
 export const radioStorage=()=>({createSignedUploadUrl:async key=>({data:{token:'test-only',path:key}})});
 export async function signedMediaUrl(key){return 'https://radio-storage.test/'+key}
 export async function mediaRedirect(key){return new Response(null,{status:307,headers:{Location:await signedMediaUrl(key)}})}
+
+export async function ensureRadioUploadCapacity() {}

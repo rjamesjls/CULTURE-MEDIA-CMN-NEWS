@@ -43,7 +43,7 @@ export default function UrlImport({onClose, onImport}) {
                 <input id="radio-import-url" className="field" type="url" placeholder="https://exemple.com/musique.mp3" required autoFocus value={url} onChange={e => setUrl(e.target.value)} disabled={busy} autoComplete="off" spellCheck={false}/>
                 <label className="field-label" htmlFor="radio-import-title">Titre (facultatif)</label>
                 <input id="radio-import-title" className="field" maxLength={180} value={title} onChange={e => setTitle(e.target.value)} disabled={busy} placeholder="Le nom du fichier sera utilisé par défaut"/>
-                <p className="help">Lien HTTPS vers un fichier accessible publiquement · 50 Mo maximum. Les pages YouTube et les liens de pages de partage ne sont pas pris en charge. Certains hébergeurs bloquent l’import par lien.</p>
+                <p className="help">Lien HTTPS vers un fichier accessible publiquement · 100 Mo maximum. Les pages YouTube et les liens de pages de partage ne sont pas pris en charge. Certains hébergeurs bloquent l’import par lien.</p>
                 {error && <p className="notice error" role="alert">{error}</p>}
                 {busy && <p role="status">{phase === 'downloading' ? `Téléchargement… ${(bytes / 1024 / 1024).toFixed(1)} Mo reçus` : 'Ajout à la bibliothèque et analyse du fichier…'}</p>}
                 <div className="radio-modal-actions">

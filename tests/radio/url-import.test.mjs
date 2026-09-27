@@ -41,15 +41,15 @@ test('rejects web pages, unavailable, unsupported and empty files with useful er
     await assert.rejects(downloadMediaUrl('https://media.example/song.mp3'), /vide/);
 });
 
-test('enforces the 50 MB limit from headers and actual streamed bytes, then cancels the stream', async t => {
+test('enforces the 100 MB limit from headers and actual streamed bytes, then cancels the stream', async t => {
     t.mock.method(globalThis, 'fetch', async () => new Response('data', {headers:{'Content-Length':String(MAX_URL_IMPORT_BYTES+1),'Content-Type':'audio/mpeg'}}));
-    await assert.rejects(downloadMediaUrl('https://media.example/song.mp3'), /50 Mo/);
+    await assert.rejects(downloadMediaUrl('https://media.example/song.mp3'), /100 Mo/);
     let cancelled=false;
     globalThis.fetch=async()=>new Response(new ReadableStream({
         pull(controller){controller.enqueue(new Uint8Array(1024*1024));},
         cancel(){cancelled=true;},
     }));
-    await assert.rejects(downloadMediaUrl('https://media.example/song.mp3'), /50 Mo/);
+    await assert.rejects(downloadMediaUrl('https://media.example/song.mp3'), /100 Mo/);
     assert.equal(cancelled, true);
 });
 
