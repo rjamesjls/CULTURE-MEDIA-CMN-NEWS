@@ -28,7 +28,7 @@ export async function POST(req) {
             live = !!row && row.seq >= 0 && now - row.updated_at < 15000;
         }
         const track = await db().prepare('SELECT content_kind FROM tracks WHERE id=?').bind(trackId).first();
-        const eligible = track?.content_kind === 'music' && active && !station.paused_at && !live && current?.id === trackId && streamKey(current.key, station.stream_clock_shift) === occurrence;
+        const eligible = track?.content_kind === 'music' && active && !station.paused_at && !live && (current?.sourceId || current?.id) === trackId && streamKey(current.key, station.stream_clock_shift, current.sourceId) === occurrence;
         // The server clock bounds each credit. Late or duplicate requests cannot add time.
         // Separate attempts per tab; accepted streams deduplicate browser + programme occurrence.
         await db().batch([

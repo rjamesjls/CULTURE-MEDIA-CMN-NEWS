@@ -1,5 +1,6 @@
 import { admin, handle, json, db, body, check, id, state, stationRow, playlistSnapshot, ApiError, getTracks } from '@/lib/afoluku-radio/server';
 import { locate, replaceUpcoming, rebaseProgramme } from '@/lib/afoluku-radio/radio';
+import {cancelScheduledTimeline} from '@/lib/afoluku-radio/timeline-server';
 import { stopCurrentCamera } from '@/lib/afoluku-radio/camera-server';
 export const dynamic = 'force-dynamic';
 export async function GET() { return handle(async () => json(await state())); }
@@ -7,12 +8,26 @@ export async function POST(req) {
     return handle(async () => {
         await admin(req);
         const data = await body(req);
-        check(['seek', 'start', 'stop', 'pause', 'resume', 'next', 'loop', 'queue-update', 'queue-load', 'queue-start'].includes(data.action), 'Action inconnue.');
+        check(['previous', 'seek', 'start', 'stop', 'pause', 'resume', 'next', 'loop', 'queue-update', 'queue-load', 'queue-start'].includes(data.action), 'Action inconnue.');
         const row = await stationRow();
         const now = Date.now();
         const tracks = JSON.parse(row.snapshot);
         const clock = row.paused_at || now;
         const current = locate(tracks, row.started_at, !!row.loop, clock);
+        const timeline=tracks[0]?.timelineStart!==undefined;
+        if(timeline && row.started_at && (data.action.startsWith('queue-') || data.action==='loop'))throw new ApiError(409,'Modifiez la timeline puis remettez-la à l’antenne. Pour revenir à une playlist, arrêtez la diffusion puis rechargez la file.');
+        if(timeline && ['next','previous'].includes(data.action)) {
+            if(data.revision!==row.revision)throw new ApiError(409,'La programmation a changé. Actualisez.');
+            if(row.live_session){const live=await db().prepare('SELECT updated_at FROM live_sessions WHERE id=?').bind(row.live_session).first();if(live&&now-live.updated_at<15000)throw new ApiError(409,'Terminez le direct micro avant de changer de passage.');}
+            const elapsed=(clock-row.started_at)/1000;
+            const index=current?current.index:tracks.findIndex(t=>t.timelineStart>elapsed);
+            const target=data.action==='previous'?Math.max(0,(index<0?tracks.length:index)-1):(current?index+1:index);
+            check(row.started_at && target>=0 && target<tracks.length,'Aucun autre passage dans cette direction.');
+            const result=await db().prepare('UPDATE station SET started_at=?,stream_clock_shift=0,revision=revision+1 WHERE id=1 AND revision=?').bind(clock-Math.round(tracks[target].timelineStart*1000),row.revision).run();
+            if(!result.meta.changes)throw new ApiError(409,'La programmation a changé.');
+            return json(await state());
+        }
+        if(data.action==='previous')throw new ApiError(400,'Le retour au passage précédent est disponible pour une timeline.');
         if (data.action === 'seek') {
             if (data.revision !== row.revision || data.currentKey !== current?.key)
                 throw new ApiError(409, 'Le titre a changé. Actualisez puis recommencez.');
@@ -35,7 +50,7 @@ export async function POST(req) {
         if (data.action === 'pause' || data.action === 'resume') {
             if (data.revision !== row.revision)
                 throw new ApiError(409, 'La programmation a changé. Actualisez puis recommencez.');
-            check(current, 'Aucune musique à mettre en pause ou à reprendre.');
+            check(current || (timeline && row.started_at), 'Aucune musique à mettre en pause ou à reprendre.');
             const paused = data.action === 'pause';
             if (paused !== !!row.paused_at) {
                 const result = await db().prepare('UPDATE station SET started_at=?,paused_at=?,stream_clock_shift=?,revision=revision+1 WHERE id=1 AND revision=?').bind(paused ? row.started_at : row.started_at + now - row.paused_at, paused ? now : 0, paused ? row.stream_clock_shift : row.stream_clock_shift + now - row.paused_at, row.revision).run();
@@ -84,6 +99,7 @@ export async function POST(req) {
             await db().prepare('INSERT INTO station(id,snapshot,playlist_name,started_at,loop,revision) VALUES (1,?,?,?,?,1) ON CONFLICT(id) DO UPDATE SET snapshot=excluded.snapshot,playlist_name=excluded.playlist_name,started_at=excluded.started_at,loop=excluded.loop,paused_at=0,stream_clock_shift=0,revision=station.revision+1').bind(JSON.stringify(p.tracks), p.name, now, data.loop ? 1 : 0).run();
         }
         if (data.action === 'stop') {
+            await cancelScheduledTimeline();
             await stopCurrentCamera();
             await db().prepare('UPDATE station SET started_at=0,paused_at=0,stream_clock_shift=0,live_session=NULL,revision=revision+1 WHERE id=1').run();
         }

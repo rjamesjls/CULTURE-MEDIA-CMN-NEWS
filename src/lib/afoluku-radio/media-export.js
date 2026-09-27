@@ -1,5 +1,5 @@
 // The encoder runs locally in a disposable worker: recordings never leave the browser.
-export async function encodeRadioMedia({ blob, url, format, start, end, signal, onProgress }) {
+export async function encodeRadioMedia({ blob, url, format, start, end, ranges, signal, onProgress }) {
  const aborted = () => new DOMException('Export annulé.', 'AbortError');
  if (signal?.aborted) throw aborted();
  const { FFmpeg } = await import('@ffmpeg/ffmpeg');
@@ -23,10 +23,17 @@ export async function encodeRadioMedia({ blob, url, format, start, end, signal, 
   const output = format === 'mp3' ? 'output.mp3' : 'output.mp4';
   encoder.on('progress', ({ progress }) => onProgress?.(Math.max(0, Math.min(0.99, progress))));
   const range = Number.isFinite(start) && Number.isFinite(end) ? ['-ss', String(start), '-t', String(end - start)] : [];
+  let filters=[];
+  if(ranges?.length){
+   const video=format!=='mp3';
+   const steps=ranges.flatMap((r,i)=>[...(video?[`[0:v:0]trim=start=${r.start}:end=${r.end},setpts=PTS-STARTPTS[v${i}]`]:[]),`[0:a:0]atrim=start=${r.start}:end=${r.end},asetpts=PTS-STARTPTS[a${i}]`]);
+   steps.push(ranges.map((_,i)=>video?`[v${i}][a${i}]`:`[a${i}]`).join('')+`concat=n=${ranges.length}:v=${video?1:0}:a=1${video?'[vout]':''}[aout]`);
+   filters=['-filter_complex',steps.join(';')];
+  }
   const codec = format === 'mp3'
-   ? ['-map', '0:a:0', '-vn', '-c:a', 'libmp3lame', '-b:a', '192k']
-   : ['-map', '0:v:0', '-map', '0:a:0', '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '20', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '192k', '-movflags', '+faststart'];
-  const exit = await encoder.exec(['-i', 'input', ...range, ...codec, '-threads', '1', output]);
+   ? ['-map', ranges?.length?'[aout]':'0:a:0', '-vn', '-c:a', 'libmp3lame', '-b:a', '192k']
+   : ['-map', ranges?.length?'[vout]':'0:v:0', '-map', ranges?.length?'[aout]':'0:a:0', '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '20', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '192k', '-movflags', '+faststart'];
+  const exit = await encoder.exec(['-i', 'input', ...range, ...filters, ...codec, '-threads', '1', output]);
   if (exit !== 0) throw new Error('L’encodage a échoué. Essayez un extrait plus court.');
   const data = await encoder.readFile(output);
   if (signal?.aborted) throw aborted();

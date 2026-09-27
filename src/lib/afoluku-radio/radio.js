@@ -1,6 +1,13 @@
 export function locate(tracks, startedAt, loop, now) {
     if (!startedAt || !tracks.length || tracks.some(t => !Number.isFinite(t.duration) || t.duration <= 0))
         return null;
+    if (tracks[0].timelineStart !== undefined) {
+        const elapsed=(now-startedAt)/1000;
+        const index=tracks.findIndex(t=>elapsed>=t.timelineStart && elapsed<t.timelineStart+t.duration);
+        if(index<0)return null;
+        const t=tracks[index],offset=elapsed-t.timelineStart;
+        return {...t,index,offset,endsAt:startedAt+(t.timelineStart+t.duration)*1000,key:`${t.id}:${Math.round(startedAt+t.timelineStart*1000)}`};
+    }
     const total = tracks.reduce((sum, t) => sum + t.duration, 0);
     const elapsed = Math.max(0, (now - startedAt) / 1000);
     if (!loop && elapsed >= total)
@@ -20,6 +27,7 @@ export function locate(tracks, startedAt, loop, now) {
 export const seconds = (n) => `${Math.floor(n / 60)}:${String(Math.floor(n % 60)).padStart(2, '0')}`;
 // The queue is the next pass through the programme, excluding the current occurrence.
 export function upcoming(tracks, startedAt, loop, now) {
+    if(startedAt && tracks[0]?.timelineStart !== undefined)return tracks.filter(t=>startedAt+t.timelineStart*1000>now);
     const current = locate(tracks, startedAt, loop, now);
     if (!startedAt)
         return tracks;
@@ -50,4 +58,4 @@ export function moveEntry(items, from, before) {
     return next;
 }
 // Pausing shifts the playback clock, but must not create a second stream occurrence.
-export function streamKey(key, clockShift) { const split = key.lastIndexOf(':'); return key.slice(0, split + 1) + (Number(key.slice(split + 1)) - clockShift); }
+export function streamKey(key, clockShift, sourceId) { const split = key.lastIndexOf(':'); return (sourceId ? `${sourceId}:` : key.slice(0, split + 1)) + (Number(key.slice(split + 1)) - clockShift); }

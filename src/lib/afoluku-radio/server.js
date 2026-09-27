@@ -2,6 +2,7 @@ import {radioDatabase} from './postgres';
 import {radioBucket} from './storage';
 import {createClient} from '@/utils/supabase/server';
 
+import {activateScheduledTimeline,pendingTimeline} from './timeline-server';
 import { cameraState } from './camera-server';
 import { locate, upcoming, streamKey } from './radio';
 export class ApiError extends Error {
@@ -41,7 +42,7 @@ export async function body(req) { check(req.headers.get('content-type')?.include
 catch {
     throw new ApiError(400, 'Requête invalide.');
 } }
-export async function stationRow() { return await db().prepare('SELECT * FROM station WHERE id=1').first() || { snapshot: '[]', playlist_name: '', started_at: 0, paused_at: 0, stream_clock_shift: 0, loop: 1, live_session: null, revision: 0 }; }
+export async function stationRow() { await activateScheduledTimeline(); return await db().prepare('SELECT * FROM station WHERE id=1').first() || { snapshot: '[]', playlist_name: '', started_at: 0, paused_at: 0, stream_clock_shift: 0, loop: 1, live_session: null, revision: 0 }; }
 export async function state() {
     const row = await stationRow();
     const now = Date.now();
@@ -50,14 +51,15 @@ export async function state() {
     const visualRows = (await db().prepare('SELECT id,cover_key,peaks,mime,content_kind,music_genre FROM tracks').all()).results;
     const visuals = new Map(visualRows.map(t => [t.id, { ...trackVisuals(t), mime: t.mime, contentKind: t.content_kind, musicGenre: t.music_genre }]));
     if (current)
-        Object.assign(current, visuals.get(current.id), { paused: !!row.paused_at, streamKey: streamKey(current.key, row.stream_clock_shift) });
+        Object.assign(current, visuals.get(current.sourceId || current.id), { mime: visuals.get(current.id)?.mime, peaks: visuals.get(current.id)?.peaks }, { paused: !!row.paused_at, streamTrackId: current.sourceId || current.id, streamKey: streamKey(current.key, row.stream_clock_shift, current.sourceId) });
     if (row.live_session) {
         const s = await db().prepare('SELECT * FROM live_sessions WHERE id=?').bind(row.live_session).first();
         if (s && s.seq >= 0 && now - s.updated_at < 15000)
             live = { session: s.id, seq: s.seq, updatedAt: s.updated_at };
     }
     const camera = await cameraState();
-    return { serverNow: now, camera, active: (!!current && !row.paused_at) || !!live || !!camera, paused: !!row.paused_at, playlistName: row.playlist_name, loop: !!row.loop, current, live, revision: row.revision, upcoming: upcoming(JSON.parse(row.snapshot), row.started_at, !!row.loop, row.paused_at || now).map(t => ({ ...t, coverUrl: visuals.get(t.id)?.coverUrl, coverType: visuals.get(t.id)?.coverType, mime: visuals.get(t.id)?.mime })) };
+    const snapshot=JSON.parse(row.snapshot);
+    return { scheduledTimeline: await pendingTimeline(), timeline: snapshot[0]?.timelineStart !== undefined ? { startedAt:row.started_at, position:((row.paused_at||now)-row.started_at)/1000, entries:snapshot } : null, serverNow: now, camera, active: (!!current && !row.paused_at) || !!live || !!camera, paused: !!row.paused_at, playlistName: row.playlist_name, loop: !!row.loop, current, live, revision: row.revision, upcoming: upcoming(JSON.parse(row.snapshot), row.started_at, !!row.loop, row.paused_at || now).map(t => ({ ...t, coverUrl: visuals.get(t.sourceId || t.id)?.coverUrl, coverType: visuals.get(t.sourceId || t.id)?.coverType, mime: visuals.get(t.id)?.mime })) };
 }
 export function trackVisuals(t) { return { coverType: (/\.(mp4|webm)$/.test(t.cover_key || '') ? 'video' : 'image'), coverUrl: t.cover_key ? `/api/afoluku-radio/tracks/${t.id}/cover?v=${t.cover_key.split('/').pop()}` : null, peaks: JSON.parse(t.peaks || '[]') }; }
 export async function getTracks() { return (await db().prepare('SELECT * FROM tracks ORDER BY created_at DESC').all()).results.map(t => ({ id: t.id, title: t.title, duration: t.duration, bytes: t.bytes, mime: t.mime, contentKind: t.content_kind, musicGenre: t.music_genre, ...trackVisuals(t) })); }

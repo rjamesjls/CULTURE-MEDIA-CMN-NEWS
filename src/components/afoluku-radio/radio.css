@@ -119,3 +119,34 @@
 .afoluku-radio-app .portrait-times input { width: 100%; }
 .afoluku-radio-app .portrait-export-canvas { display: block; max-width: 100%; width: 240px; aspect-ratio: 3/4; height: auto; margin: 12px auto; }
 .afoluku-radio-app .portrait-export-canvas[hidden] { display:none; }
+
+/* Shared timeline preparation and transport, directly below both monitor decks. */
+.afoluku-radio-app .radio-timeline { padding:22px; margin:20px 0; border:1px solid #394233; border-radius:16px; background:#151b13; min-width:0; }
+.afoluku-radio-app .timeline-heading { display:flex; align-items:start; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+.afoluku-radio-app .timeline-settings,.afoluku-radio-app .timeline-add,.afoluku-radio-app .timeline-cut { display:flex; gap:14px; flex-wrap:wrap; align-items:end; margin:16px 0; }
+.afoluku-radio-app .timeline-settings label,.afoluku-radio-app .timeline-cut label { display:grid; gap:6px; flex:1; min-width:170px; font-size:13px; }
+.afoluku-radio-app .radio-timeline input:not([type=range]),.afoluku-radio-app .radio-timeline select { background:#0c110a; color:#fff; border:1px solid #48513f; border-radius:7px; padding:9px; max-width:100%; width:100%; color-scheme:dark; }
+.afoluku-radio-app .timeline-add select { flex:1; min-width:180px; }
+.afoluku-radio-app .timeline-add label { display:flex; align-items:center; gap:8px; font-size:13px; }
+.afoluku-radio-app .timeline-scroll { overflow-x:auto; border:1px solid #3d4832; border-radius:10px; background:#0c110a; }
+.afoluku-radio-app .timeline-lane { height:132px; position:relative; }
+.afoluku-radio-app .timeline-ruler { height:30px; border-bottom:1px solid #394233; position:relative; }
+.afoluku-radio-app .timeline-ruler span { position:absolute; font-size:10px; color:#bec9b0; padding:6px 3px; border-left:1px solid #3d4832; white-space:nowrap; }
+.afoluku-radio-app .timeline-clip { position:absolute; top:42px; height:72px; overflow:hidden; text-align:left; border:1px solid #6c8b37; background:#283a19; border-radius:5px; color:#fff; padding:8px; cursor:grab; }
+.afoluku-radio-app .timeline-clip b,.afoluku-radio-app .timeline-clip span { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:12px; }
+.afoluku-radio-app .timeline-clip span { font-size:10px; margin-top:8px; }
+.afoluku-radio-app .timeline-clip.selected { outline:2px solid #ffcf29; outline-offset:-2px; }
+.afoluku-radio-app .timeline-clip.onair { background:#762729; border-color:#ff5d5d; }
+.afoluku-radio-app .timeline-playhead { position:absolute; top:0; bottom:0; border-left:2px solid #ff3939; pointer-events:none; }
+.afoluku-radio-app .timeline-empty { padding:26px 18px; color:#b8c2ab; font-size:13px; }
+.afoluku-radio-app .timeline-list { display:flex; flex-wrap:wrap; gap:8px; margin:14px 0; max-height:180px; overflow:auto; }
+.afoluku-radio-app .timeline-list>div { display:flex; align-items:center; border:1px solid #384330; border-radius:8px; max-width:100%; }
+.afoluku-radio-app .timeline-list>div.selected { border-color:#ffcf29; }
+.afoluku-radio-app .timeline-list>div>button:first-child { min-width:0; overflow:hidden; text-overflow:ellipsis; font-size:12px; }
+.afoluku-radio-app .timeline-list span { color:#b5c1a8; font-size:11px; }
+.afoluku-radio-app .timeline-editor { border-top:1px solid #394233; padding-top:16px; }
+.afoluku-radio-app .timeline-editor h3 { display:flex; gap:8px; align-items:center; }
+.afoluku-radio-app .timeline-wave { position:relative; height:64px; overflow:hidden; background:#0c110a; border-radius:8px; }
+.afoluku-radio-app .timeline-wave>span { position:absolute; top:0; bottom:0; background:repeating-linear-gradient(135deg,#a22e3666,#a22e3666 6px,#e0344677 6px,#e0344677 8px); pointer-events:none; }
+.afoluku-radio-app .timeline-editor audio { width:100%; margin-top:15px; }
+@media(max-width:640px){.afoluku-radio-app .radio-timeline{padding:14px;}.afoluku-radio-app .timeline-settings label{min-width:100%;}.afoluku-radio-app .timeline-transport button{flex:1;}.afoluku-radio-app .timeline-list>div{width:100%;}.afoluku-radio-app .timeline-list>div>button:first-child{flex:1;}}

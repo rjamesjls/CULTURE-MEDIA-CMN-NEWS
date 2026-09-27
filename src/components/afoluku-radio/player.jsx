@@ -25,7 +25,7 @@ export default function Listener({compact=false,href="/fr/radio"}) {
         streams.current = reporter;
         const sample = () => {
             const current = stationRef.current?.current, p = player.current;
-            const track = enabled.current && p?.isPlaying() && p.gain.gain.value > 0 && !p.session && current?.contentKind === 'music' && current.streamKey && p.key === current.key && !stationRef.current?.live && !stationRef.current?.camera && !stationRef.current?.paused ? { id: current.id, key: current.streamKey } : null;
+            const track = enabled.current && p?.isPlaying() && p.gain.gain.value > 0 && !p.session && current?.contentKind === 'music' && current.streamKey && p.key === current.key && !stationRef.current?.live && !stationRef.current?.camera && !stationRef.current?.paused ? { id: current.streamTrackId || current.id, key: current.streamKey } : null;
             void reporter.report(track);
         };
         const leave = () => void reporter.report(null, Date.now(), true);
