@@ -162,3 +162,16 @@ test('returning from live waits for the next programme file to play',async t=>{
  assert.equal(scheduled[0].source.stopped,undefined);assert.equal(player.programmeGain.gain.value,0);
  gate.resolve();await pending;assert.equal(scheduled[0].source.stopped,true);assert.equal(player.programmeGain.gain.value,1);
 });
+
+test('studio and listener ignore transient timing jitter but honour an explicit seek',async t=>{
+ const {player,video}=setup(t);const desk=new AudioDesk(video);
+ for(const target of [player,desk]){
+  await target.sync(state(100));target.audio.currentTime=20;
+  await target.sync({...state(101),current:{id:'track',key:'track:1',offset:15}});
+  assert.equal(target.audio.currentTime,20);assert.equal(target.audio.playbackRate,1);
+  await target.sync({...state(102),current:{id:'track',key:'track:1',offset:20}});
+  assert.equal(target.audio.currentTime,20);
+  await target.sync({...state(103),current:{id:'track',key:'track:seek',offset:90}});
+  assert.equal(target.audio.currentTime,90);assert.equal(target.audio.playbackRate,1);
+ }
+});

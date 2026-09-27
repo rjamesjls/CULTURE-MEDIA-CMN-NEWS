@@ -1,3 +1,4 @@
+import {PlaybackClock} from './playback-clock.js';
 import {CameraReceiver} from './camera-transport.js';
 import {LiveUploader} from './live-uploader.js';
 export async function api(url, method = 'GET', data) { const r = await fetch(url, { method, headers: data ? { 'Content-Type': 'application/json' } : undefined, body: data ? JSON.stringify(data) : undefined, cache: 'no-store' }); const result = await r.json(); if (!r.ok)
@@ -9,10 +10,12 @@ export function wav(samples, rate) { const buffer = new ArrayBuffer(44 + samples
 } return buffer; }
 // Keep audio and video on one programme clock, with only one media element playing.
 class ProgrammeMedia {
+    clock = new PlaybackClock();
     sound = new Audio();
     current = this.sound;
     video;
     constructor(video) { this.video = video; this.sound.crossOrigin = 'anonymous';
+        this.clock.align(this.sound, 0, true); if (video) this.clock.align(video, 0, true);
         this.sound.volume = 1; this.sound.muted = false; if (video) {
         video.crossOrigin = 'anonymous';
             video.volume = 1;
@@ -81,17 +84,15 @@ export class AudioDesk {
     } const changed = this.media.select(c.mime); if (changed || this.key !== c.key) {
         this.key = c.key;
         this.audio.src = '/api/afoluku-radio/audio/' + c.id;
-        this.audio.currentTime = c.offset;
+        this.media.clock.align(this.audio, c.offset, true);
     }
-    else if (state.paused || Math.abs(this.audio.currentTime - c.offset) > 3) {
-        this.audio.currentTime = c.offset;
-    } if (state.paused) {
+    else this.media.clock.align(this.audio, c.offset, state.paused || this.audio.paused); if (state.paused) {
         this.audio.pause();
         return;
     } if (this.audio.paused)
         await this.audio.play(); }
     async preview(id, mime) { const operation = ++this.previewOperation; this.key = 'preview'; await this.resume(); if (this.disposed || operation !== this.previewOperation)
-        return; this.media.select(mime); this.audio.src = '/api/afoluku-radio/audio/' + id; this.audio.currentTime = 0; await this.audio.play(); if (this.disposed || operation !== this.previewOperation)
+        return; this.media.select(mime); this.audio.src = '/api/afoluku-radio/audio/' + id; this.media.clock.align(this.audio, 0, true); await this.audio.play(); if (this.disposed || operation !== this.previewOperation)
         this.audio.pause(); }
     stopPreview() { this.previewOperation++; if (this.key === 'preview') {
         this.audio.pause();
@@ -290,10 +291,9 @@ export class ListenerAudio {
         if (changed || this.key !== c.key) {
             this.key = c.key;
             this.audio.src = '/api/afoluku-radio/audio/' + c.id;
-            this.audio.currentTime = c.offset;
+            this.media.clock.align(this.audio, c.offset, true);
         }
-        else if (state.paused || Math.abs(this.audio.currentTime - c.offset) > 3)
-            this.audio.currentTime = c.offset;
+        else this.media.clock.align(this.audio, c.offset, state.paused || this.audio.paused || !!this.session);
         if (state.paused) {
             this.clearLive();
             this.audio.pause();
