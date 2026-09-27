@@ -1,6 +1,7 @@
-export const PORTRAIT_WIDTH = 720, PORTRAIT_HEIGHT = 960;
-export function drawPortrait(ctx, { name, title, subtitle, status, logo, artwork, video, frequencies, position = 0, duration = 0 }) {
-    const w=PORTRAIT_WIDTH,h=PORTRAIT_HEIGHT;
+export const PORTRAIT_WIDTH = 1080, PORTRAIT_HEIGHT = 1440;
+export function drawPortrait(ctx, { title, subtitle, logo, artwork, video, frequencies, position = 0, duration = 0 }) {
+    ctx.save();ctx.scale(PORTRAIT_WIDTH/720,PORTRAIT_HEIGHT/960);
+    const w=720,h=960;
     ctx.fillStyle='#121810';ctx.fillRect(0,0,w,h);
     ctx.strokeStyle='#3c492e';ctx.lineWidth=2;ctx.strokeRect(1,1,w-2,h-2);
     function text(value,x,y,width,size,color='#fff',lines=1){
@@ -19,10 +20,12 @@ export function drawPortrait(ctx, { name, title, subtitle, status, logo, artwork
         const scale=Math.min(width/mw,height/sh);ctx.drawImage(media,0,sy,mw,sh,x+(width-mw*scale)/2,y+(height-sh*scale)/2,mw*scale,sh*scale);return true;
     }
     contain(logo,40,24,320,94);
-    text(status||'AFOLUKU RADIO',430,64,250,20,'#ffd21c');
-    text(name,40,154,640,44,'#ffd21c',2);
+    text('Extrait Radio',40,154,640,44,'#ffd21c');
+    ctx.font='300 22px "Helvetica Neue", Arial';ctx.fillStyle='#fff';ctx.fillText('cette semaine',40,189);
+    ctx.fillStyle='#d71920';ctx.fillRect(490,43,190,44);
+    text('#musique',511,73,150,24);
     ctx.fillStyle='#0b100a';ctx.fillRect(40,230,640,270);
-    if(!contain(video,40,230,640,270)&&!contain(artwork,40,230,640,270))contain(logo,110,300,500,140);
+    if(!contain(video,40,230,640,270)&&!contain(artwork,40,230,640,270))text('Radio',40,390,640,72,'#ffd21c');
     text(title,40,544,640,28,'#fff',3);
     text(subtitle,40,659,640,18,'#bdc9b1',2);
     const bins=frequencies||new Uint8Array(48);
@@ -32,6 +35,7 @@ export function drawPortrait(ctx, { name, title, subtitle, status, logo, artwork
     const time=n=>`${Math.floor(n/60)}:${String(Math.floor(n%60)).padStart(2,'0')}`;
     text(time(position),40,897,250,20,'#bdc9b1');text(time(duration),608,897,72,20,'#bdc9b1');
     text('AFOLUKU TV · UNE VOIX. UNE CULTURE. UNE CONNEXION.',40,937,640,15,'#bdc9b1');
+    ctx.restore();
 }
 export function portraitImage(src) {
     if(!src)return Promise.resolve(null);

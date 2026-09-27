@@ -1,9 +1,15 @@
+import { encodeRadioMedia } from './media-export.js';
 import { drawPortrait, portraitImage, PORTRAIT_WIDTH, PORTRAIT_HEIGHT } from './portrait.js';
 export function validateExcerpt(start,end,duration){
  if(!Number.isFinite(start)||!Number.isFinite(end)||start<0||end<=start||end>duration)throw new Error('Choisissez un début et une fin dans la durée du média, avec la fin après le début.');
  if(end-start>600)throw new Error('Choisissez un extrait de 10 minutes maximum.');
 }
-export async function exportPortrait({source,start,end,settings,canvas,signal,onProgress}){
+export async function exportPortrait(options){
+ const {signal,onProgress}=options;
+ const recorded=await capturePortrait({...options,onProgress:p=>onProgress?.(p*0.7)});
+ return encodeRadioMedia({blob:recorded.blob,format:'mp4',signal,onProgress:p=>onProgress?.(0.7+p*0.3)});
+}
+async function capturePortrait({source,start,end,settings,canvas,signal,onProgress}){
  validateExcerpt(start,end,source.duration);
  if(!globalThis.MediaRecorder || !canvas.captureStream)throw new Error('Ce navigateur ne permet pas l’export vidéo. Essayez Chrome ou Edge.');
  const mimeType=['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/mp4'].find(type=>MediaRecorder.isTypeSupported(type));
@@ -26,7 +32,7 @@ export async function exportPortrait({source,start,end,settings,canvas,signal,on
   canvas.width=PORTRAIT_WIDTH;canvas.height=PORTRAIT_HEIGHT;const ctx=canvas.getContext('2d'),bins=new Uint8Array(analyser.frequencyBinCount);
   function draw(){analyser.getByteFrequencyData(bins);drawPortrait(ctx,{name:settings.name,title:source.title,subtitle:source.subtitle||'La web radio d’AFOLUKU TV',status:'EXTRAIT',logo,artwork,video:settings.videoEnabled!==false?media:null,frequencies:bins,position:media.currentTime,duration:source.duration});onProgress?.(Math.min(1,(media.currentTime-start)/(end-start)));frame=requestAnimationFrame(draw);}
   draw();stream=canvas.captureStream(30);stream.addTrack(output.stream.getAudioTracks()[0]);
-  recorder=new MediaRecorder(stream,{mimeType,videoBitsPerSecond:3000000,audioBitsPerSecond:192000});
+  recorder=new MediaRecorder(stream,{mimeType,videoBitsPerSecond:6000000,audioBitsPerSecond:192000});
   const done=new Promise((resolve,reject)=>{resolveRecording=resolve;rejectRecording=reject;});
   recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data);};
   recorder.onerror=()=>rejectRecording(new Error('L’export vidéo a échoué. Réessayez.'));
