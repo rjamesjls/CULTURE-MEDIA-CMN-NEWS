@@ -30,6 +30,8 @@ Le pool utilise trois connexions maximum par instance et des requêtes explicite
 4. Se connecter avec un administrateur actif, importer un audio et une vidéo, lancer une file, puis contrôler `/fr/radio` dans une autre fenêtre et sur un téléphone. Tester le casque et le micro avec HTTPS.
 5. Après validation, intégrer la branche au déploiement du domaine.
 
+Si la régie indique une configuration incomplète, vérifier les variables dans **Preview** pour la branche de test, et **Production** pour le domaine. Une variable limitée à Production n’est pas accessible à une Preview. Après tout changement, créer un nouveau déploiement puis ouvrir son adresse : rafraîchir un ancien déploiement ne recharge pas les variables. La régie affiche uniquement les noms des variables manquantes aux administrateurs authentifiés ; les visiteurs reçoivent un message générique. Une panne de configuration ne doit pas proposer de se reconnecter. La connexion ouverte depuis la radio revient à `/admin/webradio`.
+
 La migration ajoute un schéma séparé et ne supprime ni les articles, ni les profils, ni les anciennes tables `public.radio_*`. RLS est activé et aucun accès direct au schéma n’est accordé à `anon` ou `authenticated`. Les lectures publiques passent par les endpoints limités de l’application ; les mutations de gestion exigent un administrateur actif et vérifient l’origine.
 
 ## Transfert des contenus

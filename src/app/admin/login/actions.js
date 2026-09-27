@@ -2,6 +2,7 @@
 
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
+import { adminDestination } from '@/utils/supabase/admin-destination';
 
 export async function login(formData) {
   const email = formData.get('email');
@@ -17,7 +18,7 @@ export async function login(formData) {
     return { error: 'Identifiants invalides.' };
   }
 
-  redirect('/admin');
+  redirect(adminDestination(formData.get('next')));
 }
 
 export async function signup(formData) {
@@ -34,7 +35,7 @@ export async function signup(formData) {
     return { error: error.message || 'Erreur lors de la création du compte.' };
   }
 
-  redirect('/admin');
+  redirect(adminDestination(formData.get('next')));
 }
 
 export async function logout() {

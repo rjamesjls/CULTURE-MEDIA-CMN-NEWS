@@ -26,6 +26,8 @@ import { seconds, moveEntry } from '@/lib/afoluku-radio/radio';
 const initial = { serverNow: Date.now(), active: false, paused: false, playlistName: '', loop: true, current: null, live: null, revision: 0, upcoming: [] };
 export default function Studio() {
     const settings = useRadioSettings();
+    const [needsLogin, setNeedsLogin] = useState(false);
+    const studioReady = useRef(false);
     const [previewVolume, setPreviewVolume] = useState(70), [previewPaused, setPreviewPaused] = useState(false);
     const previewVideo = useRef(null), previewDesk = useRef(null);
     const settingsRef = useRef(settings);
@@ -41,13 +43,29 @@ export default function Studio() {
     const input = useRef(null), desk = useRef(null), monitorRef = useRef(false), sessionRef = useRef(null), stationRef = useRef(station), pollBusy = useRef(false), playlistDrag = useRef(null), uploadLock = useRef(false);
     useLayoutEffect(()=>{stationRef.current=station;sessionRef.current=session;monitorRef.current=monitor;});
     const playlist = playlists.find(p => p.id === selected) || playlists[0];
-    async function refresh() { const d = await api('/api/afoluku-radio/studio'); setTracks(d.tracks); setPlaylists(d.playlists); setStation(d.station); setLoop(d.station.loop); setAuthorized(true); try {
-        setStreamStats(await api('/api/afoluku-radio/streams'));
-        setStreamsFailed(false);
+    async function refresh() {
+        let data;
+        try {
+            data = await api('/api/afoluku-radio/studio');
+            setNeedsLogin(false);
+        } catch (error) {
+            setNeedsLogin(error.status === 401);
+            throw error;
+        }
+        studioReady.current = true;
+        setTracks(data.tracks);
+        setPlaylists(data.playlists);
+        setStation(data.station);
+        setLoop(data.station.loop);
+        setAuthorized(true);
+        try {
+            setStreamStats(await api('/api/afoluku-radio/streams'));
+            setStreamsFailed(false);
+        } catch {
+            setStreamsFailed(true);
+        }
+        return data;
     }
-    catch {
-        setStreamsFailed(true);
-    } return d; }
     async function stopLive(message, keepMic = false) { const current = sessionRef.current; sessionRef.current = null; setSession(null); if (keepMic)
         desk.current?.stopLive();
     else {
@@ -84,7 +102,7 @@ export default function Studio() {
     } }
     useEffect(() => { let alive = true; void Promise.resolve().then(refresh).catch(e => { if (alive)
         setError(e.message); }).finally(() => { if (alive)
-        setLoading(false); }); const timer = setInterval(async () => { if (pollBusy.current)
+        setLoading(false); }); const timer = setInterval(async () => { if (!studioReady.current || pollBusy.current)
         return; pollBusy.current = true; try {
         const state = await api('/api/afoluku-radio/station');
         if (!alive || state.serverNow < stationRef.current.serverNow)
@@ -270,9 +288,17 @@ export default function Studio() {
     } const bottom = e.clientY > e.currentTarget.getBoundingClientRect().top + e.currentTarget.getBoundingClientRect().height / 2; void run(() => savePlaylist({ ...playlist, trackIds: moveEntry(playlist.trackIds, origin.index, i + (bottom ? 1 : 0)) })); }}><TableCell><div className="row"><span className="drag-handle" aria-hidden="true"><GripVertical size={18}/></span><button className="artwork-button" disabled={disabled} title="Modifier le type, la catégorie et la pochette" aria-label={`Modifier ${t.title}`} onClick={() => setEditingTrackId(t.id)}><TrackArtwork src={t.coverUrl} type={t.coverType} title={t.title}/></button><div className="grow"><div className="track-title">{t.title}</div><span className={`content-tag ${t.contentKind !== 'music' ? 'excluded' : ''}`}>{classificationLabel(t)}</span><Waveform peaks={t.peaks} compact/><div className="subtle">{inPlaylist ? `Piste ${i + 1}` : `${(t.bytes / 1024 / 1024).toFixed(1)} Mo · ${`${isVideo(t.mime) ? 'VIDÉO' : 'AUDIO'} ${t.mime.split('/')[1].toUpperCase()}`}`}</div></div></div></TableCell><TableCell className="duration-col subtle">{seconds(t.duration)}</TableCell><TableCell className="text-right stream-number">{t.contentKind !== 'music' ? <span className="subtle">Hors classement</span> : streamStats && !streamsFailed ? (streamCounts.get(t.id) || 0).toLocaleString('fr-FR') : '—'}</TableCell><TableCell><div className="actions"><button className="ghost" title="Type, catégorie et pochette" aria-label={`Modifier ${t.title}`} disabled={disabled} onClick={() => setEditingTrackId(t.id)}><Pencil size={17}/><span>Modifier</span></button>{inPlaylist ? <><button className="ghost" title="Monter" aria-label={`Monter ${t.title}`} disabled={disabled || i === 0} onClick={() => void run(async () => { const ids = [...playlist.trackIds]; [ids[i - 1], ids[i]] = [ids[i], ids[i - 1]]; await savePlaylist({ ...playlist, trackIds: ids }); })}><ArrowUp size={17}/></button><button className="ghost" title="Descendre" aria-label={`Descendre ${t.title}`} disabled={disabled || i === items.length - 1} onClick={() => void run(async () => { const ids = [...playlist.trackIds]; [ids[i + 1], ids[i]] = [ids[i], ids[i + 1]]; await savePlaylist({ ...playlist, trackIds: ids }); })}><ArrowDown size={17}/></button><button className="ghost" title="Retirer de la playlist" aria-label={`Retirer ${t.title} de la playlist`} disabled={disabled} onClick={() => void run(() => savePlaylist({ ...playlist, trackIds: playlist.trackIds.filter((_, j) => j !== i) }))}><Trash2 size={17}/></button></> : <><button className="ghost" title="Ajouter à la file À venir" aria-label={`Ajouter ${t.title} à la file À venir`} disabled={disabled} onClick={() => void run(() => enqueue(t))}><Plus size={17}/></button><button className="ghost" title={previewTrack?.id === t.id ? 'Arrêter la préécoute' : 'Préécouter'} aria-label={`${previewTrack?.id === t.id ? 'Arrêter la préécoute de' : 'Préécouter'} ${t.title}`} disabled={disabled} onClick={() => previewTrack?.id === t.id ? stopPreview() : void run(() => preview(t))}>{previewTrack?.id === t.id ? <Square size={17}/> : <Play size={17}/>}</button><button className="ghost" title="Supprimer" aria-label={`Supprimer ${t.title}`} disabled={disabled} onClick={() => setConfirm({ type: 'track', id: t.id, name: t.title })}><Trash2 size={17}/></button></>}</div></TableCell></TableRow>)}</TableBody></Table>; }
     function library() { const filtered = tracks.filter(t => (kindFilter === 'all' || t.contentKind === kindFilter) && (genreFilter === 'all' || t.contentKind === 'music' && (genreFilter === 'unclassified' ? !t.musicGenre : t.musicGenre === genreFilter))); return <section className="library library-drop" aria-label="Bibliothèque musicale et importation" onDragOver={allowFileDrop} onDrop={e => { if (disabled || !e.dataTransfer.files.length)
         return; e.preventDefault(); void importFiles(Array.from(e.dataTransfer.files)); }}><div className="section-top"><div><h2>Votre bibliothèque</h2><p>Glissez un titre vers À venir, ou utilisez le bouton +. Cliquez sur Modifier pour choisir le type, la catégorie et la pochette.</p></div><span className="count">{tracks.length} titre{tracks.length !== 1 ? 's' : ''}</span></div>{previewTrack && <div className="notice preview-bar" role="status"><span><Headphones size={17}/> Préécoute : {previewTrack.title}</span><button className="secondary" onClick={stopPreview}><Square size={16}/>Arrêter la préécoute</button></div>}<div className="library-filters"><label>Contenus<NativeSelect aria-label="Filtrer les types de contenus" value={kindFilter} onChange={e => { setKindFilter(e.target.value); setGenreFilter('all'); }}><NativeSelectOption value="all">Tous les contenus</NativeSelectOption>{contentKinds.map(([id, label]) => <NativeSelectOption key={id} value={id}>{label}</NativeSelectOption>)}</NativeSelect></label>{(kindFilter === 'all' || kindFilter === 'music') && <label>Catégories musicales<NativeSelect aria-label="Filtrer les catégories musicales" value={genreFilter} onChange={e => setGenreFilter(e.target.value)}><NativeSelectOption value="all">Toutes les catégories</NativeSelectOption>{musicGenres.map(([id, label]) => <NativeSelectOption key={id} value={id}>{label}</NativeSelectOption>)}<NativeSelectOption value="unclassified">Musique à classer</NativeSelectOption></NativeSelect></label>}</div>{tracks.length ? (filtered.length ? trackRows(filtered) : <div className="empty"><p>Aucun titre ne correspond à ces filtres.</p><button className="secondary" onClick={() => { setKindFilter('all'); setGenreFilter('all'); }}>Afficher tous les contenus</button></div>) : <div className="empty"><div className="empty-icon"><Music2 /></div><h3>{loading ? 'Chargement de votre bibliothèque…' : 'Votre radio commence ici.'}</h3><p>Déposez vos fichiers audio ou vidéo ici pour les importer.</p>{uploadButton('Ajouter des fichiers', 'secondary')}<small>Audio ou vidéo MP4/WebM · 50 Mo maximum par fichier</small></div>}</section>; }
+    if (!authorized) return <section className="workspace" aria-busy={loading || busy}>
+        <h1>Régie AFOLUKU RADIO</h1>
+        {loading || busy ? <p role="status">Vérification de la régie…</p> : <>
+            <div className="notice error" role="alert">{error || 'La régie est temporairement indisponible.'}</div>
+            {needsLogin ? <Link href="/admin/login?next=%2Fadmin%2Fwebradio" className="primary">Se connecter à la régie</Link> : <p>Les commandes seront disponibles dès que la connexion aux services de la radio sera rétablie.</p>}
+            <button className="primary" onClick={() => void run(refresh)}><RefreshCw size={16}/>Vérifier à nouveau</button>
+        </>}
+    </section>;
     return <SidebarProvider className="studio"><Sidebar collapsible="none" className="rail"><Link href="/admin/webradio" className="brand">AFOLUKU<span>RADIO / STUDIO</span></Link><div className="rail-label">VOTRE ESPACE</div><nav aria-label="Navigation de la régie">{[['studio', Radio, 'Régie radio'], ['library', Music2, 'Bibliothèque'], ['playlists', ListMusic, 'Playlists'], ['ranking', Trophy, 'Classement'], ['settings', Settings, 'Paramètres']].map(([id, Icon, label]) => <button key={id} className={view === id ? 'selected' : ''} aria-current={view === id ? 'page' : undefined} title={label} onClick={() => setView(id)}><Icon />{label}</button>)}</nav><div className="rail-bottom"><div className="station-icon"><Radio /></div><b>AFOLUKU RADIO</b><span>La web radio d’AFOLUKU TV</span></div></Sidebar><div className="workspace"><header className="topbar"><AudienceCount enabled={authorized}/><Link href="/fr/radio" target="_blank" rel="noopener">Page d’écoute <ArrowUpRight size={16}/></Link></header><main><input ref={input} type="file" multiple accept="audio/*,video/mp4,video/webm,.mp3,.m4a,.wav,.ogg,.flac,.mp4,.webm" hidden onChange={e => { if (e.target.files)
         void importFiles(Array.from(e.target.files)); }}/><div className={`heading ${view === 'studio' ? 'studio-heading' : ''}`}><div><div className="eyebrow">AFOLUKU RADIO / {view === 'studio' ? 'RÉGIE' : view === 'library' ? 'BIBLIOTHÈQUE' : view === 'ranking' ? 'CLASSEMENT' : view === 'settings' ? 'PARAMÈTRES' : 'PLAYLISTS'}</div><h1>{view === 'studio' ? 'Régie radio' : view === 'library' ? 'Tous vos médias' : view === 'ranking' ? 'Classement des streams' : view === 'settings' ? 'Paramètres' : 'Votre programmation'}<span>.</span></h1><p>{view === 'settings' ? 'Personnalisez votre radio et votre confort d’écoute.' : view === 'ranking' ? 'Les titres les plus écoutés sur AFOLUKU RADIO.' : view === 'playlists' ? 'Composez l’ordre de passage de vos morceaux.' : 'Votre musique et votre voix, au même endroit.'}</p></div>{view === 'playlists' ? <button className="primary" disabled={disabled} onClick={() => { setName(''); setNameDialog('new'); }}><Plus size={18}/>Créer une playlist</button> : view === 'ranking' || view === 'settings' ? null : uploadButton()}</div>
- {error && <div className="notice error" role="alert">{error} <button className="ghost" aria-label="Réessayer le chargement" onClick={() => void run(refresh)}><RefreshCw size={16}/></button></div>}{!authorized && !loading && <div className="notice"><Link href="/admin/login" target="_top">Se connecter à la régie</Link></div>}{notice && <div className="notice" role="status">{notice}</div>}{upload && <div className="notice upload-progress"><div className="row"><Upload size={17}/><span>Importation {upload.done + 1}/{upload.total} : {upload.name}</span></div><Progress value={upload.done / upload.total * 100} className="mt-3"/></div>}
+ {error && <div className="notice error" role="alert">{error} <button className="ghost" aria-label="Réessayer le chargement" onClick={() => void run(refresh)}><RefreshCw size={16}/></button></div>}{needsLogin && <div className="notice"><Link href="/admin/login?next=%2Fadmin%2Fwebradio">Se reconnecter à la régie</Link></div>}{notice && <div className="notice" role="status">{notice}</div>}{upload && <div className="notice upload-progress"><div className="row"><Upload size={17}/><span>Importation {upload.done + 1}/{upload.total} : {upload.name}</span></div><Progress value={upload.done / upload.total * 100} className="mt-3"/></div>}
  <div hidden={view !== 'studio'} className="studio-deck-area">
  <div className="studio-previews">
  <section className="media-deck preview-deck" aria-label="Préécoute locale"><header className="deck-heading"><span>PREVIEW</span><span className="badge">{previewTrack ? previewPaused ? 'EN PAUSE' : 'PRÉÉCOUTE' : 'PRÊT'}</span></header><div className="deck-stage"><video ref={previewVideo} hidden={!isVideo(previewTrack?.mime)} playsInline preload="metadata" aria-label="Vidéo en préécoute"/><div className="deck-audio" hidden={isVideo(previewTrack?.mime)}><TrackArtwork src={previewTrack?.coverUrl} type={previewTrack?.coverType} animate={!!previewTrack && !previewPaused} title={previewTrack?.title} className="onair-cover"/><AudioSpectrum hideTitle getAnalyser={() => previewDesk.current?.spectrum || null} active={!!previewTrack && !previewPaused} hint="Choisissez un titre à préécouter dans la bibliothèque."/></div></div><div className="deck-caption"><Headphones size={16}/><span>{previewTrack?.title || 'Aucun média en préécoute'}</span></div></section>

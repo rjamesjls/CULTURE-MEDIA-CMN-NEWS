@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
+import { adminDestination } from './admin-destination';
 
 export async function updateSession(request) {
   let supabaseResponse = NextResponse.next({
@@ -38,6 +39,7 @@ export async function updateSession(request) {
       // Redirect to login if not logged in
       const url = request.nextUrl.clone();
       url.pathname = '/admin/login';
+      if (request.nextUrl.pathname === '/admin/webradio') url.searchParams.set('next', '/admin/webradio');
       return NextResponse.redirect(url);
     }
   }
@@ -45,7 +47,8 @@ export async function updateSession(request) {
   // Redirect to admin dashboard if already logged in and trying to access login
   if (request.nextUrl.pathname === '/admin/login' && user) {
     const url = request.nextUrl.clone();
-    url.pathname = '/admin';
+    url.pathname = adminDestination(url.searchParams.get('next'));
+    url.search = '';
     return NextResponse.redirect(url);
   }
 

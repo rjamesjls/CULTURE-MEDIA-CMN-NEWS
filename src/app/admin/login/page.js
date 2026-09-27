@@ -13,6 +13,7 @@ export default function LoginPage() {
     setErrorMsg('');
 
     const formData = new FormData(e.target);
+    formData.set('next', new URL(window.location.href).searchParams.get('next') || '');
     const result = await login(formData);
 
     if (result?.error) {
@@ -32,6 +33,7 @@ export default function LoginPage() {
     setErrorMsg('');
 
     const formData = new FormData(form);
+    formData.set('next', new URL(window.location.href).searchParams.get('next') || '');
     const { signup } = await import('./actions');
     const result = await signup(formData);
 
