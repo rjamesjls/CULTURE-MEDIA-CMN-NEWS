@@ -14,7 +14,7 @@ export const TableHead=props=><th {...props}/>;
 export const TableCell=props=><td {...props}/>;
 export const TableRow=props=><tr {...props}/>;
 export const Dialog=D.Root,DialogTitle=D.Title,DialogDescription=D.Description;
-export const DialogContent=({children,className,...props})=><D.Portal><div className="afoluku-radio-app"><D.Overlay className="radio-modal-overlay"/><D.Content {...props} className={`radio-modal ${className||''}`}>{children}<D.Close className="radio-modal-close" aria-label="Fermer">×</D.Close></D.Content></div></D.Portal>;
+export const DialogContent=({children,className,closeDisabled=false,...props})=><D.Portal><div className="afoluku-radio-app"><D.Overlay className="radio-modal-overlay"/><D.Content {...props} className={`radio-modal ${className||''}`}>{children}<D.Close disabled={closeDisabled} className="radio-modal-close" aria-label="Fermer">×</D.Close></D.Content></div></D.Portal>;
 export const AlertDialog=A.Root,AlertDialogTitle=A.Title,AlertDialogDescription=A.Description;
 export const AlertDialogContent=({children,...p})=><A.Portal><div className="afoluku-radio-app"><A.Overlay className="radio-modal-overlay"/><A.Content {...p} className="radio-modal">{children}</A.Content></div></A.Portal>;
 export const AlertDialogFooter=props=><div {...props} className="radio-modal-actions"/>;

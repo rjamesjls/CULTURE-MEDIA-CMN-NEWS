@@ -12,6 +12,8 @@ import { Progress } from '@/components/afoluku-radio/ui';
 import { NativeSelect, NativeSelectOption } from '@/components/afoluku-radio/ui';
 import {uploadRadioFile} from '@/lib/afoluku-radio/upload';
 import { api, AudioDesk, readFile } from '@/lib/afoluku-radio/audio';
+import UrlImport from './url-import';
+import { Link2 } from 'lucide-react';
 import TrackEditor from './track-editor';
 import AudioSpectrum from './audio-spectrum';
 import SettingsPanel, { useRadioSettings } from './radio-settings';
@@ -26,6 +28,7 @@ import { seconds, moveEntry } from '@/lib/afoluku-radio/radio';
 const initial = { serverNow: Date.now(), active: false, paused: false, playlistName: '', loop: true, current: null, live: null, revision: 0, upcoming: [] };
 export default function Studio() {
     const settings = useRadioSettings();
+    const [urlImportOpen, setUrlImportOpen] = useState(false);
     const [needsLogin, setNeedsLogin] = useState(false);
     const studioReady = useRef(false);
     const [previewVolume, setPreviewVolume] = useState(70), [previewPaused, setPreviewPaused] = useState(false);
@@ -159,7 +162,7 @@ export default function Studio() {
         e.preventDefault();
         e.returnValue = '';
     } }; window.addEventListener('beforeunload', warn); return () => window.removeEventListener('beforeunload', warn); }, []);
-    async function importFiles(files) { if (uploadLock.current)
+    async function importFiles(files, {title: importTitle, throwOnFailure = false} = {}) { if (uploadLock.current)
         return []; uploadLock.current = true; const imported = []; setError(''); setNotice(''); const failures = []; let count = 0; for (let i = 0; i < files.length; i++) {
         const file = files[i];
         setUpload({ done: i, total: files.length, name: file.name });
@@ -172,7 +175,7 @@ export default function Studio() {
             const duration = await readFile(file, isVideo(mime));
             if (duration >= 14400)
                 throw new Error('4 heures maximum par fichier');
-            const title = file.name.replace(/\.[^.]+$/, '').slice(0, 180);
+            const title = (importTitle || file.name.replace(/\.[^.]+$/, '')).slice(0, 180);
             const saved=await uploadRadioFile(file,{purpose:'track',title,duration,mime});
             imported.push(saved.id);
             count++;
@@ -196,7 +199,7 @@ export default function Studio() {
     } if (count)
         setNotice(`${count} morceau${count > 1 ? 'x' : ''} importé${count > 1 ? 's' : ''}.`); if (failures.length)
         setError(failures.join(' · ')); if (input.current)
-        input.current.value = ''; uploadLock.current = false; return imported; }
+        input.current.value = ''; uploadLock.current = false; if (throwOnFailure && !count) throw new Error(failures.join(' · ') || 'Import impossible. Réessayez.'); return imported; }
     async function savePlaylist(p) { await api('/api/afoluku-radio/playlists', 'PUT', p); await refresh(); }
     async function launch() { if (!station.upcoming.length)
         throw new Error('Ajoutez des titres dans À venir avant de lancer la radio.'); ensure(); const current = await api('/api/afoluku-radio/station', 'POST', { action: 'queue-start', revision: station.revision, currentKey: station.current?.key || null, loop }); setStation(current); await activatePreview(current); await enableMonitor(); }
@@ -253,7 +256,7 @@ export default function Studio() {
         desk.current.setDuckLevel(settings.duckVolume / 100);
     } if (previewDesk.current)
         previewDesk.current.monitor.gain.value = settings.previewVolume / 100; }, [settings.monitorVolume, settings.previewVolume, settings.duckVolume]);
-    const disabled = !authorized || busy || !!upload;
+    const disabled = urlImportOpen || !authorized || busy || !!upload;
     async function enqueue(track) { const basis = stationRef.current; try {
         setStation(await api('/api/afoluku-radio/station', 'POST', { action: 'queue-update', revision: basis.revision, currentKey: basis.current?.key || null, trackIds: [...basis.upcoming.map(t => t.id), track.id] }));
         setNotice(`« ${track.title} » ajouté à À venir.`);
@@ -266,7 +269,7 @@ export default function Studio() {
         e.preventDefault();
         e.dataTransfer.dropEffect = 'copy';
     } }
-    function uploadButton(label = 'Importer audio / vidéo', style = 'primary') { return <button className={style} disabled={disabled} onClick={() => input.current?.click()}><Upload size={18}/>{label}</button>; }
+    function uploadButton(label = 'Importer audio / vidéo', style = 'primary') { return <div className="radio-import-actions"><button className={style} disabled={disabled} onClick={() => input.current?.click()}><Upload size={18}/>{label}</button><button className="secondary" disabled={disabled} onClick={() => setUrlImportOpen(true)}><Link2 size={18}/>Importer depuis un lien</button></div>; }
     function trackRows(items, inPlaylist = false) { return <Table className="track-table"><TableHeader><TableRow><TableHead>TITRE</TableHead><TableHead className="duration-col">DURÉE</TableHead><TableHead className="text-right">STREAMS</TableHead><TableHead className="text-right">ACTIONS</TableHead></TableRow></TableHeader><TableBody>{items.map((t, i) => <TableRow key={`${t.id}-${i}`} draggable={!disabled} onDragStart={e => { if (disabled) {
         e.preventDefault();
         return;
@@ -326,6 +329,7 @@ export default function Studio() {
  {view === 'library' && library()}
  {view === 'playlists' && (playlists.length ? <div className="playlist-layout"><div className="playlist-list">{playlists.map(p => <button className={`playlist-item ${p.id === playlist?.id ? 'active' : ''}`} key={p.id} onClick={() => setSelected(p.id)}>{p.name}<span>{p.trackIds.length} titre{p.trackIds.length !== 1 ? 's' : ''}</span></button>)}</div><section className="library"><div className="playlist-heading"><div><h2>{playlist.name}</h2><span className="subtle">{playlist.trackIds.length} titres · {seconds(playlist.trackIds.reduce((s, id) => s + (tracks.find(t => t.id === id)?.duration || 0), 0))}</span></div><div className="actions"><button className="ghost" aria-label="Renommer la playlist" disabled={disabled} onClick={() => { setName(playlist.name); setNameDialog('rename'); }}><Pencil size={16}/></button><button className="ghost" aria-label="Supprimer la playlist" disabled={disabled} onClick={() => setConfirm({ type: 'playlist', id: playlist.id, name: playlist.name })}><Trash2 size={16}/></button><button className="secondary" disabled={disabled || !tracks.length} onClick={() => setAddDialog(true)}><Plus size={16}/>Ajouter</button></div></div>{playlist.trackIds.length ? trackRows(playlist.trackIds.map(id => tracks.find(t => t.id === id)).filter(Boolean), true) : <div className="empty"><ListMusic size={30}/><h3 style={{ marginTop: 15 }}>Une playlist à composer.</h3><p>Ajoutez des morceaux de votre bibliothèque.</p><button className="secondary" disabled={disabled || !tracks.length} onClick={() => setAddDialog(true)}><Plus size={17}/>Choisir des morceaux</button></div>}</section></div> : <section className="library"><div className="empty"><div className="empty-icon"><ListMusic /></div><h3>Votre première programmation.</h3><p>Créez une playlist, ajoutez vos musiques, puis lancez la radio.</p><button className="primary" disabled={disabled} onClick={() => { setName(''); setNameDialog('new'); }}><Plus size={18}/>Créer une playlist</button></div></section>)}
  <footer><span>AFOLUKU TV · STUDIO RADIO</span><span><Headphones size={15}/>Une voix. Une culture. Une connexion.</span></footer></main></div>
+ {urlImportOpen && <UrlImport onClose={() => setUrlImportOpen(false)} onImport={(file, title) => importFiles([file], {title, throwOnFailure: true})}/>}
  <TrackEditor track={tracks.find(t => t.id === editingTrackId) || null} onClose={() => setEditingTrackId(null)} onSaved={refresh}/>
  <Dialog open={!!nameDialog} onOpenChange={open => { if (!open)
         setNameDialog(null); }}><DialogContent><DialogTitle>{nameDialog === 'new' ? 'Créer une playlist' : 'Renommer la playlist'}</DialogTitle><DialogDescription>Choisissez un nom pour votre programmation.</DialogDescription><p className="help" role="alert">{error}</p><form onSubmit={e => { e.preventDefault(); void run(async () => { if (nameDialog === 'new') {

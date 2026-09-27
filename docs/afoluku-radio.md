@@ -55,3 +55,9 @@ Les imports abandonnés restent dans Storage et dans `afoluku_radio.uploads`. Av
 - Storage et la session Supabase sont simulés dans les tests locaux, sans accès réseau externe. Le stockage réel, les cookies, le décodage vidéo, le rendu visuel et le microphone matériel restent à vérifier dans l’environnement Vercel de prévisualisation.
 
 Références : [limites des fonctions Vercel](https://vercel.com/docs/functions/limitations), [imports signés Supabase](https://supabase.com/docs/reference/javascript/file-buckets-uploadtosignedurl).
+
+## Importer depuis un lien
+
+La régie et la bibliothèque proposent **Importer depuis un lien** : coller un lien HTTPS direct vers un fichier audio/vidéo public (50 Mo maximum), puis saisir éventuellement un titre. Le navigateur télécharge le fichier sans cookies ni référent ; l’import existant vérifie la durée, stocke une copie dans Supabase et calcule la forme d’onde lorsque le format le permet. Le média rejoint la bibliothèque sans modifier la programmation à l’antenne.
+
+L’hébergeur du fichier doit autoriser les téléchargements depuis un autre site (CORS). Sinon, télécharger le fichier sur son appareil puis utiliser l’import local. Les pages de partage, liens YouTube, fichiers protégés par connexion et flux continus ne sont pas des fichiers importables. Le téléchargement est annulable, limité à 50 Mo réels et à deux minutes ; aucun proxy serveur vers une URL arbitraire n’est ajouté.
