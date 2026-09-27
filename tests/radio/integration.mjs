@@ -14,7 +14,7 @@ await postgres.exec(limitsMigration);await postgres.exec(limitsMigration);
 assert.equal(Number((await postgres.query("SELECT file_size_limit FROM storage.buckets WHERE id='afoluku-radio'")).rows[0].file_size_limit),104857600);
 const {radioDatabase:db,postgresSql}=await import('../../src/lib/afoluku-radio/postgres.js');
 assert.equal(postgresSql("SELECT '?' AS literal,cover_key IS ? FROM tracks WHERE id=?"),"SELECT '?' AS literal,cover_key IS NOT DISTINCT FROM $1 FROM afoluku_radio.tracks WHERE id=$2");
-const routes={};for(const name of ['station','playlists','tracks','settings','settings/logo','streams','listeners','live','studio','uploads','camera'])routes[name]=await import(`../../src/app/api/afoluku-radio/${name}/route.js`);
+const routes={};for(const name of ['station','playlists','tracks','settings','settings/logo','settings/import-cover','streams','listeners','live','studio','uploads','camera'])routes[name]=await import(`../../src/app/api/afoluku-radio/${name}/route.js`);
 const complete=await import('../../src/app/api/afoluku-radio/uploads/[id]/route.js');
 const classify=await import('../../src/app/api/afoluku-radio/tracks/[id]/classification/route.js');
 const audio=await import('../../src/app/api/afoluku-radio/audio/[id]/route.js');
@@ -79,6 +79,26 @@ try{
  assert.equal((await call('settings','PUT',{...videoSettings,videoEnabled:true})).status,409);
  assert.equal((await call('settings','PUT',{...hiddenVideo.data,videoEnabled:true})).status,200);
  await call('station','POST',{action:'stop'});state=(await call('station')).data;await call('station','POST',{action:'queue-update',revision:state.revision,currentKey:null,trackIds:[]});assert.equal((await call('tracks','DELETE',{id:track})).status,200);
+ let importSettings=(await call('settings')).data;
+ assert.equal(importSettings.importMusicGenre,null);assert.equal(importSettings.importCoverUrl,null);
+ assert.equal((await call('settings','PUT',{...importSettings,importMusicGenre:'unknown'})).status,400);
+ importSettings=(await call('settings','PUT',{...importSettings,importMusicGenre:'gospel'})).data;
+ const defaultImage=await call('uploads','POST',{purpose:'import-cover',mime:'image/png',size:png.length,version:importSettings.version});assert.equal(defaultImage.status,200);
+ objects.set(defaultImage.data.path,{data:png,mime:'image/png'});const defaultFinished=await finish(defaultImage.data.id);assert.equal(defaultFinished.status,200);importSettings=await defaultFinished.json();
+ assert.ok(importSettings.importCoverUrl);assert.equal(importSettings.importCoverKey,undefined);
+ importSettings=(await call('settings','PUT',{...importSettings,name:'AFOLUKU RADIO',importCoverKey:'forged'})).data;assert.ok(importSettings.importCoverUrl);
+ const importedIds=[];
+ for(const mime of ['audio/mpeg','video/mp4']){
+  const media=new Uint8Array(64);if(mime==='video/mp4')media.set(Buffer.from('ftypisom'),4);
+  const ticket=await call('uploads','POST',{purpose:'track',mime,size:64,title:'Inherited defaults',duration:120});objects.set(ticket.data.path,{data:media,mime});const completed=await finish(ticket.data.id);assert.equal(completed.status,200);const {id:trackId}=await completed.json();importedIds.push(trackId);
+  const inherited=await db.prepare('SELECT music_genre,cover_key FROM tracks WHERE id=?').bind(trackId).first();assert.equal(inherited.music_genre,'gospel');assert.equal(inherited.cover_key,defaultImage.data.path);
+ }
+ assert.equal((await cover.DELETE(request('DELETE'),{params:Promise.resolve({id:importedIds[0]})})).status,200);assert.equal(objects.has(defaultImage.data.path),true);
+ assert.equal((await routes['settings/import-cover'].DELETE(request('DELETE',null,{'X-Settings-Version':String(importSettings.version)}))).status,200);
+ assert.equal((await call('settings')).data.importCoverUrl,null);assert.equal(objects.has(defaultImage.data.path),true);
+ assert.equal((await db.prepare('SELECT cover_key FROM tracks WHERE id=?').bind(importedIds[1]).first()).cover_key,defaultImage.data.path);
+ for(const trackId of importedIds)assert.equal((await call('tracks','DELETE',{id:trackId})).status,200);
+ assert.equal(objects.has(defaultImage.data.path),true);
  assert.equal((await call('camera','POST',{action:'start'})).status,503);
  process.env.LIVEKIT_URL='wss://camera.test';process.env.LIVEKIT_API_KEY='test-key';process.env.LIVEKIT_API_SECRET='test-secret-at-least-thirty-two-characters';
  identity.user=null;assert.equal((await call('camera','POST',{action:'start'})).status,401);identity.user={id:'00000000-0000-4000-8000-000000000001'};
