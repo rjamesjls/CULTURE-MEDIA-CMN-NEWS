@@ -41,3 +41,13 @@
 .afoluku-radio-app input[type=range], .afoluku-radio-app input[type=checkbox] { background: transparent !important; }
 
 .afoluku-radio-app option { color: #fff !important; background: #2c3327 !important; }
+
+/* Keep the radio readable inside the site's light theme, including dialog portals. */
+.afoluku-radio-app { color-scheme: dark; }
+.afoluku-radio-app h1,
+.afoluku-radio-app h2,
+.afoluku-radio-app h3,
+.afoluku-radio-app h4,
+.afoluku-radio-app h5,
+.afoluku-radio-app h6 { color: var(--foreground); }
+.afoluku-radio-app button { color: inherit; }
