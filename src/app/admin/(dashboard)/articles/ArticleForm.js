@@ -371,9 +371,9 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
   };
 
   return (
-    <div style={{ display: 'flex', gap: '30px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+    <div className="article-form-layout">
       
-      <div style={{ flex: '1 1 500px' }}>
+      <div>
         <form onSubmit={handleSubmit} className="admin-form-container" style={{ margin: 0 }}>
           
           {/* --- BLOC IA INTÉGRÉ --- */}
@@ -942,7 +942,7 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
       </div>
 
       {/* Colonne Prévisualisation */}
-      <div style={{ flex: '1 1 400px', backgroundColor: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '20px', position: 'sticky', top: '20px' }}>
+      <div style={{ backgroundColor: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '20px', position: 'sticky', top: '20px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
           <h3 style={{ fontSize: '14px', textTransform: 'uppercase', color: '#6b7280', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
             <i className="fas fa-eye"></i> Prévisualisation
