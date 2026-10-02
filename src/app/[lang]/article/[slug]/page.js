@@ -14,13 +14,13 @@ export async function generateMetadata({ params }) {
   const slug = resolvedParams.slug;
   const { data: article } = await supabase
     .from('articles')
-    .select('title, description, image_url, category_id, categories(name)')
+    .select('title, description, image_url, category')
     .eq('slug', slug)
     .single();
 
   if (!article) return { title: 'Article non trouvé' };
 
-  const categoryName = article.categories?.name || 'Actualité';
+  const categoryName = article.category || 'Actualité';
   const ogImage = article.image_url || '/icon.png';
   const lang = resolvedParams.lang;
 
