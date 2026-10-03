@@ -2,6 +2,7 @@ import './admin.css';
 import Link from 'next/link';
 import { getUserProfile } from '@/utils/supabase/auth';
 import { redirect } from 'next/navigation';
+import MobileSidebarToggle from './MobileSidebarToggle';
 
 export const metadata = {
   title: 'Admin - A FOLUKU TV',
@@ -215,7 +216,10 @@ export default async function AdminLayout({ children }) {
       <main className="admin-main">
         {/* Top Navbar */}
         <header className="admin-header">
-          <div className="admin-header-title">Espace d'administration</div>
+          <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
+            <MobileSidebarToggle />
+            <div className="admin-header-title">Espace d'administration</div>
+          </div>
         </header>
 
         {/* Page Content */}
