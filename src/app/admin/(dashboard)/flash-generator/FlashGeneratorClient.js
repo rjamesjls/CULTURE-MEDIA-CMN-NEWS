@@ -84,7 +84,7 @@ function handleParse() {
       setPosts([]);
       return;
     }
-    const blocks = bulkText.split(/\n\s*-{3,}\s*\n/).filter(b => b.trim() !== '');
+    const blocks = bulkText.split(/\n\s*\n/).filter(b => b.trim() !== '');
     const parsed = blocks.map((block, index) => {
       const lines = block.trim().split('\n');
       const title = lines[0] ? lines[0].trim() : "SANS TITRE";
@@ -507,7 +507,7 @@ function handleParse() {
         <div style={{ flex: "1 1 300px", maxWidth: "100%", display: 'flex', flexDirection: 'column', gap: '15px' }}>
           <div>
             <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '8px' }}>
-              Texte Brut (Séparez chaque image par ---)
+              Texte Brut (Laissez une ligne vide = nouvelle image)
             </label>
             <textarea
               value={bulkText}
