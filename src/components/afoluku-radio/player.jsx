@@ -12,7 +12,7 @@ import { ListenerPresence, listenerId } from '@/lib/afoluku-radio/listener-prese
 import { StreamReporter } from '@/lib/afoluku-radio/stream-reporter';
 import { broadcastArtwork } from '@/lib/afoluku-radio/radio-settings';
 import { isVideo } from '@/lib/afoluku-radio/track-media';
-export default function Listener({compact=false,href="/fr/radio"}) {
+export default function Listener({compact=false,href="/fr/radio",autoPlay=false}) {
     const settings = useRadioSettings();
     const [station, setStation] = useState(null), [playing, setPlaying] = useState(false), [error, setError] = useState(''), [volume, setVolume] = useState(80);
     const video = useRef(null), cameraVideo = useRef(null);
@@ -20,6 +20,13 @@ export default function Listener({compact=false,href="/fr/radio"}) {
     const presence = useRef(null);
     const streams = useRef(null), stationRef = useRef(station);
     useLayoutEffect(() => { stationRef.current = station; });
+    useEffect(() => {
+        if (autoPlay && !enabled.current) {
+            // Give it a tiny delay to ensure everything is mounted
+            setTimeout(() => void toggle(), 100);
+        }
+    }, [autoPlay]);
+
     useEffect(() => {
         const reporter = new StreamReporter(listenerId());
         streams.current = reporter;

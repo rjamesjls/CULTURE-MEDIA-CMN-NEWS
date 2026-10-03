@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { generateFacebookPost } from './facebook-actions';
 import { publishToFacebook } from '../spinoffs/actions';
 import { notFound } from 'next/navigation';
+import SocialTabs from '../SocialTabs';
 import SpeechButton from '@/components/SpeechButton';
 
 export default function FacebookGeneratorPage({ params }) {
@@ -80,11 +81,7 @@ export default function FacebookGeneratorPage({ params }) {
 
   return (
     <div style={{ maxWidth: '900px', margin: '0 auto' }}>
-      <div style={{ marginBottom: '20px' }}>
-        <Link href="/admin/publication-center" style={{ color: '#6b7280', textDecoration: 'none', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '5px' }}>
-          <i className="fas fa-arrow-left"></i> Retour au Publication Center
-        </Link>
-      </div>
+      <SocialTabs articleId={article?.id || "draft"} />
 
       <div style={{ marginBottom: '30px' }}>
         <h2 style={{ fontFamily: 'var(--font-heading)', color: '#111827', margin: '0 0 10px 0' }}>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import SocialTabs from '../SocialTabs';
 import { generateSpinoff, saveSpinoffs, publishToFacebook } from './actions';
 import SpeechButton from '@/components/SpeechButton';
 
@@ -140,11 +141,7 @@ export default function SpinoffsClient({ article, initialSpinoffs }) {
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '50px' }}>
-      <div style={{ marginBottom: '20px' }}>
-        <Link href="/admin/publication-center" style={{ color: '#6b7280', textDecoration: 'none', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '5px' }}>
-          <i className="fas fa-arrow-left"></i> Retour au Publication Center
-        </Link>
-      </div>
+      <SocialTabs articleId={article?.id || "draft"} />
 
       <div style={{ marginBottom: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>

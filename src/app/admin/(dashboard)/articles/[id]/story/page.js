@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { generateStoryPost, publishStoryToMeta, getArticleForStory, saveStoryData } from './story-actions';
 import { notFound } from 'next/navigation';
+import SocialTabs from '../SocialTabs';
 import * as htmlToImage from 'html-to-image';
 
 export default function StoryGeneratorPage({ params }) {
@@ -199,11 +200,7 @@ export default function StoryGeneratorPage({ params }) {
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-      <div style={{ marginBottom: '20px' }}>
-        <Link href="/admin/publication-center" style={{ color: '#6b7280', textDecoration: 'none', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '5px' }}>
-          <i className="fas fa-arrow-left"></i> Retour au Publication Center
-        </Link>
-      </div>
+      <SocialTabs articleId={articleId || "draft"} />
 
       <div style={{ marginBottom: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>

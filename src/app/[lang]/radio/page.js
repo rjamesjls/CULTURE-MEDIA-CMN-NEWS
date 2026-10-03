@@ -31,7 +31,7 @@ export default async function RadioPage({ params }) {
       >
         <i className="fas fa-arrow-left"></i> Retour au site
       </Link>
-      <Listener/>
+      <Listener autoPlay={true} />
     </div>
   );
 }

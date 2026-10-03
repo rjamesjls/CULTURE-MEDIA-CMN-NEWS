@@ -34,6 +34,9 @@ export default function NewsroomClient({ articles, categories, ideas, profile })
           </p>
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
+          <Link href="/admin/flash-generator" className="admin-btn" style={{ backgroundColor: '#e41318', color: '#fff', border: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <i className="fas fa-bolt"></i> Flash Info Rapide
+          </Link>
           <button 
             onClick={() => setActiveTab('dashboard')}
             className="admin-btn"

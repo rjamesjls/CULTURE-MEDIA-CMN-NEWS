@@ -122,8 +122,8 @@ export default async function AdminLayout({ children }) {
             <i className="fas fa-satellite-dish"></i> Veille & Sources
           </Link>
 
-          <Link href="/admin/instagram" className="admin-nav-link" style={{ background: 'linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)', color: 'white', fontWeight: 'bold' }}>
-            <i className="fab fa-instagram"></i> Posts Instagram
+          <Link href="/admin/instagram" className="admin-nav-link" style={{ background: 'linear-gradient(45deg, #1e3a8a 0%, #3b82f6 50%, #8b5cf6 100%)', color: 'white', fontWeight: 'bold' }}>
+            <i className="fas fa-share-nodes"></i> Social Post
           </Link>
           <Link href="/admin/reels-studio" className="admin-nav-link" style={{ background: 'linear-gradient(45deg, #f09433 0%, #dc2743 50%, #bc1888 100%)', color: 'white', fontWeight: 'bold', marginTop: '5px' }}>
             <i className="fas fa-film"></i> Reels Studio

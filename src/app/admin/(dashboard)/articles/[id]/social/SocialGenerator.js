@@ -794,589 +794,139 @@ Contenu: ${article.content || ''}`;
     </div>
   );
 
-  const renderTemplate2 = (lang, ref) => (
+
+  const renderTemplate2 = (lang, ref) => {
+    const isBsh = lang === "bsh";
+    const bgImage = isBsh ? "/backgrounds/bg-template-bsh.png" : "/backgrounds/bg-template-fr.png";
+    const subtitle = isBsh ? "WI MEDIA, WI KULTURU, WI TOLI" : "NOTRE MÉDIA, NOS CULTURES, NOS HISTOIRES";
+    const category = currentData[`category_${lang}`] || (isBsh ? "POLITIKI" : "POLITIQUE");
+    const readMore = isBsh ? "Yu sa go leisi ala sani fini fini na a web site : www.afolukutv.com" : "Plus de détails sur notre site web.";
+    const articleBtn = isBsh ? "Article compleet" : "Article complet";
+    const titleColor = isBsh ? "#0d069b" : "#ffffff";
+    const bodyColor = isBsh ? "#1a1a1a" : "#ffffff";
+    const ctaColor = isBsh ? "#333" : "#ffffff";
+    const breakingText = isBsh ? "SAN PASA NYUNSU" : "BREAKING NEWS";
+    const sourceText = isBsh ? "FOLLOW " : "SUIVEZ ";
+
+    return (
     <div
       ref={ref}
       style={{
         width: "1080px",
         height: "1350px",
-        backgroundImage: "url(/backgrounds/editorial-blue-bg.png)",
+        backgroundImage: `url(${bgImage})`,
+        backgroundColor: "#ffffff",
         backgroundSize: "cover",
         backgroundPosition: "center",
         position: "relative",
         overflow: "hidden",
         fontFamily: '"Montserrat", sans-serif',
+        display: "flex",
+        flexDirection: "column",
       }}
     >
-      {/* Top Image */}
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          height: "600px",
-          overflow: "hidden",
-        }}
-      >
-        <img
-          src={proxiedImageUrl}
-          style={{ width: "100%", height: "100%", objectFit: "cover" }}
-          alt="Background"
-          crossOrigin="anonymous"
-        />
-        {/* Date */}
-        <div
-          style={{
-            position: "absolute",
-            top: "40px",
-            left: "0",
-            backgroundColor: activeColors.main,
-            color: "#fff",
-            padding: "8px 25px",
-            fontSize: "24px",
-            fontWeight: "bold",
-            borderTopRightRadius: "20px",
-            borderBottomRightRadius: "20px",
-          }}
-        >
-          {currentData.date}
-        </div>
-        {/* Logo */}
-        <div
-          style={{
-            position: "absolute",
-            top: "30px",
-            right: "30px",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-          }}
-        >
-          <img
-            src={
-              currentData.logoTheme === "black"
-                ? "/backgrounds/cmn-corner-logo-black.png"
-                : "/backgrounds/cmn-corner-logo.png"
-            }
-            alt="AFOLUKUTV Media"
-            style={{ width: "250px" }}
-          />
-          {currentData.showLogoNews && (
-            <div
-              style={{
-                color: currentData.logoTheme === "black" ? "#000" : "#fff",
-                fontSize: "35px",
-                fontWeight: "900",
-                marginTop: "-5px",
-                textTransform: "uppercase",
-                letterSpacing: "6px",
-              }}
-            >
-              News
+      {/* ── HEADER ── */}
+      <div style={{
+        padding: "0px 30px 14px 30px",
+        display: "flex",
+        alignItems: "stretch",
+        justifyContent: "space-between",
+        flexShrink: 0,
+      }}>
+        {/* Left: Logo + NEWS badge + Tagline */}
+        <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+          <img src="/afoluku-tv-logo.png" alt="AFOLUKU TV" style={{ height: "120px", objectFit: "contain", objectPosition: "left", marginTop: "-20px" }} crossOrigin="anonymous" />
+          <div style={{ display: "flex", alignItems: "center", marginTop: "12px", gap: "14px" }}>
+            <div style={{ backgroundColor: "#e41318", color: "#fff", padding: "1px 18px", borderRadius: "8px", fontWeight: "900", fontSize: "24px", letterSpacing: "2px", WebkitTextStroke: "1px #fff" }}>
+              NEWS
             </div>
-          )}
-        </div>
-      </div>
-
-      {/* Red Border Separator */}
-      <div
-        style={{
-          position: "absolute",
-          top: "595px",
-          left: 0,
-          right: 0,
-          height: "15px",
-          backgroundColor: "#ffffff",
-          zIndex: 10,
-        }}
-      ></div>
-
-      <div
-        style={{
-          position: "absolute",
-          top: currentData.showBreakingNews ? "480px" : "600px",
-          left: currentData.showBreakingNews ? "0" : "50%",
-          transform: currentData.showBreakingNews ? "translate(0, -50%)" : "translate(-50%, -50%)",
-          display: "flex",
-          boxShadow: "0 15px 30px rgba(0,0,0,0.4)",
-          borderRadius: "4px",
-          overflow: "hidden",
-          zIndex: 20,
-        }}
-      >
-        <div
-          style={{
-            background:
-              `linear-gradient(to bottom, ${activeColors.gradStart}, ${activeColors.gradEnd})`,
-            padding: "3px 25px",
-            display: "flex",
-            alignItems: "center",
-          }}
-        >
-          <span
-            style={{
-              color: "#ffffff",
-              fontSize: "55px",
-              fontWeight: "900",
-              letterSpacing: "1px",
-              fontFamily: '"Arial Black", Arial, sans-serif',
-              textTransform: "uppercase",
-              lineHeight: "1.1",
-              WebkitTextStroke: "2.5px #ffffff",
-            }}
-          >
-            AFOLUKU
-          </span>
-        </div>
-        <div
-          style={{
-            background: "linear-gradient(to bottom, #ffffff, #cbd5e1)",
-            padding: "3px 25px",
-            display: "flex",
-            alignItems: "center",
-          }}
-        >
-          <span
-            style={{
-              color: "#1e3a8a",
-              fontSize: "55px",
-              fontWeight: "900",
-              letterSpacing: "1px",
-              fontFamily: "Arial, sans-serif",
-              textTransform: "uppercase",
-              lineHeight: "1.1",
-            }}
-          >
-            MÉDIA
-          </span>
-        </div>
-      </div>
-
-      <div
-        style={{
-          position: "absolute",
-          top: currentData.showBreakingNews ? "480px" : "566px",
-          left: currentData.showBreakingNews ? "auto" : "50%",
-          right: currentData.showBreakingNews ? "0" : "auto",
-          transform: currentData.showBreakingNews ? "translate(0, -50%)" : "translate(-50%, -100%)",
-          backgroundColor: "#f1d210",
-          color: "#000",
-          padding: "6px 20px",
-          borderTopLeftRadius: "15px",
-          borderTopRightRadius: "15px",
-          fontSize: "20px",
-          fontWeight: "900",
-          textTransform: "uppercase",
-          zIndex: 25,
-          boxShadow: "0 -4px 6px rgba(0,0,0,0.2)",
-        }}
-      >
-        {currentData[`category_${lang}`]}
-      </div>
-
-      {/* Content Area */}
-      <div
-        style={{
-          position: "absolute",
-          top: "660px",
-          left: "50px",
-          right: "50px",
-        }}
-      >
-        <div
-          className="insta-title"
-          style={{
-            color: "#facc15",
-            fontSize: "50px",
-            fontWeight: "900",
-            lineHeight: "1.2",
-            textTransform: "uppercase",
-            marginBottom: "25px",
-          }}
-          dangerouslySetInnerHTML={{
-            __html: cleanHtmlForDisplay(currentData[`title_${lang}`]),
-          }}
-        />
-        <div
-          className={`insta-body ${lang}`}
-          style={{
-            color: "#fff",
-            fontSize: "30px",
-            lineHeight: "1.5",
-            fontWeight: "500",
-            whiteSpace: "pre-line",
-          }}
-          dangerouslySetInnerHTML={{
-            __html: cleanHtmlForDisplay(currentData[`body_${lang}`]),
-          }}
-        />
-      </div>
-
-      {/* Footer */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: "40px",
-          left: "50px",
-          right: "50px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-end",
-        }}
-      >
-        <div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "15px",
-              marginBottom: "10px",
-            }}
-          >
-            <span
-              style={{
-                backgroundColor: "#facc15",
-                color: "#000",
-                padding: "8px 20px",
-                borderRadius: "20px",
-                fontSize: "20px",
-                fontWeight: "bold",
-              }}
-            >
-              Source
-            </span>
-            <span style={{ color: "#fff", fontSize: "22px" }}>
-              {currentData.source}
-            </span>
-          </div>
-          <div style={{ color: "#94a3b8", fontSize: "18px" }}>
-            Plus d&apos;actualité sur : culturemedianews.fr
-          </div>
-        </div>
-        <div style={{ textAlign: "right" }}>
-          <div
-            style={{
-              backgroundColor: activeColors.main,
-              color: "#fff",
-              padding: "8px 20px",
-              borderRadius: "20px",
-              fontSize: "20px",
-              fontWeight: "bold",
-              display: "inline-block",
-              marginBottom: "10px",
-            }}
-          >
-            Suivez-nous pour plus d'infos
-          </div>
-          <div style={{ color: "#fff", fontSize: "28px", fontWeight: "bold" }}>
-            @culturemediacmn
-          </div>
-        </div>
-      </div>
-      {renderBreakingNewsBanner()}
-    </div>
-  );
-
-  const renderTemplate3 = (lang, ref) => (
-    <div
-      ref={ref}
-      style={{
-        width: "1080px",
-        height: "1350px",
-        backgroundColor: "#f8fafc",
-        position: "relative",
-        overflow: "hidden",
-        fontFamily: '"Montserrat", sans-serif',
-      }}
-    >
-      {/* Background Dots Pattern (simulated with radial gradient) */}
-      <div
-        style={{
-          position: "absolute",
-          top: "600px",
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundImage: "radial-gradient(#cbd5e1 2px, transparent 2px)",
-          backgroundSize: "20px 20px",
-          opacity: 0.5,
-        }}
-      ></div>
-
-      {/* Top Image */}
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          height: "600px",
-          overflow: "hidden",
-        }}
-      >
-        <img
-          src={proxiedImageUrl}
-          style={{ width: "100%", height: "100%", objectFit: "cover" }}
-          alt="Background"
-          crossOrigin="anonymous"
-        />
-        <div
-          style={{
-            position: "absolute",
-            top: "40px",
-            left: "0",
-            backgroundColor: "#1e3a8a",
-            color: "#fff",
-            padding: "8px 25px",
-            fontSize: "24px",
-            fontWeight: "bold",
-            borderTopRightRadius: "20px",
-            borderBottomRightRadius: "20px",
-          }}
-        >
-          {currentData.date}
-        </div>
-        {/* Logo */}
-        <div
-          style={{
-            position: "absolute",
-            top: "30px",
-            right: "30px",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-          }}
-        >
-          <img
-            src={
-              currentData.logoTheme === "black"
-                ? "/backgrounds/cmn-corner-logo-black.png"
-                : "/backgrounds/cmn-corner-logo.png"
-            }
-            alt="AFOLUKUTV Media"
-            style={{ width: "250px" }}
-          />
-          {currentData.showLogoNews && (
-            <div
-              style={{
-                color: currentData.logoTheme === "black" ? "#000" : "#fff",
-                fontSize: "35px",
-                fontWeight: "900",
-                marginTop: "-5px",
-                textTransform: "uppercase",
-                letterSpacing: "6px",
-              }}
-            >
-              News
+            <div style={{ fontSize: "19px", fontWeight: "600", color: "#fff", letterSpacing: "1px" }}>
+              {subtitle}
             </div>
-          )}
+          </div>
+        </div>
+        {/* Right: Date + Category */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", justifyContent: "space-between", paddingTop: "4px" }}>
+          <div style={{ fontSize: "18px", fontWeight: "700", color: "#fff", marginTop: "24px" }}>
+            {currentData.date}
+          </div>
+          <div style={{ backgroundColor: "#ffce00", color: "#000", padding: "6px 20px", fontWeight: "900", fontSize: "22px", borderRadius: "4px", textTransform: "uppercase" }}>
+            {category}
+          </div>
         </div>
       </div>
 
-      <div
-        style={{
-          position: "absolute",
-          top: "595px",
-          left: 0,
-          right: 0,
-          height: "15px",
-          backgroundColor: "#ffffff",
-          zIndex: 10,
-        }}
-      ></div>
+      {/* ── MAIN IMAGE ── */}
+      <div style={{ width: "100%", height: "500px", position: "relative", flexShrink: 0, overflow: "hidden" }}>
+        {proxiedImageUrl && (
+          <img
+            src={proxiedImageUrl}
+            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+            alt="Hero"
+            crossOrigin="anonymous"
+          />
+        )}
+      </div>
 
-      {renderBreakingNewsBanner()}
-
-      <div
-        style={{
-          position: "absolute",
-          top: currentData.showBreakingNews ? "480px" : "600px",
-          left: currentData.showBreakingNews ? "0" : "50%",
-          transform: currentData.showBreakingNews ? "translate(0, -50%)" : "translate(-50%, -50%)",
+      {/* ── BREAKING NEWS & LOCATION ── */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", width: "100%", flexShrink: 0, overflow: "visible" }}>
+        {/* Left red gradient block with broadcast icon + text */}
+        <div style={{
+          background: "linear-gradient(to right, #0d069b, #e41318)",
+          color: "#fff",
+          padding: "12px 35px",
           display: "flex",
-          boxShadow: "0 15px 30px rgba(0,0,0,0.4)",
-          borderRadius: "4px",
-          overflow: "hidden",
-          zIndex: 20,
-        }}
-      >
-        <div
-          style={{
-            background:
-              `linear-gradient(to bottom, ${activeColors.gradStart}, ${activeColors.gradEnd})`,
-            padding: "3px 25px",
-            display: "flex",
-            alignItems: "center",
-          }}
-        >
-          <span
-            style={{
-              color: "#ffffff",
-              fontSize: "55px",
-              fontWeight: "900",
-              letterSpacing: "1px",
-              fontFamily: '"Arial Black", Arial, sans-serif',
-              textTransform: "uppercase",
-              lineHeight: "1.1",
-              WebkitTextStroke: "2.5px #ffffff",
-            }}
-          >
-            AFOLUKU
-          </span>
-        </div>
-        <div
-          style={{
-            background: "linear-gradient(to bottom, #ffffff, #cbd5e1)",
-            padding: "3px 25px",
-            display: "flex",
-            alignItems: "center",
-          }}
-        >
-          <span
-            style={{
-              color: "#1e3a8a",
-              fontSize: "55px",
-              fontWeight: "900",
-              letterSpacing: "1px",
-              fontFamily: "Arial, sans-serif",
-              textTransform: "uppercase",
-              lineHeight: "1.1",
-            }}
-          >
-            MÉDIA
-          </span>
-        </div>
-      </div>
-
-      <div
-        style={{
-          position: "absolute",
-          top: currentData.showBreakingNews ? "480px" : "566px",
-          left: currentData.showBreakingNews ? "auto" : "50%",
-          right: currentData.showBreakingNews ? "0" : "auto",
-          transform: currentData.showBreakingNews ? "translate(0, -50%)" : "translate(-50%, -100%)",
-          backgroundColor: "#f1d210",
-          color: "#000",
-          padding: "6px 20px",
-          borderTopLeftRadius: "15px",
-          borderTopRightRadius: "15px",
-          fontSize: "20px",
-          fontWeight: "900",
-          textTransform: "uppercase",
-          zIndex: 25,
-          boxShadow: "0 -4px 6px rgba(0,0,0,0.2)",
-        }}
-      >
-        {currentData[`category_${lang}`]}
-      </div>
-
-      <div
-        style={{
-          position: "absolute",
-          top: "660px",
-          left: "50px",
-          right: "50px",
-          zIndex: 2,
-        }}
-      >
-        <div
-          className="insta-title"
-          style={{
-            color: activeColors.main,
-            fontSize: "50px",
-            fontWeight: "900",
-            lineHeight: "1.2",
-            textTransform: "uppercase",
-            marginBottom: "25px",
-          }}
-          dangerouslySetInnerHTML={{
-            __html: cleanHtmlForDisplay(currentData[`title_${lang}`]),
-          }}
-        />
-        <div
-          className={`insta-body ${lang}`}
-          style={{
-            color: "#1e3a8a",
-            fontSize: "30px",
-            lineHeight: "1.5",
-            fontWeight: "500",
-            whiteSpace: "pre-line",
-          }}
-          dangerouslySetInnerHTML={{
-            __html: cleanHtmlForDisplay(currentData[`body_${lang}`]),
-          }}
-        />
-      </div>
-
-      <div
-        style={{
-          position: "absolute",
-          bottom: "40px",
-          left: "50px",
-          right: "50px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-end",
-          zIndex: 2,
-        }}
-      >
-        <div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "15px",
-              marginBottom: "10px",
-            }}
-          >
-            <span
-              style={{
-                backgroundColor: "#facc15",
-                color: "#000",
-                padding: "8px 20px",
-                borderRadius: "20px",
-                fontSize: "20px",
-                fontWeight: "bold",
-              }}
-            >
-              Source
-            </span>
-            <span
-              style={{ color: "#1e3a8a", fontSize: "22px", fontWeight: "bold" }}
-            >
-              {currentData.source}
+          alignItems: "center",
+          transform: "skewX(-15deg)",
+          marginLeft: "-15px" // To keep it anchored to the left edge despite the skew
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "14px", transform: "skewX(15deg)", marginLeft: "15px" }}>
+            <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="3" fill="white" stroke="none" />
+              <path d="M8 8.5a5 5 0 0 0 0 7" /><path d="M5 5.5a9 9 0 0 0 0 13" />
+              <path d="M16 8.5a5 5 0 0 1 0 7" /><path d="M19 5.5a9 9 0 0 1 0 13" />
+            </svg>
+            <span style={{ fontFamily: "'Anton', sans-serif", fontStyle: "italic", fontSize: "62px", letterSpacing: "2px", lineHeight: "1" }}>
+              {breakingText}
             </span>
           </div>
-          <div style={{ color: "#64748b", fontSize: "18px" }}>
-            Plus d&apos;actualité sur : culturemedianews.fr
-          </div>
         </div>
-        <div style={{ textAlign: "right" }}>
-          <div
-            style={{
-              backgroundColor: activeColors.main,
-              color: "#fff",
-              padding: "8px 20px",
-              borderRadius: "20px",
-              fontSize: "20px",
-              fontWeight: "bold",
-              display: "inline-block",
-              marginBottom: "10px",
-            }}
-          >
-            Follow we fu moo info
-          </div>
-          <div
-            style={{ color: "#1e3a8a", fontSize: "28px", fontWeight: "bold" }}
-          >
-            @culturemediacmn
+
+        {/* ── LOCATION BADGE (RIGHT) ── */}
+        <div style={{ backgroundColor: "#ffce00", padding: "8px 35px", display: "flex", alignItems: "center", flexShrink: 0, transform: "skewX(15deg)", marginRight: "-15px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "14px", transform: "skewX(-15deg)", marginRight: "15px" }}>
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#0d069b" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z" />
+              <circle cx="12" cy="10" r="3" fill="#0d069b" stroke="none" />
+            </svg>
+            <span style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: "42px", fontWeight: "900", background: "linear-gradient(to right, #0d069b, #e41318)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", display: "inline-block", paddingRight: "8px", whiteSpace: "nowrap" }}>
+              {currentData.location || "CAYENNE"}
+            </span>
           </div>
         </div>
       </div>
-      {renderBreakingNewsBanner()}
+
+      {/* ── CONTENT AREA ── */}
+      <div style={{ flex: 1, padding: "22px 35px 15px 35px", display: "flex", flexDirection: "column", overflow: "hidden", position: "relative" }}>
+        {/* Title */}
+        <div className="insta-title" style={{ color: titleColor, fontSize: `${currentData[`titleFontSize_${lang}`] || 40}px`, fontWeight: "900", lineHeight: currentData[`titleLineHeight_${lang}`] || 1.15, textTransform: "uppercase", marginBottom: "16px", position: "relative" }}
+          dangerouslySetInnerHTML={{ __html: cleanHtmlForDisplay(currentData[`title_${lang}`]) }} />
+        {/* Body */}
+        <div className={`insta-body ${lang}`} style={{ fontSize: "24px", lineHeight: currentData[`bodyLineHeight_${lang}`] || 1.6, color: bodyColor, overflow: "hidden", position: "relative", textAlign: "justify" }}
+          dangerouslySetInnerHTML={{ __html: cleanHtmlForDisplay(currentData[`body_${lang}`]) }} />
+        {/* Italic CTA */}
+        <div style={{ borderLeft: `4px solid ${isBsh ? '#0d069b' : '#ffce00'}`, paddingLeft: "18px", marginTop: "18px", fontStyle: "italic", fontSize: "25px", fontWeight: "600", color: ctaColor, lineHeight: "1.4", position: "relative" }}>
+          {readMore}
+        </div>
+      </div>
+
+      {/* ── SOURCE OVERLAY ── */}
+      <div style={{ position: "absolute", bottom: "85px", left: "260px", display: "flex", alignItems: "center", zIndex: 20 }}>
+        <span style={{ color: "#fff", fontWeight: "bold", fontSize: "18px" }}>{currentData.source}</span>
+      </div>
     </div>
-  );
+    );
+  };
 
   const renderTemplate4 = (lang, ref) => (
     <div
@@ -1849,9 +1399,18 @@ Contenu: ${article.content || ''}`;
     </div>
   );
 
-  return (
+  
+  const renderTemplateFlash = (lang, ref) => {
+    return (
+      <div ref={ref} style={{ width: '1080px', height: '1350px', background: 'linear-gradient(135deg, #e41318 0%, #8b0000 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+        <div style={{ backgroundColor: '#ffce00', color: '#000', padding: '10px 40px', fontSize: '80px', fontWeight: '900', fontStyle: 'italic', fontFamily: 'Anton, sans-serif' }}>FLASH INFO</div>
+      </div>
+    );
+  };
+return (
     <>
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Anton&display=swap');
         /* Styles pour Instagram Post (wrap, points clés en jaune et très gras) */
         .insta-body {
           word-break: normal;
@@ -1883,9 +1442,18 @@ Contenu: ${article.content || ''}`;
           margin-bottom: 8px !important;
           display: list-item !important;
         }
+        .insta-body * {
+          line-height: inherit !important;
+        }
         .insta-title {
           word-break: normal;
           overflow-wrap: break-word;
+        }
+        .insta-title * {
+          font-size: inherit !important;
+          line-height: inherit !important;
+          margin: 0 !important;
+          padding: 0 !important;
         }
 
         /* Masquer la sidebar, le header et les autres éléments du layout admin */
@@ -2115,6 +1683,30 @@ Contenu: ${article.content || ''}`;
                   onChange={(val) => updateData(`title_${activeLang}`, val)}
                 />
               </div>
+              <div style={{ marginTop: "10px", display: "flex", alignItems: "center", gap: "10px" }}>
+                <label style={{ fontSize: "14px", fontWeight: "bold", width: "160px" }}>Taille du titre ({currentData[`titleFontSize_${activeLang}`] || 40}px)</label>
+                <input
+                  type="range"
+                  min="20"
+                  max="120"
+                  step="2"
+                  value={currentData[`titleFontSize_${activeLang}`] || 40}
+                  onChange={(e) => updateData(`titleFontSize_${activeLang}`, parseInt(e.target.value))}
+                  style={{ flex: 1 }}
+                />
+              </div>
+              <div style={{ marginTop: "10px", display: "flex", alignItems: "center", gap: "10px" }}>
+                <label style={{ fontSize: "14px", fontWeight: "bold", width: "160px" }}>Interligne du titre ({currentData[`titleLineHeight_${activeLang}`] || 1.15})</label>
+                <input
+                  type="range"
+                  min="0.8"
+                  max="2.5"
+                  step="0.05"
+                  value={currentData[`titleLineHeight_${activeLang}`] || 1.15}
+                  onChange={(e) => updateData(`titleLineHeight_${activeLang}`, parseFloat(e.target.value))}
+                  style={{ flex: 1 }}
+                />
+              </div>
             </div>
 
             {/* AI / Editor */}
@@ -2171,6 +1763,19 @@ Contenu: ${article.content || ''}`;
                 key={`body-${activeTemplate}-${activeLang}-${quillKey}`}
                 value={currentData[`body_${activeLang}`]}
                 onChange={(val) => updateData(`body_${activeLang}`, val)}
+              />
+            </div>
+            
+            <div style={{ marginBottom: "20px", display: "flex", alignItems: "center", gap: "10px" }}>
+              <label style={{ fontSize: "14px", fontWeight: "bold", width: "180px" }}>Interligne du texte ({currentData[`bodyLineHeight_${activeLang}`] || 1.6})</label>
+              <input
+                type="range"
+                min="1"
+                max="3"
+                step="0.1"
+                value={currentData[`bodyLineHeight_${activeLang}`] || 1.6}
+                onChange={(e) => updateData(`bodyLineHeight_${activeLang}`, parseFloat(e.target.value))}
+                style={{ flex: 1 }}
               />
             </div>
 
