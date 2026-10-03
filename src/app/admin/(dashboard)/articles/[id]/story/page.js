@@ -222,7 +222,7 @@ export default function StoryGeneratorPage({ params }) {
         </button>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '320px 340px 1fr', gap: '30px', alignItems: 'start' }}>
+      <div className="responsive-story-grid">
         
         {/* Colonne 1: Contenu & IA */}
         <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '12px', border: '1px solid #e5e7eb' }}>

@@ -143,7 +143,7 @@ export default function SpinoffsClient({ article, initialSpinoffs }) {
     <div style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '50px' }}>
       <SocialTabs articleId={article?.id || "draft"} />
 
-      <div style={{ marginBottom: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      <div style={{ marginBottom: "30px", display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "15px" }}>
         <div>
           <h2 style={{ fontFamily: 'var(--font-heading)', color: '#111827', margin: '0 0 10px 0', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span style={{ fontSize: '24px' }}>✨</span> Déclinaisons & Multi-formats
@@ -160,7 +160,7 @@ export default function SpinoffsClient({ article, initialSpinoffs }) {
 
       {/* TABS */}
       <div style={{ marginBottom: '20px', borderBottom: '1px solid #e5e7eb' }}>
-        <div style={{ padding: '20px', display: 'flex', gap: '15px', alignItems: 'center' }}>
+        <div style={{ padding: '20px', display: 'flex', gap: '15px', alignItems: 'center', flexWrap: 'wrap' }}>
           {TABS.map(tab => (
             <button
               key={tab.id}

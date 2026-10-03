@@ -97,7 +97,7 @@ export default function FacebookGeneratorPage({ params }) {
         
         {/* Aperçu Facebook */}
         <div style={{ 
-          width: '500px', 
+          width: '500px', maxWidth: '100%', 
           backgroundColor: '#fff', 
           borderRadius: '8px', 
           border: '1px solid #dcdedf',

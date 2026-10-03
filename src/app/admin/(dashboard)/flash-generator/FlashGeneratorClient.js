@@ -348,10 +348,10 @@ function handleParse() {
         <h1 style={{ margin: 0, fontSize: '28px' }}><i className="fas fa-bolt" style={{ color: '#e41318' }}></i> Générateur Flash Info Rapide</h1>
       </div>
 
-      <div style={{ display: 'flex', gap: '30px', alignItems: 'flex-start' }}>
+      <div className="responsive-flex-row">
 
         {/* COLUMN 2: SETTINGS */}
-        <div style={{ flex: "0 0 350px", display: 'flex', flexDirection: 'column', gap: '15px' }}>
+        <div style={{ flex: "1 1 300px", maxWidth: "100%", display: 'flex', flexDirection: 'column', gap: '15px' }}>
 
           
           <div style={{ backgroundColor: '#f9fafb', padding: '15px', borderRadius: '8px', border: '1px solid #e5e7eb', marginBottom: '10px' }}>
@@ -496,7 +496,7 @@ function handleParse() {
         </div>
 
         {/* COLUMN 1: TEXT */}
-        <div style={{ flex: "0 0 350px", display: 'flex', flexDirection: 'column', gap: '15px' }}>
+        <div style={{ flex: "1 1 300px", maxWidth: "100%", display: 'flex', flexDirection: 'column', gap: '15px' }}>
           <div>
             <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '8px' }}>
               Texte Brut (Laissez une ligne vide = nouvelle image)
