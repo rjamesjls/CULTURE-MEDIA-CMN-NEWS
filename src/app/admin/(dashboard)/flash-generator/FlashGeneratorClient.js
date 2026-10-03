@@ -84,7 +84,7 @@ function handleParse() {
       setPosts([]);
       return;
     }
-    const blocks = bulkText.split('\n\n').filter(b => b.trim() !== '');
+    const blocks = bulkText.split(/\n\s*-{3,}\s*\n/).filter(b => b.trim() !== '');
     const parsed = blocks.map((block, index) => {
       const lines = block.trim().split('\n');
       const title = lines[0] ? lines[0].trim() : "SANS TITRE";
@@ -92,9 +92,11 @@ function handleParse() {
       let bodyLines = lines.slice(1);
       let localSource = globalSource;
       let localCategory = globalCategory;
+      let localLocation = null;
 
       if (bodyLines.length > 0) {
-        for (let i = bodyLines.length - 1; i >= Math.max(0, bodyLines.length - 4); i--) {
+        // We look at the last 6 lines to be safe
+        for (let i = bodyLines.length - 1; i >= Math.max(0, bodyLines.length - 6); i--) {
           const line = bodyLines[i].trim();
           if (line === "") continue;
           
@@ -104,6 +106,10 @@ function handleParse() {
           }
           else if (line.toLowerCase().match(/^cat[eé]gorie\s*:/)) {
             localCategory = line.replace(/^cat[eé]gorie\s*:/i, '').trim();
+            bodyLines[i] = "";
+          }
+          else if (line.toLowerCase().startsWith('lieu :') || line.toLowerCase().startsWith('lieu:')) {
+            localLocation = line.replace(/^lieu\s*:/i, '').trim();
             bodyLines[i] = "";
           }
         }
@@ -116,7 +122,9 @@ function handleParse() {
       const body = bodyLines.join('\n');
       
       let location = "GUYANE";
-      if (title.includes('—')) {
+      if (localLocation) {
+        location = localLocation;
+      } else if (title.includes('—')) {
         location = title.split('—').pop().trim();
       } else if (title.includes('-')) {
         location = title.split('-').pop().trim();
@@ -499,7 +507,7 @@ function handleParse() {
         <div style={{ flex: "1 1 300px", maxWidth: "100%", display: 'flex', flexDirection: 'column', gap: '15px' }}>
           <div>
             <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '8px' }}>
-              Texte Brut (Laissez une ligne vide = nouvelle image)
+              Texte Brut (Séparez chaque image par ---)
             </label>
             <textarea
               value={bulkText}
@@ -507,12 +515,14 @@ function handleParse() {
               rows="35"
               placeholder="SPORT — MARIPASOULA
 La commune organise sa fête...
-Ceci est un retour à la ligne normal.
-Source : Mairie de Maripasoula
-Catégorie : ÉVÈNEMENT
 
+Ceci est un retour à la ligne avec espace (paragraphe).
+Source : Mairie de Maripasoula
+Catégorie : ÉVÈNEMENT\nLieu : MARIPASOULA CENTRE
+---
 SANTÉ — CAYENNE
 Le centre hospitalier recrute...
+
 Ici la source et catégorie globale seront utilisées."
               style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ccc', resize: 'vertical' }}
             />
