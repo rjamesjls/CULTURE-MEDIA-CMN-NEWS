@@ -260,7 +260,7 @@ export default async function ArticlePage({ params }) {
         /* Mobile First Layout */
         .article-layout-wrapper {
           flex-direction: column;
-          margin: 100px auto 40px auto;
+          margin: 25px auto 40px auto;
         }
         
         .article-container {
@@ -292,7 +292,7 @@ export default async function ArticlePage({ params }) {
         @media (min-width: 1024px) {
           .article-layout-wrapper {
             flex-direction: row;
-            margin: 140px auto 40px auto;
+            margin: 35px auto 40px auto;
           }
           
           .article-container {
