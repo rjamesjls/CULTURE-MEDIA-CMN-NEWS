@@ -928,6 +928,306 @@ Contenu: ${article.content || ''}`;
     );
   };
 
+  const renderTemplate3 = (lang, ref) => (
+    <div
+      ref={ref}
+      style={{
+        width: "1080px",
+        height: "1350px",
+        backgroundColor: "#f8fafc",
+        position: "relative",
+        overflow: "hidden",
+        fontFamily: '"Montserrat", sans-serif',
+      }}
+    >
+      {/* Background Dots Pattern (simulated with radial gradient) */}
+      <div
+        style={{
+          position: "absolute",
+          top: "600px",
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundImage: "radial-gradient(#cbd5e1 2px, transparent 2px)",
+          backgroundSize: "20px 20px",
+          opacity: 0.5,
+        }}
+      ></div>
+
+      {/* Top Image */}
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: "600px",
+          overflow: "hidden",
+        }}
+      >
+        <img
+          src={proxiedImageUrl}
+          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          alt="Background"
+          crossOrigin="anonymous"
+        />
+        <div
+          style={{
+            position: "absolute",
+            top: "40px",
+            left: "0",
+            backgroundColor: "#1e3a8a",
+            color: "#fff",
+            padding: "8px 25px",
+            fontSize: "24px",
+            fontWeight: "bold",
+            borderTopRightRadius: "20px",
+            borderBottomRightRadius: "20px",
+          }}
+        >
+          {currentData.date}
+        </div>
+        {/* Logo */}
+        <div
+          style={{
+            position: "absolute",
+            top: "30px",
+            right: "30px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
+          <img
+            src={
+              currentData.logoTheme === "black"
+                ? "/backgrounds/cmn-corner-logo-black.png"
+                : "/backgrounds/cmn-corner-logo.png"
+            }
+            alt="AFOLUKUTV Media"
+            style={{ width: "250px" }}
+          />
+          {currentData.showLogoNews && (
+            <div
+              style={{
+                color: currentData.logoTheme === "black" ? "#000" : "#fff",
+                fontSize: "35px",
+                fontWeight: "900",
+                marginTop: "-5px",
+                textTransform: "uppercase",
+                letterSpacing: "6px",
+              }}
+            >
+              News
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div
+        style={{
+          position: "absolute",
+          top: "595px",
+          left: 0,
+          right: 0,
+          height: "15px",
+          backgroundColor: "#ffffff",
+          zIndex: 10,
+        }}
+      ></div>
+
+      {renderBreakingNewsBanner()}
+
+      <div
+        style={{
+          position: "absolute",
+          top: currentData.showBreakingNews ? "480px" : "600px",
+          left: currentData.showBreakingNews ? "0" : "50%",
+          transform: currentData.showBreakingNews ? "translate(0, -50%)" : "translate(-50%, -50%)",
+          display: "flex",
+          boxShadow: "0 15px 30px rgba(0,0,0,0.4)",
+          borderRadius: "4px",
+          overflow: "hidden",
+          zIndex: 20,
+        }}
+      >
+        <div
+          style={{
+            background:
+              `linear-gradient(to bottom, ${activeColors.gradStart}, ${activeColors.gradEnd})`,
+            padding: "3px 25px",
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
+          <span
+            style={{
+              color: "#ffffff",
+              fontSize: "55px",
+              fontWeight: "900",
+              letterSpacing: "1px",
+              fontFamily: '"Arial Black", Arial, sans-serif',
+              textTransform: "uppercase",
+              lineHeight: "1.1",
+              WebkitTextStroke: "2.5px #ffffff",
+            }}
+          >
+            AFOLUKU
+          </span>
+        </div>
+        <div
+          style={{
+            background: "linear-gradient(to bottom, #ffffff, #cbd5e1)",
+            padding: "3px 25px",
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
+          <span
+            style={{
+              color: "#1e3a8a",
+              fontSize: "55px",
+              fontWeight: "900",
+              letterSpacing: "1px",
+              fontFamily: "Arial, sans-serif",
+              textTransform: "uppercase",
+              lineHeight: "1.1",
+            }}
+          >
+            MÉDIA
+          </span>
+        </div>
+      </div>
+
+      <div
+        style={{
+          position: "absolute",
+          top: currentData.showBreakingNews ? "480px" : "566px",
+          left: currentData.showBreakingNews ? "auto" : "50%",
+          right: currentData.showBreakingNews ? "0" : "auto",
+          transform: currentData.showBreakingNews ? "translate(0, -50%)" : "translate(-50%, -100%)",
+          backgroundColor: "#f1d210",
+          color: "#000",
+          padding: "6px 20px",
+          borderTopLeftRadius: "15px",
+          borderTopRightRadius: "15px",
+          fontSize: "20px",
+          fontWeight: "900",
+          textTransform: "uppercase",
+          zIndex: 25,
+          boxShadow: "0 -4px 6px rgba(0,0,0,0.2)",
+        }}
+      >
+        {currentData[`category_${lang}`]}
+      </div>
+
+      <div
+        style={{
+          position: "absolute",
+          top: "660px",
+          left: "50px",
+          right: "50px",
+          zIndex: 2,
+        }}
+      >
+        <div
+          className="insta-title"
+          style={{
+            color: activeColors.main,
+            fontSize: "50px",
+            fontWeight: "900",
+            lineHeight: "1.2",
+            textTransform: "uppercase",
+            marginBottom: "25px",
+          }}
+          dangerouslySetInnerHTML={{
+            __html: cleanHtmlForDisplay(currentData[`title_${lang}`]),
+          }}
+        />
+        <div
+          className={`insta-body ${lang}`}
+          style={{
+            color: "#1e3a8a",
+            fontSize: "30px",
+            lineHeight: "1.5",
+            fontWeight: "500",
+            whiteSpace: "pre-line",
+          }}
+          dangerouslySetInnerHTML={{
+            __html: cleanHtmlForDisplay(currentData[`body_${lang}`]),
+          }}
+        />
+      </div>
+
+      <div
+        style={{
+          position: "absolute",
+          bottom: "40px",
+          left: "50px",
+          right: "50px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-end",
+          zIndex: 2,
+        }}
+      >
+        <div>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "15px",
+              marginBottom: "10px",
+            }}
+          >
+            <span
+              style={{
+                backgroundColor: "#facc15",
+                color: "#000",
+                padding: "8px 20px",
+                borderRadius: "20px",
+                fontSize: "20px",
+                fontWeight: "bold",
+              }}
+            >
+              Source
+            </span>
+            <span
+              style={{ color: "#1e3a8a", fontSize: "22px", fontWeight: "bold" }}
+            >
+              {currentData.source}
+            </span>
+          </div>
+          <div style={{ color: "#64748b", fontSize: "18px" }}>
+            Plus d&apos;actualité sur : culturemedianews.fr
+          </div>
+        </div>
+        <div style={{ textAlign: "right" }}>
+          <div
+            style={{
+              backgroundColor: activeColors.main,
+              color: "#fff",
+              padding: "8px 20px",
+              borderRadius: "20px",
+              fontSize: "20px",
+              fontWeight: "bold",
+              display: "inline-block",
+              marginBottom: "10px",
+            }}
+          >
+            Follow we fu moo info
+          </div>
+          <div
+            style={{ color: "#1e3a8a", fontSize: "28px", fontWeight: "bold" }}
+          >
+            @culturemediacmn
+          </div>
+        </div>
+      </div>
+      {renderBreakingNewsBanner()}
+    </div>
+  );
+
   const renderTemplate4 = (lang, ref) => (
     <div
       ref={ref}
