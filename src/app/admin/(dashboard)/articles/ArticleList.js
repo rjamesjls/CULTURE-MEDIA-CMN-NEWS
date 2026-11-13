@@ -8,12 +8,14 @@ import { LayoutGrid, List, Search, Kanban, Calendar } from 'lucide-react';
 import KanbanView from './KanbanView';
 import CalendarView from './CalendarView';
 import { updateArticleStatus } from '../../actions';
+import PrivateShareModal from '@/components/admin/PrivateShareModal';
 
 export default function ArticleList({ initialArticles, categories }) {
   const [view, setView] = useState('list'); // 'list' or 'grid'
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState(''); // '' = all, 'published' = published, 'draft' = draft
+  const [statusFilter, setStatusFilter] = useState(''); // '' = all, 'published' = published, 'draft' = draft, 'private' = private
+  const [selectedPrivateArticle, setSelectedPrivateArticle] = useState(null);
 
   // Filtrage
   const filteredArticles = initialArticles.filter((article) => {
@@ -63,6 +65,7 @@ export default function ArticleList({ initialArticles, categories }) {
             <option value="published">Publiés</option>
             <option value="pending">En attente</option>
             <option value="draft">Brouillons</option>
+            <option value="private">Privés (Protégés par code)</option>
           </select>
         </div>
 
@@ -121,7 +124,11 @@ export default function ArticleList({ initialArticles, categories }) {
               <div style={{ height: '180px', backgroundColor: '#f3f4f6', backgroundImage: article.image_url ? `url(${article.image_url})` : 'none', backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
                 {!article.image_url && <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#9ca3af' }}>Sans image</div>}
                 
-                {article.status === 'draft' ? (
+                {article.status === 'private' ? (
+                  <span className="admin-badge" style={{ position: 'absolute', top: '12px', left: '12px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', backgroundColor: '#f3e8ff', color: '#7e22ce', border: '1px solid #d8b4fe' }}>
+                    <i className="fas fa-lock" style={{ marginRight: '4px' }}></i> Privé
+                  </span>
+                ) : article.status === 'draft' ? (
                   <span className="admin-badge badge-yellow" style={{ position: 'absolute', top: '12px', left: '12px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
                     Brouillon
                   </span>
@@ -140,6 +147,11 @@ export default function ArticleList({ initialArticles, categories }) {
                   <a href={`/article/${article.slug}`} target="_blank" rel="noopener noreferrer" style={{ color: '#111827', textDecoration: 'none' }}>
                     {article.title}
                   </a>
+                  {article.seo_metadata?.private_access?.enabled && (
+                    <span title="Accès privé par code actif" style={{ marginLeft: '6px', color: '#d97706', fontSize: '12px' }}>
+                      <i className="fas fa-key"></i>
+                    </span>
+                  )}
                 </h4>
                 <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '10px', borderTop: '1px solid #f3f4f6' }}>
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -152,6 +164,21 @@ export default function ArticleList({ initialArticles, categories }) {
                     </div>
                   </div>
                   <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedPrivateArticle(article)}
+                      className="btn-icon"
+                      title="Envoyer avec un code de lecture"
+                      style={{
+                        padding: '6px',
+                        backgroundColor: article.seo_metadata?.private_access?.enabled ? '#fef3c7' : '#fef9c3',
+                        color: '#b45309',
+                        border: '1px solid #fde047',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <i className="fas fa-key"></i>
+                    </button>
                     <Link 
                       href={`/admin/articles/${article.id}/insights`}
                       className="btn-icon" 
@@ -211,9 +238,18 @@ export default function ArticleList({ initialArticles, categories }) {
                     <a href={`/article/${article.slug}`} target="_blank" rel="noopener noreferrer" style={{ color: '#111827', textDecoration: 'none' }}>
                       {article.title} <i className="fas fa-external-link-alt" style={{ fontSize: '10px', color: '#9ca3af', marginLeft: '5px' }}></i>
                     </a>
+                    {article.seo_metadata?.private_access?.enabled && (
+                      <span title="Accès privé par code actif" style={{ marginLeft: '8px', color: '#d97706', fontSize: '12px' }}>
+                        <i className="fas fa-key"></i>
+                      </span>
+                    )}
                   </td>
                   <td>
-                    {article.status === 'draft' ? (
+                    {article.status === 'private' ? (
+                      <span className="admin-badge" style={{ backgroundColor: '#f3e8ff', color: '#7e22ce', border: '1px solid #d8b4fe' }}>
+                        <i className="fas fa-lock" style={{ marginRight: '4px' }}></i> Privé
+                      </span>
+                    ) : article.status === 'draft' ? (
                       <span className="admin-badge badge-yellow">Brouillon</span>
                     ) : article.status === 'pending' ? (
                       <span className="admin-badge badge-orange" style={{ backgroundColor: '#ffedd5', color: '#9a3412' }}>En attente</span>
@@ -232,6 +268,21 @@ export default function ArticleList({ initialArticles, categories }) {
                   <td>{article.pub_date ? new Date(article.pub_date).toLocaleDateString('fr-FR') : 'Date inconnue'}</td>
                   <td>
                     <div className="admin-actions" style={{ justifyContent: 'flex-end', display: 'flex', gap: '5px' }}>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedPrivateArticle(article)}
+                        className="btn-icon"
+                        title="Envoyer avec un code de lecture (Accès privé)"
+                        style={{
+                          padding: '4px 8px',
+                          backgroundColor: article.seo_metadata?.private_access?.enabled ? '#fef3c7' : '#fef9c3',
+                          color: '#b45309',
+                          border: '1px solid #fde047',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <i className="fas fa-key"></i>
+                      </button>
                       <Link 
                         href={`/admin/articles/${article.id}/insights`}
                         className="btn-icon" 
@@ -276,6 +327,31 @@ export default function ArticleList({ initialArticles, categories }) {
         <div style={{ textAlign: 'center', padding: '40px', backgroundColor: '#fff', border: '1px dashed #d1d5db', borderRadius: '8px', color: '#6b7280' }}>
           Aucun article trouvé pour votre recherche.
         </div>
+      )}
+
+      {/* Modal Partage Privé avec code de lecture */}
+      {selectedPrivateArticle && (
+        <PrivateShareModal
+          isOpen={!!selectedPrivateArticle}
+          article={selectedPrivateArticle}
+          onClose={() => setSelectedPrivateArticle(null)}
+          onUpdated={(updated) => {
+            // Mise à jour locale de l'article pour réactivité immédiate
+            if (selectedPrivateArticle) {
+              const currentAccess = selectedPrivateArticle.seo_metadata?.private_access || {};
+              selectedPrivateArticle.seo_metadata = {
+                ...(selectedPrivateArticle.seo_metadata || {}),
+                private_access: {
+                  ...currentAccess,
+                  ...updated,
+                },
+              };
+              if (updated.is_private_only) {
+                selectedPrivateArticle.status = 'private';
+              }
+            }
+          }}
+        />
       )}
     </div>
   );

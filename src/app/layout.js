@@ -70,9 +70,9 @@ export default async function RootLayout({ children }) {
           <BottomNavServer lang={lang} />
         </PublicOnly>
         {/* Scripts globaux */}
-        <script src="/js/main.js" defer></script>
-        <script src="/js/carousel.js" defer></script>
-        {/* <script src="/js/theme-switcher.js" defer></script> */}
+        <Script src="/js/main.js" strategy="lazyOnload" />
+        <Script src="/js/carousel.js" strategy="lazyOnload" />
+        {/* <Script src="/js/theme-switcher.js" strategy="lazyOnload" /> */}
         <PublicOnly>
           <RadioPlayer />
         </PublicOnly>

@@ -1,5 +1,5 @@
 'use client';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import * as htmlToImage from 'html-to-image';
 import Link from 'next/link';
 
@@ -29,6 +29,41 @@ export default function FlashGeneratorClient() {
   const [localOverrides, setLocalOverrides] = useState({});
 
   const containerRef = useRef(null);
+
+  const slides = useMemo(() => {
+    if (posts.length === 0) return [];
+    
+    const derived = [];
+    // Always prepend cover
+    derived.push({
+      id: 'cover',
+      type: 'cover',
+      postIndex: -1
+    });
+
+    posts.forEach((post, i) => {
+      derived.push({
+        id: post.id,
+        type: 'standard',
+        post,
+        postIndex: i
+      });
+
+      const override = localOverrides[i] || {};
+      if (override.hasImage) {
+        derived.push({
+          id: `${post.id}-image`,
+          type: 'image',
+          post,
+          postIndex: i,
+          imageUrl: override.imageUrl || ''
+        });
+      }
+    });
+
+    return derived;
+  }, [posts, localOverrides]);
+
 
   // Charger depuis le localStorage au premier affichage
   /* eslint-disable react-hooks/exhaustive-deps */
@@ -151,7 +186,20 @@ function handleParse() {
 
   const getActiveValue = (key, globalValue) => {
     if (applyGlobally) return globalValue;
-    return localOverrides[currentPreviewIndex]?.[key] ?? globalValue;
+    if (slides.length === 0) return globalValue;
+    const postIndex = slides[currentPreviewIndex]?.postIndex;
+    if (postIndex === undefined || postIndex === -1) return globalValue;
+    return localOverrides[postIndex]?.[key] ?? globalValue;
+  };
+
+  const setLocalOverride = (index, key, value) => {
+    setLocalOverrides(prev => ({
+      ...prev,
+      [index]: {
+        ...(prev[index] || {}),
+        [key]: value
+      }
+    }));
   };
 
   const handleUpdate = (key, value, globalSetter) => {
@@ -169,13 +217,13 @@ function handleParse() {
   };
 
   const handleDownloadAll = async () => {
-    if (posts.length === 0) return;
+    if (slides.length === 0) return;
     setIsGenerating(true);
     
     try {
-      for (let i = 0; i < posts.length; i++) {
-        const post = posts[i];
-        const node = document.getElementById(`flash-post-${post.id}`);
+      for (let i = 0; i < slides.length; i++) {
+        const slide = slides[i];
+        const node = document.getElementById(`flash-slide-${slide.id}`);
         if (!node) continue;
         
         const dataUrl = await htmlToImage.toPng(node, {
@@ -208,11 +256,11 @@ function handleParse() {
   };
 
   const handleDownloadCurrent = async () => {
-    if (posts.length === 0) return;
+    if (slides.length === 0) return;
     setIsGenerating(true);
     try {
-      const post = posts[currentPreviewIndex];
-      const node = document.getElementById(`flash-post-${post.id}`);
+      const slide = slides[currentPreviewIndex];
+      const node = document.getElementById(`flash-slide-${slide.id}`);
       if (!node) return;
       
       const dataUrl = await htmlToImage.toPng(node, {
@@ -240,10 +288,97 @@ function handleParse() {
     }
   };
 
-  const renderTemplate = (post, index) => {
+  const renderTemplate = (slide) => {
+    if (slide.type === 'cover') {
+      const d = new Date();
+      const coverDay = d.getDate();
+      const coverMonthYear = `${d.toLocaleString('fr-FR', { month: 'long' })} ${d.getFullYear()}`;
+      return (
+        <div 
+          id={`flash-slide-${slide.id}`}
+          style={{
+            width: "1080px",
+            height: "1350px",
+            backgroundImage: `url(/backgrounds/bg-cover-template.png)`,
+            backgroundColor: "#0d069b",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            position: "relative",
+            overflow: "hidden",
+            fontFamily: '"Montserrat", sans-serif',
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "flex-start",
+            transform: "scale(0.35)",
+            transformOrigin: "top left",
+            flexShrink: 0,
+          }}
+        >
+          <div style={{ position: "absolute", top: "245px", display: "flex", gap: "12px", alignItems: "baseline", zIndex: 5, width: "100%", justifyContent: "center" }}>
+            <span style={{ color: "#ffce00", fontSize: "60px", fontWeight: "900", letterSpacing: "2px" }}>{coverDay}</span>
+            <span style={{ color: "#fff", fontSize: "52px", fontWeight: "900", textTransform: "uppercase", letterSpacing: "2px" }}>{coverMonthYear}</span>
+          </div>
+        </div>
+      );
+    }
+
+    const post = slide.post;
+    if (slide.type === 'image') {
+      return (
+        <div 
+          id={`flash-slide-${slide.id}`}
+          style={{
+            width: "1080px",
+            height: "1350px",
+            backgroundImage: `url(/backgrounds/bg-image-template.png)`,
+            backgroundColor: "#0d069b",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            position: "relative",
+            overflow: "hidden",
+            fontFamily: '"Montserrat", sans-serif',
+            display: "flex",
+            flexDirection: "column",
+            transform: "scale(0.35)",
+            transformOrigin: "top left",
+            flexShrink: 0,
+          }}
+        >
+          {/* Top Right: Date + Category */}
+          <div style={{ position: "absolute", top: "50px", right: "50px", display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "15px", zIndex: 10 }}>
+            <div style={{ fontSize: "28px", fontWeight: "700", color: "#fff" }}>
+              {globalDate}
+            </div>
+            <div style={{ backgroundColor: "#ffce00", color: "#000", padding: "8px 25px", fontWeight: "900", fontSize: "26px", borderRadius: "4px", textTransform: "uppercase" }}>
+              {post.category}
+            </div>
+          </div>
+
+          {/* Center: Image */}
+          <div style={{ position: "absolute", top: "250px", left: "60px", right: "60px", bottom: "250px", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 5 }}>
+             {slide.imageUrl ? (
+                <div style={{ width: "100%", height: "100%", border: "4px solid #fff", overflow: "hidden", backgroundColor: "#000", backgroundImage: `url(${slide.imageUrl})`, backgroundSize: "cover", backgroundPosition: "center" }}>
+                </div>
+             ) : (
+                <div style={{ width: "100%", height: "100%", border: "6px dashed #fff", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: "52px", fontWeight: "bold" }}>
+                  Insérez une URL d&apos;image
+                </div>
+             )}
+          </div>
+
+          {/* Bottom Left: Source Text */}
+          <div style={{ position: "absolute", bottom: "125px", left: "280px", zIndex: 10 }}>
+             <span style={{ color: "#fff", fontWeight: "700", fontSize: "28px" }}>{post.source}</span>
+          </div>
+        </div>
+      );
+    }
+
     const bgImage = "/backgrounds/bg-template-fr.png";
+    const override = localOverrides[slide.postIndex] || {};
     
-    const override = localOverrides[index] || {};
+    // For standard slide
     const tBadgeText = override.badgeText ?? globalBadgeText;
     const tBadgeFontSize = override.badgeFontSize ?? globalBadgeFontSize;
     const tTitleFontSize = override.titleFontSize ?? globalTitleFontSize;
@@ -255,7 +390,7 @@ function handleParse() {
 
     return (
       <div 
-        id={`flash-post-${post.id}`}
+        id={`flash-slide-${slide.id}`}
         style={{
           width: "1080px",
           height: "1350px",
@@ -331,8 +466,10 @@ function handleParse() {
         </div>
 
         {/* BODY */}
-        <div style={{ flex: 1, padding: "20px 80px 20px 80px", fontSize: `${tBodyFontSize}px`, lineHeight: tBodyLineHeight, color: "#fff", textAlign: "center", display: "flex", flexDirection: "column", justifyContent: "flex-start", textTransform: "uppercase", fontWeight: "800", whiteSpace: "pre-wrap" }}>
-          {post.body}
+        <div style={{ flex: 1, padding: "20px 80px 20px 80px", display: "flex", flexDirection: "column", justifyContent: "flex-start", alignItems: "center" }}>
+          <div style={{ fontSize: `${tBodyFontSize}px`, lineHeight: tBodyLineHeight, color: "#fff", textAlign: "center", textTransform: "uppercase", fontWeight: "800", whiteSpace: "pre-wrap" }}>
+            {post.body}
+          </div>
         </div>
 
         {/* SOURCE */}
@@ -360,6 +497,53 @@ function handleParse() {
 
         {/* COLUMN 2: SETTINGS */}
         <div style={{ flex: "1 1 300px", maxWidth: "100%", display: 'flex', flexDirection: 'column', gap: '15px' }}>
+          <div style={{ backgroundColor: '#e0f2fe', padding: '15px', borderRadius: '8px', border: '1px solid #bae6fd' }}>
+            <h4 style={{margin: '0 0 10px 0', color: '#0369a1'}}>Page Actuelle ({currentPreviewIndex + 1})</h4>
+            
+            <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '8px', fontSize: '13px', color: '#0c4a6e' }}>Type de page</label>
+            <select 
+              value={localOverrides[currentPreviewIndex]?.slideType || 'standard'}
+              onChange={e => setLocalOverride('slideType', e.target.value)}
+              style={{ width: '100%', padding: '8px', borderRadius: '4px', marginBottom: '10px', border: '1px solid #7dd3fc' }}
+            >
+              <option value="standard">Standard (Texte)</option>
+              <option value="cover">Page de Couverture</option>
+              <option value="image">Page avec Image</option>
+            </select>
+
+            {localOverrides[currentPreviewIndex]?.slideType === 'cover' && (
+              <>
+                <div style={{ marginBottom: '10px' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={localOverrides[currentPreviewIndex]?.showDate !== false} 
+                      onChange={e => setLocalOverride('showDate', e.target.checked)}
+                      style={{ width: '16px', height: '16px' }}
+                    />
+                    Afficher la date globale
+                  </label>
+                  <p style={{ margin: '5px 0 0 24px', fontSize: '11px', color: '#6b7280' }}>
+                    Seule la date dynamique est gérée sur cette couverture. Tout le reste du texte est inclus dans le fond.
+                  </p>
+                </div>
+              </>
+            )}
+
+            {localOverrides[currentPreviewIndex]?.slideType === 'image' && (
+              <div>
+                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '4px', fontSize: '12px' }}>URL de l&apos;image</label>
+                <input 
+                  type="text" 
+                  value={localOverrides[currentPreviewIndex]?.imageUrl || ''}
+                  onChange={e => setLocalOverride('imageUrl', e.target.value)}
+                  placeholder="https://..."
+                  style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #7dd3fc' }}
+                />
+              </div>
+            )}
+          </div>
+
 
           
           <div style={{ backgroundColor: '#f9fafb', padding: '15px', borderRadius: '8px', border: '1px solid #e5e7eb', marginBottom: '10px' }}>
@@ -528,14 +712,14 @@ Ici la source et catégorie globale seront utilisées."
             />
           </div>
           
-          {posts.length > 0 && (
+          {slides.length > 0 && (
             <div style={{ padding: '12px', backgroundColor: '#e5e7eb', color: '#374151', borderRadius: '6px', fontWeight: 'bold', textAlign: 'center', fontSize: '15px' }}>
               <i className="fas fa-check-circle" style={{ color: '#10b981', marginRight: '8px' }}></i>
-              {posts.length} {posts.length > 1 ? 'images prêtes' : 'image prête'}
+              {slides.length} {slides.length > 1 ? 'images prêtes' : 'image prête'}
             </div>
           )}
           
-          {posts.length > 0 && (
+          {slides.length > 0 && (
             <button 
               onClick={handleDownloadAll}
               disabled={isGenerating}
@@ -549,7 +733,7 @@ Ici la source et catégorie globale seront utilisées."
 
         {/* RIGHT COLUMN: Previews */}
         <div style={{ flex: 1, backgroundColor: '#f3f4f6', padding: '20px', borderRadius: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          {posts.length === 0 ? (
+          {slides.length === 0 ? (
             <div style={{ textAlign: 'center', color: '#6b7280', marginTop: '100px' }}>
               <i className="fas fa-images" style={{ fontSize: '48px', marginBottom: '15px' }}></i>
               <p>Collez votre texte pour voir les images générées.</p>
@@ -566,12 +750,12 @@ Ici la source et catégorie globale seront utilisées."
                   <i className="fas fa-chevron-left"></i>
                 </button>
                 <span style={{ fontWeight: 'bold', fontSize: '18px', minWidth: '80px', textAlign: 'center' }}>
-                  {currentPreviewIndex + 1} / {posts.length}
+                  {currentPreviewIndex + 1} / {slides.length}
                 </span>
                 <button 
-                  onClick={() => setCurrentPreviewIndex(Math.min(posts.length - 1, currentPreviewIndex + 1))}
-                  disabled={currentPreviewIndex === posts.length - 1}
-                  style={{ padding: '8px 15px', backgroundColor: currentPreviewIndex === posts.length - 1 ? '#d1d5db' : '#0d069b', color: '#fff', border: 'none', borderRadius: '6px', cursor: currentPreviewIndex === posts.length - 1 ? 'not-allowed' : 'pointer' }}
+                  onClick={() => setCurrentPreviewIndex(Math.min(slides.length - 1, currentPreviewIndex + 1))}
+                  disabled={currentPreviewIndex === slides.length - 1}
+                  style={{ padding: '8px 15px', backgroundColor: currentPreviewIndex === slides.length - 1 ? '#d1d5db' : '#0d069b', color: '#fff', border: 'none', borderRadius: '6px', cursor: currentPreviewIndex === slides.length - 1 ? 'not-allowed' : 'pointer' }}
                 >
                   <i className="fas fa-chevron-right"></i>
                 </button>
@@ -589,10 +773,10 @@ Ici la source et catégorie globale seront utilisées."
 
               {/* Carousel Container */}
               <div style={{ width: '378px', height: '472px', position: 'relative', overflow: 'hidden', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', borderRadius: '10px' }}>
-                <div style={{ display: 'flex', width: `${posts.length * 378}px`, transform: `translateX(-${currentPreviewIndex * 378}px)`, transition: 'transform 0.3s ease-in-out' }}>
-                  {posts.map((post, index) => (
-                    <div key={post.id} style={{ width: '378px', height: '472px', flexShrink: 0 }}>
-                      {renderTemplate(post, index)}
+                <div style={{ display: 'flex', width: `${slides.length * 378}px`, transform: `translateX(-${currentPreviewIndex * 378}px)`, transition: 'transform 0.3s ease-in-out' }}>
+                  {slides.map((slide) => (
+                    <div key={slide.id} style={{ width: '378px', height: '472px', flexShrink: 0 }}>
+                      {renderTemplate(slide)}
                     </div>
                   ))}
                 </div>

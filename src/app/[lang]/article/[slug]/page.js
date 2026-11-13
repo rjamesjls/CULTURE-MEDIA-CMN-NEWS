@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import ArticleInteractions from '@/components/ArticleInteractions';
 import ArticleComments from '@/components/ArticleComments';
@@ -82,14 +82,28 @@ export default async function ArticlePage({ params }) {
     notFound();
   }
 
-  // Si c'est un brouillon, on vérifie que l'utilisateur est admin ou auteur
+  // Si c'est un brouillon ou un article privé, on vérifie les droits
   let isPreviewMode = false;
+  let isPrivateMode = false;
   if (article.status === 'draft') {
     const profile = await getUserProfile();
     if (!profile || (profile.role !== 'admin' && profile.role !== 'author')) {
       notFound(); // On simule que l'article n'existe pas pour le grand public
     }
     isPreviewMode = true;
+  } else if (article.status === 'private' || article.seo_metadata?.private_access?.is_private_only) {
+    const profile = await getUserProfile();
+    const isStaff = profile && (profile.role === 'admin' || profile.role === 'author');
+    if (!isStaff) {
+      // Pour le grand public, accès uniquement via le lien privé
+      const privateToken = article.seo_metadata?.private_access?.token;
+      if (privateToken) {
+        redirect(`/${lang}/p/${privateToken}`);
+      } else {
+        notFound();
+      }
+    }
+    isPrivateMode = true;
   }
 
   // Fetch comments (approved only)
@@ -147,6 +161,11 @@ export default async function ArticlePage({ params }) {
       {isPreviewMode && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9999, backgroundColor: '#fef08a', color: '#854d0e', padding: '10px', textAlign: 'center', fontWeight: 'bold', fontSize: '14px', borderBottom: '2px solid #eab308' }}>
           ⚠️ MODE APERÇU : Cet article est un brouillon et n'est pas visible par le public.
+        </div>
+      )}
+      {isPrivateMode && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9999, backgroundColor: '#fef3c7', color: '#92400e', padding: '10px', textAlign: 'center', fontWeight: 'bold', fontSize: '14px', borderBottom: '2px solid #f59e0b' }}>
+          🔒 MODE PRIVÉ (ADMIN) : Cet article est confidentiel et accessible au public uniquement via son lien privé avec son code de lecture.
         </div>
       )}
       <div className="article-layout-wrapper" style={{ maxWidth: '1400px', padding: '0 20px', display: 'flex', gap: '40px', alignItems: 'flex-start' }}>

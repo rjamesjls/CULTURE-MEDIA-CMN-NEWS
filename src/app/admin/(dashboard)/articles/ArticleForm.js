@@ -10,6 +10,7 @@ import SpeechButton from '@/components/SpeechButton';
 import TextToSpeechButton from '@/components/TextToSpeechButton';
 import 'react-quill-new/dist/quill.snow.css';
 import { supabase } from '@/lib/supabase';
+import PrivateShareModal from '@/components/admin/PrivateShareModal';
 
 const CustomEditor = dynamic(() => import('../../../../components/CustomEditor'), {
   ssr: false,
@@ -34,6 +35,21 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
   const [imageUrl, setImageUrl] = useState(initialData?.image_url || '');
   const [content, setContent] = useState(initialData?.content || '');
   const [isSpecialEdition, setIsSpecialEdition] = useState(initialData?.is_special_edition || false);
+
+  // Private Access State
+  const [privateAccessEnabled, setPrivateAccessEnabled] = useState(
+    initialData?.status === 'private' || initialData?.seo_metadata?.private_access?.enabled === true
+  );
+  const [privateAccessCode, setPrivateAccessCode] = useState(
+    initialData?.seo_metadata?.private_access?.access_code || ''
+  );
+  const [privateToken, setPrivateToken] = useState(
+    initialData?.seo_metadata?.private_access?.token || ''
+  );
+  const [privateRecipient, setPrivateRecipient] = useState(
+    initialData?.seo_metadata?.private_access?.recipient_name || ''
+  );
+  const [showShareModal, setShowShareModal] = useState(false);
   
   // Multilingual State (BSH)
   const [currentLang, setCurrentLang] = useState('fr');
@@ -332,10 +348,33 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
         formData.delete('magazine_cover_url_temp');
       }
 
+      // Gestion du code de lecture privé
+      if (privateAccessEnabled) {
+        const token = privateToken || (Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 10));
+        const code = (privateAccessCode || Math.floor(100000 + Math.random() * 900000).toString()).trim().toUpperCase();
+        mergedMetadata.private_access = {
+          ...(existingMetadata.private_access || {}),
+          enabled: true,
+          token,
+          access_code: code,
+          recipient_name: privateRecipient.trim(),
+          is_private_only: true,
+          updated_at: new Date().toISOString(),
+        };
+      } else if (existingMetadata.private_access) {
+        mergedMetadata.private_access = {
+          ...existingMetadata.private_access,
+          enabled: false,
+        };
+      }
+
       formData.append('seo_metadata', JSON.stringify(mergedMetadata));
       formData.append('is_special_edition', isSpecialEdition);
 
-      const status = e.nativeEvent?.submitter?.value || 'published';
+      let status = e.nativeEvent?.submitter?.value || 'published';
+      if (status === 'private' || (privateAccessEnabled && status !== 'draft' && status !== 'pending')) {
+        status = 'private';
+      }
       formData.set('status', status);
 
       if (initialData?.id) {
@@ -828,6 +867,104 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
             ></textarea>
           </div>
 
+          {/* --- BLOC ACCÈS PRIVÉ & CODE DE LECTURE --- */}
+          <div style={{
+            marginBottom: '25px',
+            backgroundColor: privateAccessEnabled ? '#fffbeb' : '#f9fafb',
+            border: `2px solid ${privateAccessEnabled ? '#fcd34d' : '#e5e7eb'}`,
+            borderRadius: '12px',
+            padding: '20px',
+            transition: 'all 0.3s ease',
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', margin: 0 }}>
+                <input
+                  type="checkbox"
+                  checked={privateAccessEnabled}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setPrivateAccessEnabled(checked);
+                    if (checked && !privateAccessCode) {
+                      setPrivateAccessCode(Math.floor(100000 + Math.random() * 900000).toString());
+                    }
+                  }}
+                  style={{ width: '18px', height: '18px', accentColor: '#d97706' }}
+                />
+                <div>
+                  <span style={{ fontSize: '15px', fontWeight: '700', color: '#111827' }}>
+                    <i className="fas fa-key" style={{ color: '#d97706', marginRight: '8px' }}></i>
+                    Activer l'accès privé avec Code de lecture
+                  </span>
+                  <div style={{ fontSize: '12px', color: '#6b7280' }}>
+                    L'article sera accessible <strong>uniquement</strong> via un lien privé aux personnes disposant du code.
+                  </div>
+                </div>
+              </label>
+
+              {initialData?.id && privateAccessEnabled && (
+                <button
+                  type="button"
+                  onClick={() => setShowShareModal(true)}
+                  className="admin-btn"
+                  style={{
+                    backgroundColor: '#d97706',
+                    color: '#fff',
+                    padding: '8px 14px',
+                    fontSize: '13px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                  }}
+                >
+                  <i className="fas fa-paper-plane"></i> Fenêtre d'envoi & Partage
+                </button>
+              )}
+            </div>
+
+            {privateAccessEnabled && (
+              <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid #fde68a', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px' }}>
+                <div>
+                  <label className="admin-form-label" style={{ fontSize: '12px', color: '#92400e' }}>
+                    Code de lecture requis :
+                  </label>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <input
+                      type="text"
+                      className="admin-form-control"
+                      value={privateAccessCode}
+                      onChange={(e) => setPrivateAccessCode(e.target.value.toUpperCase())}
+                      placeholder="Ex: 849201"
+                      style={{ margin: 0, fontWeight: '700', fontFamily: 'monospace', letterSpacing: '1px' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setPrivateAccessCode(Math.floor(100000 + Math.random() * 900000).toString())}
+                      title="Générer un code à 6 chiffres"
+                      className="admin-btn"
+                      style={{ backgroundColor: '#f59e0b', color: '#fff', padding: '0 12px' }}
+                    >
+                      <i className="fas fa-sync-alt"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="admin-form-label" style={{ fontSize: '12px', color: '#92400e' }}>
+                    Destinataire prévu (optionnel) :
+                  </label>
+                  <input
+                    type="text"
+                    className="admin-form-control"
+                    value={privateRecipient}
+                    onChange={(e) => setPrivateRecipient(e.target.value)}
+                    placeholder="Ex: Jean Dupont"
+                    style={{ margin: 0 }}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
           <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', backgroundColor: '#f3f4f6', padding: '15px', borderRadius: '8px', flexWrap: 'wrap' }}>
             <button 
               type="submit" 
@@ -837,6 +974,16 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
               disabled={isSubmitting}
             >
               {isSubmitting ? 'Enregistrement...' : 'Publier immédiatement'}
+            </button>
+            <button 
+              type="submit" 
+              name="status"
+              value="private"
+              className="admin-btn" 
+              style={{ backgroundColor: '#f3e8ff', color: '#7e22ce', border: '1px solid #d8b4fe' }}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Enregistrement...' : 'Enregistrer en Privé (Code requis)'}
             </button>
             <button 
               type="submit" 
@@ -1059,6 +1206,21 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
           </div>
         </div>
       </div>
+
+      {/* Modal Partage Privé avec code de lecture */}
+      {showShareModal && initialData && (
+        <PrivateShareModal
+          isOpen={showShareModal}
+          article={initialData}
+          onClose={() => setShowShareModal(false)}
+          onUpdated={(res) => {
+            if (res.access_code) setPrivateAccessCode(res.access_code);
+            if (res.token) setPrivateToken(res.token);
+            if (res.recipient_name) setPrivateRecipient(res.recipient_name);
+            setPrivateAccessEnabled(true);
+          }}
+        />
+      )}
       
     </div>
   );
