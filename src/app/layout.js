@@ -73,9 +73,11 @@ export default async function RootLayout({ children }) {
         <Script src="/js/main.js" strategy="lazyOnload" />
         <Script src="/js/carousel.js" strategy="lazyOnload" />
         {/* <Script src="/js/theme-switcher.js" strategy="lazyOnload" /> */}
+        {/* Player radio désactivé du pied de page
         <PublicOnly>
           <RadioPlayer />
         </PublicOnly>
+        */}
       </body>
     </html>
   );
