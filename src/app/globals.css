@@ -464,7 +464,7 @@ textarea.input {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 64px;
+  height: 70px;
   padding: 0 var(--container-padding);
   max-width: var(--container-max);
   margin: 0 auto;
@@ -478,8 +478,8 @@ textarea.input {
 }
 
 .header-logo {
-  height: 38px;
-  max-height: 38px;
+  height: 48px;
+  max-height: 48px;
   width: auto;
   object-fit: contain;
   display: block;
@@ -491,7 +491,7 @@ textarea.input {
 }
 
 .header-spacer {
-  height: 64px;
+  height: 70px;
 }
 
 .nav-menu {
@@ -2629,7 +2629,7 @@ body.theme-alternate .reading-progress {
   .header-container {
     justify-content: center !important;
     position: relative;
-    height: 56px !important;
+    height: 60px !important;
     padding: 0 16px !important;
   }
   .logo-link {
@@ -2640,12 +2640,12 @@ body.theme-alternate .reading-progress {
     justify-content: center !important;
   }
   .header-logo {
-    height: 32px !important;
-    max-height: 32px !important;
+    height: 40px !important;
+    max-height: 40px !important;
     width: auto !important;
   }
   .header-spacer {
-    height: 56px !important;
+    height: 60px !important;
   }
 }
 
