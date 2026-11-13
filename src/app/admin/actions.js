@@ -28,42 +28,49 @@ export async function deleteArticle(id) {
   return { success: true };
 }
 
-export async function saveArticle(formData) {
+export async function saveArticle(input) {
   const { getUserProfile } = await import('@/utils/supabase/auth');
   const { createClient } = await import('@/utils/supabase/server');
   
   const profile = await getUserProfile();
   if (!profile) throw new Error("Non autorisé");
 
-  const id = formData.get('id');
-  const title = formData.get('title');
-  const description = formData.get('description');
-  const content = formData.get('content');
+  const isFormData = typeof input?.get === 'function';
+  const get = (key) => isFormData ? input.get(key) : input?.[key];
+
+  const id = get('id');
+  const title = get('title');
+  const description = get('description');
+  const content = get('content');
   
   // BSH Fields
-  const title_bsh = formData.get('title_bsh');
-  const hook_bsh = formData.get('hook_bsh');
-  const content_bsh = formData.get('content_bsh');
+  const title_bsh = get('title_bsh');
+  const hook_bsh = get('hook_bsh');
+  const content_bsh = get('content_bsh');
 
-  const category = formData.get('category') || 'Non classé';
-  const author = formData.get('author') || 'La Rédaction';
-  const status = formData.get('status') || 'published';
-  let image_url = formData.get('image_url');
+  const category = get('category') || 'Non classé';
+  const author = get('author') || 'La Rédaction';
+  const status = get('status') || 'published';
+  let image_url = get('image_url');
   
   let seo_metadata = {};
-  const seoMetadataStr = formData.get('seo_metadata');
-  if (seoMetadataStr) {
-    try {
-      seo_metadata = JSON.parse(seoMetadataStr);
-    } catch (e) {
-      console.error("Erreur parsing seo_metadata", e);
+  const rawSeoMetadata = get('seo_metadata');
+  if (rawSeoMetadata) {
+    if (typeof rawSeoMetadata === 'object') {
+      seo_metadata = rawSeoMetadata;
+    } else {
+      try {
+        seo_metadata = JSON.parse(rawSeoMetadata);
+      } catch (e) {
+        console.error("Erreur parsing seo_metadata", e);
+      }
     }
   }
   
   const supabaseServer = await createClient();
   
-  // Handling new file upload if provided
-  const imageFile = formData.get('image_file');
+  // Handling new file upload if provided (fallback if sent as FormData)
+  const imageFile = isFormData ? input.get('image_file') : input?.image_file;
   if (imageFile && imageFile.size > 0) {
     const fileExt = imageFile.name.split('.').pop();
     const fileName = `${Date.now()}.${fileExt}`;
@@ -86,7 +93,7 @@ export async function saveArticle(formData) {
   }
 
   // Handling magazine cover upload if provided
-  const magazineCoverFile = formData.get('magazine_cover_file');
+  const magazineCoverFile = isFormData ? input.get('magazine_cover_file') : input?.magazine_cover_file;
   if (magazineCoverFile && magazineCoverFile.size > 0) {
     const fileExt = magazineCoverFile.name.split('.').pop();
     const fileName = `magazines/cover_${Date.now()}.${fileExt}`;
@@ -109,7 +116,8 @@ export async function saveArticle(formData) {
 
   const slug = slugify(title || 'sans-titre', { lower: true, strict: true, locale: 'fr' });
 
-  const isSpecialEdition = formData.get('is_special_edition') === 'true';
+  const rawIsSpecialEdition = get('is_special_edition');
+  const isSpecialEdition = rawIsSpecialEdition === true || rawIsSpecialEdition === 'true';
 
   const articleData = {
     title,
@@ -139,15 +147,16 @@ export async function saveArticle(formData) {
     // Insert
     articleData.pub_date = new Date().toISOString();
     articleData.user_id = profile.id;
-    const { error } = await supabaseServer.from('articles').insert([articleData]);
+    const { data: inserted, error } = await supabaseServer.from('articles').insert([articleData]).select('id').single();
     if (error) throw new Error(error.message);
+    return { success: true, id: inserted?.id };
   }
 
   revalidatePath('/');
   revalidatePath('/faits-divers');
   revalidatePath('/admin/articles');
   
-  return { success: true };
+  return { success: true, id };
 }
 
 export async function createCategory(formData) {

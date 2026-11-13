@@ -278,7 +278,72 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
     }
   }, [initialData]);
   
-  // We will extract the status directly from the submitter button
+  // Helpers d'upload direct côté client pour garantir des payloads légers (< 15 Ko)
+  // et éviter tout statut HTTP 413 (Payload/Content Too Large) sur Vercel
+  const uploadToSupabaseStorage = async (fileOrBlobOrDataUri, folder = 'articles') => {
+    if (!fileOrBlobOrDataUri) return null;
+
+    let blob;
+    let ext = 'jpg';
+
+    if (typeof fileOrBlobOrDataUri === 'string') {
+      if (fileOrBlobOrDataUri.startsWith('data:')) {
+        const mimeMatch = fileOrBlobOrDataUri.match(/^data:([^;]+);base64,/);
+        if (mimeMatch) {
+          ext = mimeMatch[1].split('/')[1] || 'jpg';
+          if (ext === 'jpeg') ext = 'jpg';
+        }
+        const res = await fetch(fileOrBlobOrDataUri);
+        blob = await res.blob();
+      } else {
+        // C'est déjà une URL HTTP standard
+        return fileOrBlobOrDataUri;
+      }
+    } else if (fileOrBlobOrDataUri instanceof Blob || fileOrBlobOrDataUri instanceof File) {
+      blob = fileOrBlobOrDataUri;
+      if (fileOrBlobOrDataUri.name) {
+        ext = fileOrBlobOrDataUri.name.split('.').pop() || 'jpg';
+      }
+    } else {
+      return null;
+    }
+
+    const fileName = `${folder}/${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${ext}`;
+    const { error: uploadError } = await supabase.storage
+      .from('media')
+      .upload(fileName, blob, { cacheControl: '3600', upsert: false });
+
+    if (uploadError) {
+      throw new Error("Erreur lors de l'upload de l'image (Supabase): " + uploadError.message);
+    }
+
+    const { data: publicUrlData } = supabase.storage.from('media').getPublicUrl(fileName);
+    return publicUrlData.publicUrl;
+  };
+
+  const processInlineImages = async (htmlContent) => {
+    if (!htmlContent || typeof htmlContent !== 'string' || !htmlContent.includes('data:image/')) {
+      return htmlContent || '';
+    }
+
+    const dataUriRegex = /src=["'](data:image\/[^;"']+;base64,[^"']+)["']/g;
+    let updatedHtml = htmlContent;
+    const matches = [...htmlContent.matchAll(dataUriRegex)];
+
+    for (const m of matches) {
+      const dataUri = m[1];
+      try {
+        const publicUrl = await uploadToSupabaseStorage(dataUri, 'articles/inline');
+        if (publicUrl) {
+          updatedHtml = updatedHtml.split(dataUri).join(publicUrl);
+        }
+      } catch (e) {
+        console.warn("Erreur upload image inline:", e);
+      }
+    }
+
+    return updatedHtml;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -287,68 +352,40 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
 
     try {
       const formElement = e.target;
-      const formData = new FormData(formElement);
       
-      // Upload image_file to Supabase directly if present
-      const imageFile = formData.get('image_file');
-      if (imageFile && imageFile.size > 0) {
-        const fileExt = imageFile.name.split('.').pop();
-        const fileName = `articles/${Date.now()}.${fileExt}`;
-        
-        const { error: uploadError } = await supabase.storage
-          .from('media')
-          .upload(fileName, imageFile, { upsert: false });
-          
-        if (uploadError) throw new Error("Erreur lors de l'upload de l'image (Supabase): " + uploadError.message);
-        
-        const { data: publicUrlData } = supabase.storage.from('media').getPublicUrl(fileName);
-        formData.set('image_url', publicUrlData.publicUrl);
-        formData.delete('image_file'); // Ne pas envoyer le fichier au Server Action
+      // 1. Upload direct côté client de l'image principale (fichier ou base64)
+      let finalImageUrl = imageUrl;
+      const fileFromInput = imageInputRef.current?.files?.[0];
+
+      if (fileFromInput && fileFromInput.size > 0) {
+        finalImageUrl = await uploadToSupabaseStorage(fileFromInput, 'articles');
+        setImageUrl(finalImageUrl);
+      } else if (imageUrl && imageUrl.startsWith('data:image/')) {
+        finalImageUrl = await uploadToSupabaseStorage(imageUrl, 'articles');
+        setImageUrl(finalImageUrl);
       }
 
-      // Upload magazine_cover_file to Supabase directly if present
-      const magazineCoverFile = formData.get('magazine_cover_file');
-      if (magazineCoverFile && magazineCoverFile.size > 0) {
-        const fileExt = magazineCoverFile.name.split('.').pop();
-        const fileName = `magazines/cover_${Date.now()}.${fileExt}`;
-        
-        const { error: uploadError } = await supabase.storage
-          .from('media')
-          .upload(fileName, magazineCoverFile, { upsert: false });
-          
-        if (uploadError) throw new Error("Erreur lors de l'upload de la couverture magazine (Supabase): " + uploadError.message);
-        
-        const { data: publicUrlData } = supabase.storage.from('media').getPublicUrl(fileName);
-        
-        // On ajoutera ce champ dans seo_metadata
-        formData.set('magazine_cover_url_temp', publicUrlData.publicUrl);
-        formData.delete('magazine_cover_file'); // Ne pas envoyer le fichier au Server Action
+      // 2. Upload direct de la couverture magazine si présente
+      let magCoverUrl = null;
+      const magCoverInput = formElement.querySelector('input[name="magazine_cover_file"]');
+      const magCoverFile = magCoverInput?.files?.[0];
+      if (magCoverFile && magCoverFile.size > 0) {
+        magCoverUrl = await uploadToSupabaseStorage(magCoverFile, 'magazines');
       }
 
-      // Vider les autres champs non nécessaires
-      if (formData.get('image_url') && formData.get('image_url').startsWith('data:image/')) {
-        formData.delete('image_url'); // Evite d'envoyer la string base64 énorme si on n'a pas uploadé
-      }
+      // 3. Traiter le contenu HTML pour convertir toute image base64 collée dans Quill
+      const cleanContent = await processInlineImages(content);
+      const cleanContentBsh = await processInlineImages(contentBsh);
 
-      formData.append('title', title);
-      formData.append('description', description);
-      formData.append('content', content);
-      formData.append('title_bsh', titleBsh);
-      formData.append('hook_bsh', descriptionBsh);
-      formData.append('content_bsh', contentBsh);
-      
+      // 4. Métadonnées SEO
       const existingMetadata = initialData?.seo_metadata || {};
       const mergedMetadata = superMetadata ? { ...superMetadata } : { ...existingMetadata };
       mergedMetadata.article_format = articleFormat;
-      
-      // Récupérer l'URL uploadée
-      const magCoverUrl = formData.get('magazine_cover_url_temp');
       if (magCoverUrl) {
         mergedMetadata.magazine_cover_url = magCoverUrl;
-        formData.delete('magazine_cover_url_temp');
       }
 
-      // Gestion du code de lecture privé
+      // 5. Gestion du code de lecture privé
       if (privateAccessEnabled) {
         const token = privateToken || (Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 10));
         const code = (privateAccessCode || Math.floor(100000 + Math.random() * 900000).toString()).trim().toUpperCase();
@@ -368,20 +405,30 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
         };
       }
 
-      formData.append('seo_metadata', JSON.stringify(mergedMetadata));
-      formData.append('is_special_edition', isSpecialEdition);
-
       let status = e.nativeEvent?.submitter?.value || 'published';
       if (status === 'private' || (privateAccessEnabled && status !== 'draft' && status !== 'pending')) {
         status = 'private';
       }
-      formData.set('status', status);
 
+      // 6. Construction d'un payload ultra-léger exempt de tout gros fichier ou base64
+      const cleanPayload = new FormData();
       if (initialData?.id) {
-        formData.append('id', initialData.id);
+        cleanPayload.append('id', initialData.id);
       }
+      cleanPayload.append('title', title);
+      cleanPayload.append('description', description);
+      cleanPayload.append('content', cleanContent);
+      cleanPayload.append('title_bsh', titleBsh || '');
+      cleanPayload.append('hook_bsh', descriptionBsh || '');
+      cleanPayload.append('content_bsh', cleanContentBsh || '');
+      cleanPayload.append('category', category || 'Non classé');
+      cleanPayload.append('author', author || 'La Rédaction');
+      cleanPayload.append('status', status);
+      cleanPayload.append('image_url', finalImageUrl || '');
+      cleanPayload.append('seo_metadata', JSON.stringify(mergedMetadata));
+      cleanPayload.append('is_special_edition', isSpecialEdition ? 'true' : 'false');
 
-      await saveArticle(formData);
+      await saveArticle(cleanPayload);
       router.push('/admin/articles');
     } catch (err) {
       setErrorMsg(err.message);
