@@ -4,6 +4,7 @@ import Link from 'next/link';
 import ArticleInteractions from '@/components/ArticleInteractions';
 import ArticleComments from '@/components/ArticleComments';
 import ViewTracker from '@/components/ViewTracker';
+import ArticleHeaderSetter from '@/components/ArticleHeaderSetter';
 export const revalidate = 60;
 
 export async function generateMetadata({ params }) {
@@ -81,6 +82,11 @@ export default async function MagazineReaderPage({ params }) {
 
   return (
     <div className="magazine-reader" style={{ backgroundColor: '#020617', minHeight: '100vh', color: '#f8fafc', overflowX: 'hidden' }}>
+      <ArticleHeaderSetter
+        badge={article.seo_metadata?.header_badge || 'Magazine'}
+        category={article.category}
+        pubDate={article.pub_date}
+      />
       <ViewTracker articleId={article.id} />
       
       {/* Bouton Retour Discret */}

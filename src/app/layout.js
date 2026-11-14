@@ -8,6 +8,7 @@ import PublicOnly from '@/components/PublicOnly';
 import Script from 'next/script';
 import { headers } from 'next/headers';
 import RadioPlayer from '@/components/RadioPlayer';
+import { ArticleHeaderProvider } from '@/context/ArticleHeaderContext';
 
 export const metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'https://www.culturemedia.news'), // Remplacez par le vrai nom de domaine
@@ -58,17 +59,19 @@ export default async function RootLayout({ children }) {
         </Script>
       </head>
       <body>
-        <PublicOnly>
-          <HeaderWrapper>
-            <Header lang={lang} />
-          </HeaderWrapper>
-        </PublicOnly>
-        <main>{children}</main>
-        <PublicOnly>
-          <Footer lang={lang} />
-          <NewsletterPopup lang={lang} />
-          <BottomNavServer lang={lang} />
-        </PublicOnly>
+        <ArticleHeaderProvider>
+          <PublicOnly>
+            <HeaderWrapper>
+              <Header lang={lang} />
+            </HeaderWrapper>
+          </PublicOnly>
+          <main>{children}</main>
+          <PublicOnly>
+            <Footer lang={lang} />
+            <NewsletterPopup lang={lang} />
+            <BottomNavServer lang={lang} />
+          </PublicOnly>
+        </ArticleHeaderProvider>
         {/* Scripts globaux */}
         <Script src="/js/main.js" strategy="lazyOnload" />
         <Script src="/js/carousel.js" strategy="lazyOnload" />

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { verifyPrivateAccessCode, lockPrivateArticle } from '@/app/actions/private-access';
 import TextToSpeechButton from '@/components/TextToSpeechButton';
+import ArticleHeaderSetter from '@/components/ArticleHeaderSetter';
 
 export default function PrivateReaderGate({
   token,
@@ -73,6 +74,11 @@ export default function PrivateReaderGate({
 
     return (
       <div style={{ backgroundColor: '#fafafa', minHeight: '100vh', paddingBottom: '80px' }}>
+        <ArticleHeaderSetter
+          badge={article.seo_metadata?.header_badge || 'Info'}
+          category={article.category}
+          pubDate={article.pub_date}
+        />
         {/* Barre d'alerte sécurité en haut */}
         <div style={{
           backgroundColor: '#0f172a',

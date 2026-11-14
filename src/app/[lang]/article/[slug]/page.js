@@ -5,6 +5,7 @@ import ArticleInteractions from '@/components/ArticleInteractions';
 import ArticleComments from '@/components/ArticleComments';
 import ViewTracker from '@/components/ViewTracker';
 import TextToSpeechButton from '@/components/TextToSpeechButton';
+import ArticleHeaderSetter from '@/components/ArticleHeaderSetter';
 import { getUserProfile } from '@/utils/supabase/auth';
 
 export const revalidate = 60; // Revalidate every minute
@@ -168,6 +169,11 @@ export default async function ArticlePage({ params }) {
           🔒 MODE PRIVÉ (ADMIN) : Cet article est confidentiel et accessible au public uniquement via son lien privé avec son code de lecture.
         </div>
       )}
+      <ArticleHeaderSetter
+        badge={article.seo_metadata?.header_badge || (article.seo_metadata?.article_format === 'web_magazine' ? 'Magazine' : 'News')}
+        category={article.category}
+        pubDate={article.pub_date}
+      />
       <div className="article-layout-wrapper" style={{ maxWidth: '1400px', padding: '0 20px', display: 'flex', gap: '40px', alignItems: 'flex-start' }}>
         <ViewTracker articleId={article.id} />
         

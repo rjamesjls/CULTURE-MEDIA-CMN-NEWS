@@ -30,20 +30,28 @@ export async function middleware(request) {
       (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
     );
 
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set('x-pathname', pathname);
+
     let langToSet = defaultLocale;
     let finalResponse = supabaseResponse;
 
     if (!pathnameHasLocale) {
       // Redirect to default locale
       request.nextUrl.pathname = `/${defaultLocale}${pathname}`;
-      finalResponse = NextResponse.redirect(request.nextUrl);
+      requestHeaders.set('x-pathname', `/${defaultLocale}${pathname}`);
+      requestHeaders.set('x-lang', defaultLocale);
+      finalResponse = NextResponse.redirect(request.nextUrl, {
+        headers: requestHeaders,
+      });
       langToSet = defaultLocale;
     } else {
       // Extract locale from pathname
       langToSet = pathname.split('/')[1];
+      requestHeaders.set('x-lang', langToSet);
       finalResponse = NextResponse.next({
         request: {
-          headers: request.headers,
+          headers: requestHeaders,
         }
       });
     }

@@ -30,6 +30,10 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
   const [newCategoryName, setNewCategoryName] = useState('');
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [articleFormat, setArticleFormat] = useState(initialData?.seo_metadata?.article_format || 'standard');
+  const [headerBadge, setHeaderBadge] = useState(
+    initialData?.seo_metadata?.header_badge ||
+    (initialData?.seo_metadata?.article_format === 'web_magazine' ? 'Magazine' : 'News')
+  );
   const [author, setAuthor] = useState(initialData?.author || 'La Rédaction');
   const [description, setDescription] = useState(initialData?.description || '');
   const [imageUrl, setImageUrl] = useState(initialData?.image_url || '');
@@ -381,6 +385,7 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
       const existingMetadata = initialData?.seo_metadata || {};
       const mergedMetadata = superMetadata ? { ...superMetadata } : { ...existingMetadata };
       mergedMetadata.article_format = articleFormat;
+      mergedMetadata.header_badge = headerBadge;
       if (magCoverUrl) {
         mergedMetadata.magazine_cover_url = magCoverUrl;
       }
@@ -732,11 +737,33 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
               <select 
                 className="admin-form-control" 
                 value={articleFormat}
-                onChange={(e) => setArticleFormat(e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setArticleFormat(val);
+                  if (val === 'web_magazine') setHeaderBadge('Magazine');
+                }}
               >
                 <option value="standard">Article Standard</option>
                 <option value="web_magazine">Web Magazine</option>
                 <option value="special_edition">Édition Spéciale</option>
+              </select>
+            </div>
+
+            <div className="admin-form-group">
+              <label className="admin-form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ backgroundColor: '#dc2626', color: '#fff', fontSize: '10px', fontWeight: 'bold', padding: '1px 6px', borderRadius: '4px' }}>HEADER</span>
+                Mention Header (Pastille rouge)
+              </label>
+              <select 
+                className="admin-form-control" 
+                value={headerBadge}
+                onChange={(e) => setHeaderBadge(e.target.value)}
+                style={{ fontWeight: 'bold', color: '#dc2626' }}
+              >
+                <option value="News">News</option>
+                <option value="Actu">Actu</option>
+                <option value="Magazine">Magazine</option>
+                <option value="Info">Info</option>
               </select>
             </div>
 
