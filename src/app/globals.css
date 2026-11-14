@@ -464,7 +464,7 @@ textarea.input {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 74px;
+  height: 82px;
   padding: 0 var(--container-padding);
   max-width: var(--container-max);
   margin: 0 auto;
@@ -474,9 +474,28 @@ textarea.input {
 .header-left-cluster {
   display: flex;
   align-items: center;
-  gap: 14px;
   flex-shrink: 0;
   min-width: 0;
+}
+
+.header-article-left {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 4px;
+}
+
+.header-home-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header-theme-slogan-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .header-logo-link {
@@ -487,12 +506,17 @@ textarea.input {
 }
 
 .header-logo-compact {
-  height: 44px;
-  max-height: 44px;
+  height: 38px;
+  max-height: 38px;
   width: auto;
   object-fit: contain;
   display: block;
   transition: transform 0.2s ease;
+}
+
+.header-home-left .header-logo-compact {
+  height: 44px;
+  max-height: 44px;
 }
 
 .header-logo-compact:hover {
@@ -512,18 +536,30 @@ textarea.input {
 .header-badge-red {
   background: #dc2626;
   color: #ffffff;
-  padding: 4px 12px;
+  padding: 3px 10px;
+  border-radius: 5px;
+  font-weight: 800;
+  font-size: 11.5px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.4);
+}
+
+.header-badge-yellow {
+  background: #facc15;
+  color: #000000;
+  padding: 4px 14px;
   border-radius: 6px;
   font-weight: 800;
   font-size: 13px;
   letter-spacing: 1px;
   text-transform: uppercase;
-  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.4);
+  box-shadow: 0 2px 8px rgba(250, 204, 21, 0.45);
 }
 
 .header-slogan {
   font-family: var(--font-heading);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   color: rgba(255, 255, 255, 0.92);
   letter-spacing: 0.8px;
@@ -531,18 +567,22 @@ textarea.input {
   white-space: nowrap;
 }
 
+.header-home-left .header-slogan {
+  font-size: 13px;
+}
+
 .header-right-article {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   justify-content: center;
-  gap: 3px;
+  gap: 4px;
   flex-shrink: 0;
 }
 
 .header-pub-date {
   font-family: var(--font-heading);
-  font-size: 11.5px;
+  font-size: 12px;
   white-space: nowrap;
   letter-spacing: 0.3px;
 }
@@ -558,13 +598,13 @@ textarea.input {
 }
 
 .header-badge-cat {
-  padding: 4px 12px;
+  padding: 4px 14px;
   font-size: 12.5px;
   font-weight: 800;
 }
 
 .header-spacer {
-  height: 74px;
+  height: 82px;
 }
 
 .nav-menu {
@@ -2703,12 +2743,12 @@ body.theme-alternate .reading-progress {
     justify-content: space-between !important;
     align-items: center !important;
     position: relative;
-    height: 66px !important;
-    padding: 0 12px !important;
+    height: 74px !important;
+    padding: 0 10px !important;
     gap: 8px !important;
   }
   .header-left-cluster {
-    gap: 8px !important;
+    gap: 6px !important;
   }
   .header-logo-link {
     position: static !important;
@@ -2716,20 +2756,37 @@ body.theme-alternate .reading-progress {
     margin: 0 !important;
   }
   .header-logo-compact {
-    height: 34px !important;
-    max-height: 34px !important;
+    height: 28px !important;
+    max-height: 28px !important;
     width: auto !important;
     margin: 0 !important;
   }
+  .header-home-left .header-logo-compact {
+    height: 34px !important;
+    max-height: 34px !important;
+  }
   .header-badge-red {
+    padding: 2px 7px !important;
+    font-size: 9.5px !important;
+    border-radius: 4px !important;
+  }
+  .header-badge-yellow {
     padding: 2.5px 8px !important;
     font-size: 10px !important;
     border-radius: 5px !important;
   }
-  .header-article-mode .header-slogan {
-    display: none !important;
+  .header-theme-slogan-row {
+    gap: 6px !important;
   }
-  .header-home-mode .header-slogan {
+  .header-article-left .header-slogan {
+    font-size: 9px !important;
+    letter-spacing: 0.2px !important;
+    max-width: 170px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+  .header-home-left .header-slogan {
     font-size: 9px !important;
     letter-spacing: 0.3px !important;
     white-space: normal !important;
@@ -2747,7 +2804,7 @@ body.theme-alternate .reading-progress {
     display: none !important;
   }
   .header-spacer {
-    height: 66px !important;
+    height: 74px !important;
   }
 }
 

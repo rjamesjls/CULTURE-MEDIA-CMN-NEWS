@@ -10,17 +10,11 @@ function formatPubDate(pubDateStr, lang = 'fr') {
   try {
     const d = new Date(pubDateStr);
     if (isNaN(d.getTime())) return '';
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = d.getDate();
     const year = d.getFullYear();
-    const hours = String(d.getHours()).padStart(2, '0');
-    const minutes = String(d.getMinutes()).padStart(2, '0');
-    const seconds = String(d.getSeconds()).padStart(2, '0');
+    const month = d.toLocaleDateString('fr-FR', { month: 'long' });
 
-    if (lang === 'bsh') {
-      return `${day}/${month}/${year} - ${hours}:${minutes}:${seconds}`;
-    }
-    return `${day}/${month}/${year} à ${hours}:${minutes}:${seconds}`;
+    return `${day} ${month} ${year}`;
   } catch {
     return '';
   }
@@ -53,39 +47,55 @@ export default function HeaderClient({ lang = 'fr', menus = [], initialArticle =
     <>
       <header className={`header ${isArticlePage ? 'header-article-mode' : 'header-home-mode'}`} id="header" suppressHydrationWarning>
         <div className="header-container">
-          {/* ── CÔTÉ GAUCHE : Logo + (Pastille format si article) + Slogan ── */}
+          {/* ── CÔTÉ GAUCHE : Logo, et en dessous la thématique avec le slogan à côté ── */}
           <div className="header-left-cluster">
-            <Link href={`/${lang}`} className="header-logo-link" title="A FOLUKU TV - Accueil">
-              <img 
-                src="/afoluku-tv-logo.png" 
-                alt="A FOLUKU TV" 
-                className="header-logo-compact" 
-              />
-            </Link>
+            {isArticlePage ? (
+              <div className="header-article-left">
+                <Link href={`/${lang}`} className="header-logo-link" title="A FOLUKU TV - Accueil">
+                  <img 
+                    src="/afoluku-tv-logo.png" 
+                    alt="A FOLUKU TV" 
+                    className="header-logo-compact" 
+                  />
+                </Link>
 
-            {isArticlePage && (
-              <div className="header-badge header-badge-red" title={`Format : ${badge}`}>
-                {badge}
+                <div className="header-theme-slogan-row">
+                  <div className="header-badge header-badge-red header-badge-theme" title={`Format : ${badge}`}>
+                    {badge}
+                  </div>
+                  <div className="header-slogan" title={slogan}>
+                    {slogan}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="header-home-left">
+                <Link href={`/${lang}`} className="header-logo-link" title="A FOLUKU TV - Accueil">
+                  <img 
+                    src="/afoluku-tv-logo.png" 
+                    alt="A FOLUKU TV" 
+                    className="header-logo-compact" 
+                  />
+                </Link>
+                <div className="header-slogan" title={slogan}>
+                  {slogan}
+                </div>
               </div>
             )}
-
-            <div className="header-slogan" title={slogan}>
-              {slogan}
-            </div>
           </div>
 
           {/* ── CÔTÉ DROIT : Article Mode vs Home Mode ── */}
           {isArticlePage ? (
             <div className="header-right-article">
               {pubDateFormatted && (
-                <div className="header-pub-date" title="Date exacte de publication">
+                <div className="header-pub-date" title="Date de publication">
                   <span className="header-pub-date-label">
                     {lang === 'bsh' ? 'Pasa : ' : 'Publié le '}
                   </span>
                   <span className="header-pub-date-value">{pubDateFormatted}</span>
                 </div>
               )}
-              <div className="header-badge header-badge-red header-badge-cat" title={`Catégorie : ${category}`}>
+              <div className="header-badge header-badge-yellow header-badge-cat" title={`Catégorie : ${category}`}>
                 {category}
               </div>
             </div>
