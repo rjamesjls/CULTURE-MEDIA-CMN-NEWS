@@ -1,5 +1,5 @@
 export default function robots() {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.culturemedia.news'; // Remplacez par le vrai domaine en prod
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.afolukutv.com';
 
   return {
     rules: {

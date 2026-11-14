@@ -51,7 +51,7 @@ export default function PrivateShareModal({ isOpen, onClose, article, onUpdated 
 
   if (!isOpen || !article) return null;
 
-  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://www.culturemedia.news';
+  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://www.afolukutv.com';
   const privateUrl = `${origin}/fr/p/${token}`;
 
   const greeting = recipientName ? `Bonjour ${recipientName},` : 'Bonjour,';

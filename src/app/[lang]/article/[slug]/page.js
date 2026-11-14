@@ -13,25 +13,41 @@ export const revalidate = 60; // Revalidate every minute
 export async function generateMetadata({ params }) {
   const resolvedParams = await params;
   const slug = resolvedParams.slug;
+  const lang = resolvedParams.lang || 'fr';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.afolukutv.com';
+
   const { data: article } = await supabase
     .from('articles')
-    .select('title, description, image_url, category')
+    .select('title, title_bsh, description, hook_bsh, image_url, category, pub_date, updated_at')
     .eq('slug', slug)
     .single();
 
   if (!article) return { title: 'Article non trouvé' };
 
   const categoryName = article.category || 'Actualité';
-  const ogImage = article.image_url || '/icon.png';
-  const lang = resolvedParams.lang;
+  const title = (lang === 'bsh' && article.title_bsh) ? article.title_bsh : article.title;
+  const description = (lang === 'bsh' && article.hook_bsh) 
+    ? article.hook_bsh 
+    : (article.description || 'Retrouvez toute l\'actualité et la culture sur A FOLUKU TV');
 
-  const getTitle = () => (lang === 'bsh' && article.title_bsh) ? article.title_bsh : article.title;
-  const getDesc = () => (lang === 'bsh' && article.hook_bsh) ? article.hook_bsh : article.description;
+  let rawImage = article.image_url;
+  if (!rawImage) {
+    rawImage = `${baseUrl}/afoluku-tv-logo.png`;
+  } else if (rawImage.startsWith('/')) {
+    rawImage = `${baseUrl}${rawImage}`;
+  }
+
+  // Optimisation Supabase pour WhatsApp & réseaux sociaux (réduit le poids pour assurer l'affichage du thumbnail)
+  const ogImageUrl = rawImage.includes('/storage/v1/object/public/')
+    ? `${rawImage.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/')}?width=1200&quality=80`
+    : rawImage;
+
+  const pageUrl = `${baseUrl}/${lang}/article/${slug}`;
 
   return {
-    title: `${getTitle()} | A FOLUKU TV`,
-    description: getDesc(),
-    keywords: [categoryName, 'A FOLUKU TV', 'Actualité'],
+    title: `${title} | A FOLUKU TV`,
+    description: description,
+    keywords: [categoryName, 'A FOLUKU TV', 'Actualité', 'Guyane'],
     alternates: {
       canonical: `/${lang}/article/${slug}`,
       languages: {
@@ -40,27 +56,33 @@ export async function generateMetadata({ params }) {
       },
     },
     openGraph: {
-      title: article.title,
-      description: article.description,
-      url: `/article/${slug}`,
+      title: title,
+      description: description,
+      url: pageUrl,
+      siteName: 'A FOLUKU TV',
+      locale: lang === 'bsh' ? 'sr_RS' : 'fr_FR',
       type: 'article',
       publishedTime: article.pub_date,
+      modifiedTime: article.updated_at || article.pub_date,
       authors: ['A FOLUKU TV'],
       section: categoryName,
       images: [
         {
-          url: ogImage,
+          url: ogImageUrl,
+          secureUrl: ogImageUrl,
           width: 1200,
           height: 630,
-          alt: article.title,
+          alt: title,
+          type: ogImageUrl.includes('.png') ? 'image/png' : 'image/jpeg',
         },
       ],
     },
     twitter: {
       card: 'summary_large_image',
-      title: article.title,
-      description: article.description,
-      images: [ogImage],
+      site: '@afolukutv',
+      title: title,
+      description: description,
+      images: [ogImageUrl],
     },
   };
 }
@@ -145,14 +167,14 @@ export default async function ArticlePage({ params }) {
     '@type': 'NewsArticle',
     headline: getTitle(article),
     image: [
-      article.image_url || 'https://www.culturemedia.news/icon.png'
+      article.image_url || 'https://www.afolukutv.com/afoluku-tv-logo.png'
     ],
     datePublished: article.pub_date,
     dateModified: article.updated_at || article.pub_date,
     author: [{
       '@type': 'Organization',
       name: 'A FOLUKU TV',
-      url: 'https://www.culturemedia.news'
+      url: 'https://www.afolukutv.com'
     }]
   };
 

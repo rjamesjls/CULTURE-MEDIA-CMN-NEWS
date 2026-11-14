@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 
 export default async function sitemap() {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.culturemedia.news'; // Remplacez par le vrai domaine en prod
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.afolukutv.com';
   
   // Utilisation du client public anonyme pour récupérer les articles publiés
   const supabase = createClient(

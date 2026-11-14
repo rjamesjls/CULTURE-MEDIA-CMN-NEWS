@@ -11,20 +11,22 @@ import RadioPlayer from '@/components/RadioPlayer';
 import { ArticleHeaderProvider } from '@/context/ArticleHeaderContext';
 
 export const metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'https://www.culturemedia.news'), // Remplacez par le vrai nom de domaine
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'https://www.afolukutv.com'),
   title: 'A FOLUKU TV',
   description: 'Le premier site dédié à l\'information et à la culture',
-  keywords: ['Actualité', 'Culture', 'Information', 'Média', 'News', 'Web'],
+  keywords: ['Actualité', 'Culture', 'Information', 'Média', 'News', 'Web', 'Guyane'],
   openGraph: {
     title: 'A FOLUKU TV',
     description: 'Le premier site dédié à l\'information et à la culture',
-    url: '/',
+    url: 'https://www.afolukutv.com',
     siteName: 'A FOLUKU TV',
     images: [
       {
-        url: '/icon.png', // Fallback global image
-        width: 800,
-        height: 600,
+        url: 'https://www.afolukutv.com/afoluku-tv-logo.png',
+        secureUrl: 'https://www.afolukutv.com/afoluku-tv-logo.png',
+        width: 1200,
+        height: 630,
+        alt: 'A FOLUKU TV',
       },
     ],
     locale: 'fr_FR',
@@ -32,9 +34,10 @@ export const metadata = {
   },
   twitter: {
     card: 'summary_large_image',
+    site: '@afolukutv',
     title: 'A FOLUKU TV',
     description: 'Le premier site dédié à l\'information et à la culture',
-    images: ['/icon.png'],
+    images: ['https://www.afolukutv.com/afoluku-tv-logo.png'],
   },
 };
 

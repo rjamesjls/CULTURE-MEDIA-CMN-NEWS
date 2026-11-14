@@ -9,27 +9,69 @@ export const revalidate = 60;
 
 export async function generateMetadata({ params }) {
   const resolvedParams = await params;
-  const { slug, lang } = resolvedParams;
+  const { slug, lang = 'fr' } = resolvedParams;
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.afolukutv.com';
 
   const { data: article } = await supabase
     .from('articles')
-    .select('title, title_bsh, description, hook_bsh, image_url, is_special_edition')
+    .select('title, title_bsh, description, hook_bsh, image_url, is_special_edition, pub_date, updated_at')
     .eq('slug', slug)
     .single();
 
   if (!article) return { title: 'Magazine Introuvable' };
 
+  const title = (lang === 'bsh' && article.title_bsh) ? article.title_bsh : article.title;
+  const description = (lang === 'bsh' && article.hook_bsh) ? article.hook_bsh : (article.description || 'Découvrez ce magazine interactif sur A FOLUKU TV');
 
+  let rawImage = article.image_url;
+  if (!rawImage) {
+    rawImage = `${baseUrl}/afoluku-tv-logo.png`;
+  } else if (rawImage.startsWith('/')) {
+    rawImage = `${baseUrl}${rawImage}`;
+  }
 
-  const getTitle = () => (lang === 'bsh' && article.title_bsh) ? article.title_bsh : article.title;
-  const getDesc = () => (lang === 'bsh' && article.hook_bsh) ? article.hook_bsh : article.description;
+  const ogImageUrl = rawImage.includes('/storage/v1/object/public/')
+    ? `${rawImage.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/')}?width=1200&quality=80`
+    : rawImage;
+
+  const pageUrl = `${baseUrl}/${lang}/magazine/${slug}`;
 
   return {
-    title: `${getTitle()}${article.is_special_edition ? ' | Édition Spéciale' : ''}`,
-    description: getDesc(),
+    title: `${title}${article.is_special_edition ? ' | Édition Spéciale' : ''} | A FOLUKU TV`,
+    description: description,
+    alternates: {
+      canonical: `/${lang}/magazine/${slug}`,
+      languages: {
+        'fr': `/fr/magazine/${slug}`,
+        'bsh': `/bsh/magazine/${slug}`,
+      },
+    },
     openGraph: {
-      images: [article.image_url || ''],
-    }
+      title: title,
+      description: description,
+      url: pageUrl,
+      siteName: 'A FOLUKU TV',
+      locale: lang === 'bsh' ? 'sr_RS' : 'fr_FR',
+      type: 'article',
+      publishedTime: article.pub_date,
+      modifiedTime: article.updated_at || article.pub_date,
+      images: [
+        {
+          url: ogImageUrl,
+          secureUrl: ogImageUrl,
+          width: 1200,
+          height: 630,
+          alt: title,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      site: '@afolukutv',
+      title: title,
+      description: description,
+      images: [ogImageUrl],
+    },
   };
 }
 
