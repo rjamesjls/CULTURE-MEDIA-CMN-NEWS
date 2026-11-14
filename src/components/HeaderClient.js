@@ -101,12 +101,7 @@ export default function HeaderClient({ lang = 'fr', menus = [], initialArticle =
             </div>
           ) : (
             <nav className="nav-menu" id="navMenu">
-              {!menus?.some(menu => menu.url === "/radio") && (
-                <Link href={`/${lang}/radio`} className="nav-link">
-                  Radio
-                </Link>
-              )}
-              {menus?.map((menu) => (
+              {menus?.filter(menu => menu.url !== '/radio').map((menu) => (
                 <Link key={menu.id} href={`/${lang}${menu.url === '/' ? '' : menu.url}`} className={`nav-link ${menu.url === '/' ? 'active' : ''}`}>
                   {menu.label}
                 </Link>
