@@ -3,6 +3,9 @@
 import useTTS from '@/hooks/useTTS';
 
 export default function TextToSpeechButton({ title, content, style }) {
+  // Masqué à la demande de l'utilisateur (lecteur écoute automatique)
+  return null;
+
   const { isSpeaking, isPaused, isSupported, play, pause, stop } = useTTS();
 
   if (!isSupported) {

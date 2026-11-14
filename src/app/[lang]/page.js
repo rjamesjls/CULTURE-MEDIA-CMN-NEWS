@@ -2,7 +2,6 @@ import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import NewsletterForm from '@/components/NewsletterForm';
 import { getDictionary } from '@/i18n/dictionaries';
-import InstagramFeed from '@/components/InstagramFeed';
 
 export const revalidate = 60; // Revalidate every minute
 
@@ -126,12 +125,12 @@ export default async function Home({ params }) {
               <Link href={`/${lang}/faits-divers`} className="section-link">{dict.home.view_all} <i className="fas fa-arrow-right"></i></Link>
             </div>
 
-            <div className="featured-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '30px' }}>
+            <div className="featured-grid">
               {error && <p>{dict.home.error_loading}</p>}
               {articles && articles.slice(0, 6).map(article => (
                 <article key={article.id} className="card article-card" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
                   <div className="card-image-wrapper">
-                    <img src={article.image_url || 'https://images.unsplash.com/photo-1620287341056-49a2f1ab2fdc?q=80&w=600&auto=format&fit=crop'} alt={getTitle(article)} className="card-image" loading="lazy" style={{ height: '200px', objectFit: 'cover', width: '100%' }} />
+                    <img src={article.image_url || 'https://images.unsplash.com/photo-1620287341056-49a2f1ab2fdc?q=80&w=600&auto=format&fit=crop'} alt={getTitle(article)} className="card-image" loading="lazy" style={{ objectFit: 'cover', width: '100%' }} />
                     <span className="badge card-badge">{article.category}</span>
                   </div>
                   <div className="card-body" style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
@@ -140,7 +139,7 @@ export default async function Home({ params }) {
                     </h3>
                     <div className="card-meta" style={{ marginTop: 'auto' }}>
                       <span><i className="far fa-clock"></i> {new Date(article.pub_date).toLocaleDateString(lang === 'bsh' ? 'bs-BA' : 'fr-FR')}</span>
-                      <span style={{ marginLeft: '10px' }}><i className="fas fa-user"></i> {article.author}</span>
+                      <span className="card-meta-author" style={{ marginLeft: '10px' }}><i className="fas fa-user"></i> {article.author}</span>
                     </div>
                   </div>
                 </article>
@@ -173,11 +172,6 @@ export default async function Home({ params }) {
         </div>
       </section>
 
-      {/* Instagram Feed Section */}
-      <section style={{ padding: '0 20px 40px 20px', maxWidth: '1200px', margin: '0 auto' }}>
-        <InstagramFeed />
-      </section>
-
       {/* NEWSLETTER SECTION */}
       <section className="section newsletter-section" id="newsletter">
         <div className="container-narrow">
@@ -194,6 +188,126 @@ export default async function Home({ params }) {
       </section>
 
       <style>{`
+        /* ===================================================
+           HERO CAROUSEL - MOBILE OPTIMIZATION
+           =================================================== */
+        @media (max-width: 768px) {
+          .hero-carousel {
+            height: 380px !important;
+          }
+          .carousel-overlay {
+            padding: 16px 14px 22px 14px !important;
+          }
+          .carousel-overlay .badge {
+            font-size: 10px !important;
+            padding: 2px 7px !important;
+            margin-bottom: 6px !important;
+          }
+          .carousel-title {
+            font-size: 1.25rem !important;
+            line-height: 1.3 !important;
+            margin-bottom: 6px !important;
+            display: -webkit-box !important;
+            -webkit-line-clamp: 2 !important;
+            -webkit-box-orient: vertical !important;
+            overflow: hidden !important;
+          }
+          .carousel-excerpt {
+            font-size: 0.82rem !important;
+            line-height: 1.35 !important;
+            margin-bottom: 10px !important;
+            display: -webkit-box !important;
+            -webkit-line-clamp: 2 !important;
+            -webkit-box-orient: vertical !important;
+            overflow: hidden !important;
+          }
+          .carousel-overlay .btn {
+            padding: 6px 14px !important;
+            font-size: 12px !important;
+          }
+          .carousel-indicators {
+            bottom: 8px !important;
+          }
+        }
+
+        /* ===================================================
+           ARTICLES À LA UNE (FEATURED GRID) - 2 ARTICLES SUR MOBILE
+           =================================================== */
+        .featured-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 12px;
+        }
+
+        .featured-grid .article-card .card-image {
+          height: 120px;
+        }
+
+        .featured-grid .article-card .card-body {
+          padding: 10px 8px;
+        }
+
+        .featured-grid .article-card .card-title {
+          font-size: 0.88rem;
+          line-height: 1.35;
+          margin-bottom: 6px;
+          display: -webkit-box;
+          -webkit-line-clamp: 3;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+
+        .featured-grid .article-card .card-meta {
+          font-size: 0.68rem;
+          color: #64748b;
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+        }
+
+        .featured-grid .card-meta-author {
+          display: none;
+        }
+
+        .featured-grid .card-badge {
+          font-size: 9.5px;
+          padding: 2px 6px;
+        }
+
+        @media (min-width: 640px) {
+          .featured-grid .article-card .card-image {
+            height: 160px;
+          }
+          .featured-grid .card-meta-author {
+            display: inline-block;
+          }
+        }
+
+        @media (min-width: 1024px) {
+          .featured-grid {
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+          }
+          .featured-grid .article-card .card-image {
+            height: 200px;
+          }
+          .featured-grid .article-card .card-body {
+            padding: var(--space-4);
+          }
+          .featured-grid .article-card .card-title {
+            font-size: 1.15rem;
+            line-height: 1.4;
+            -webkit-line-clamp: 2;
+          }
+          .featured-grid .article-card .card-meta {
+            font-size: var(--text-sm);
+          }
+          .featured-grid .card-badge {
+            font-size: var(--text-xs);
+            padding: var(--space-1) var(--space-3);
+          }
+        }
+
         /* Mobile First Layout */
         .article-layout-wrapper {
           flex-direction: column;
