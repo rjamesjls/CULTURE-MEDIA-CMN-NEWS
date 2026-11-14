@@ -37,10 +37,8 @@ export async function generateMetadata({ params }) {
     rawImage = `${baseUrl}${rawImage}`;
   }
 
-  // Optimisation Supabase pour WhatsApp & réseaux sociaux (réduit le poids pour assurer l'affichage du thumbnail)
-  const ogImageUrl = rawImage.includes('/storage/v1/object/public/')
-    ? `${rawImage.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/')}?width=1200&quality=80`
-    : rawImage;
+  // Image optimisée haute compatibilité via API Sharp (1200x630 JPEG progressif ~50Ko, idéal WhatsApp / réseaux sociaux)
+  const ogImageUrl = `${baseUrl}/api/og-image?slug=${slug}`;
 
   const pageUrl = `${baseUrl}/${lang}/article/${slug}`;
 
@@ -73,7 +71,7 @@ export async function generateMetadata({ params }) {
           width: 1200,
           height: 630,
           alt: title,
-          type: ogImageUrl.includes('.png') ? 'image/png' : 'image/jpeg',
+          type: 'image/jpeg',
         },
       ],
     },
@@ -83,6 +81,9 @@ export async function generateMetadata({ params }) {
       title: title,
       description: description,
       images: [ogImageUrl],
+    },
+    other: {
+      'image_src': ogImageUrl,
     },
   };
 }
