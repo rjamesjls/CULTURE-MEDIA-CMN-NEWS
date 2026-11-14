@@ -84,8 +84,8 @@ export default function HeaderClient({ lang = 'fr', menus = [], initialArticle =
             )}
           </div>
 
-          {/* ── CÔTÉ DROIT : Article Mode vs Home Mode ── */}
-          {isArticlePage ? (
+          {/* ── CÔTÉ DROIT : Article Mode sur mobile vs Menu de navigation sur Web / Desktop ── */}
+          {isArticlePage && (
             <div className="header-right-article">
               {pubDateFormatted && (
                 <div className="header-pub-date" title="Date de publication">
@@ -99,22 +99,47 @@ export default function HeaderClient({ lang = 'fr', menus = [], initialArticle =
                 {category}
               </div>
             </div>
-          ) : (
-            <nav className="nav-menu" id="navMenu">
-              {menus?.filter(menu => menu.url !== '/radio').map((menu) => (
-                <Link key={menu.id} href={`/${lang}${menu.url === '/' ? '' : menu.url}`} className={`nav-link ${menu.url === '/' ? 'active' : ''}`}>
+          )}
+
+          {/* Menu de navigation principal : Toujours présent et accessible sur la version Web (Desktop/Tablette) */}
+          <nav className="nav-menu" id="navMenu">
+            {menus?.filter(menu => menu.url !== '/radio').map((menu) => {
+              const href = `/${lang}${menu.url === '/' ? '' : menu.url}`;
+              const isActive = menu.url === '/'
+                ? (pathname === `/${lang}` || pathname === `/${lang}/`)
+                : (pathname === href || pathname?.startsWith(`${href}/`));
+
+              return (
+                <Link 
+                  key={menu.id} 
+                  href={href} 
+                  className={`nav-link ${isActive ? 'active' : ''}`}
+                >
                   {menu.label}
                 </Link>
-              ))}
+              );
+            })}
 
-              <div className="search-bar">
-                <i className="fas fa-search search-icon"></i>
-                <input type="text" placeholder="Rechercher..." className="search-input" id="searchInput" />
-              </div>
+            <div className="search-bar">
+              <i className="fas fa-search search-icon"></i>
+              <input 
+                type="text" 
+                placeholder="Rechercher..." 
+                className="search-input" 
+                id="searchInput" 
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    const query = e.target.value.trim();
+                    if (query) {
+                      window.location.href = `/${lang}/all-articles?search=${encodeURIComponent(query)}`;
+                    }
+                  }
+                }}
+              />
+            </div>
 
-              <SubscribeButton />
-            </nav>
-          )}
+            <SubscribeButton />
+          </nav>
         </div>
       </header>
 

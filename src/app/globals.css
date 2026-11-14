@@ -580,6 +580,12 @@ textarea.input {
   flex-shrink: 0;
 }
 
+@media (min-width: 769px) {
+  .header-right-article {
+    display: none !important;
+  }
+}
+
 .header-pub-date {
   font-family: var(--font-heading);
   font-size: 12px;
