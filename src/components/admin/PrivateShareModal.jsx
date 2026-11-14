@@ -125,7 +125,8 @@ Bonne lecture !`;
     try {
       await revokePrivateShare(article.id);
       setIsEnabled(false);
-      if (onUpdated) onUpdated({ enabled: false });
+      setIsPrivateOnly(false);
+      if (onUpdated) onUpdated({ enabled: false, is_private_only: false, status: 'published' });
       alert('Lien privé désactivé avec succès.');
       onClose();
     } catch (err) {

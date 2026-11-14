@@ -45,7 +45,8 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
 
   // Private Access State
   const [privateAccessEnabled, setPrivateAccessEnabled] = useState(
-    initialData?.status === 'private' || initialData?.seo_metadata?.private_access?.enabled === true
+    initialData?.seo_metadata?.private_access?.enabled === true || 
+    (initialData?.status === 'private' && initialData?.seo_metadata?.private_access?.enabled !== false)
   );
   const [privateAccessCode, setPrivateAccessCode] = useState(
     initialData?.seo_metadata?.private_access?.access_code || ''
@@ -415,12 +416,15 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
         mergedMetadata.private_access = {
           ...existingMetadata.private_access,
           enabled: false,
+          is_private_only: false,
         };
       }
 
-      let status = e.nativeEvent?.submitter?.value || 'published';
+      let status = e.nativeEvent?.submitter?.value || (initialData?.status === 'private' && !privateAccessEnabled ? 'published' : (initialData?.status || 'published'));
       if (status === 'private' || (privateAccessEnabled && status !== 'draft' && status !== 'pending')) {
         status = 'private';
+      } else if (!privateAccessEnabled && status === 'private') {
+        status = 'published';
       }
 
       // 6. Construction d'un payload ultra-léger exempt de tout gros fichier ou base64

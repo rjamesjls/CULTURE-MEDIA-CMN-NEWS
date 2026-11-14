@@ -124,6 +124,8 @@ export async function savePrivateShare(articleId, {
   // on le bascule en status = 'private' pour qu'il n'apparaisse plus sur le site public
   if (is_private_only) {
     updatePayload.status = 'private';
+  } else if (article.status === 'private') {
+    updatePayload.status = 'published';
   }
 
   const { error: updateError } = await supabase
@@ -139,6 +141,11 @@ export async function savePrivateShare(articleId, {
   revalidatePath('/admin/publication-center');
   revalidatePath('/');
   revalidatePath('/faits-divers');
+  if (article.slug) {
+    revalidatePath(`/article/${article.slug}`);
+    revalidatePath(`/fr/article/${article.slug}`);
+    revalidatePath(`/bsh/article/${article.slug}`);
+  }
 
   return {
     success: true,
@@ -164,7 +171,7 @@ export async function revokePrivateShare(articleId) {
 
   const { data: article, error } = await supabase
     .from('articles')
-    .select('id, status, seo_metadata')
+    .select('id, status, slug, seo_metadata')
     .eq('id', articleId)
     .single();
 
@@ -176,6 +183,7 @@ export async function revokePrivateShare(articleId) {
   const updatedPrivateAccess = {
     ...currentAccess,
     enabled: false,
+    is_private_only: false,
     revoked_at: new Date().toISOString(),
   };
 
@@ -186,9 +194,9 @@ export async function revokePrivateShare(articleId) {
     },
   };
 
-  // Si l'article était au statut 'private', on peut le repasser en 'draft' pour éviter qu'il soit orphelin
+  // Si l'article était au statut 'private', on le repasse en 'published' pour qu'il redevienne accessible publiquement
   if (article.status === 'private') {
-    updatePayload.status = 'draft';
+    updatePayload.status = 'published';
   }
 
   const { error: updateError } = await supabase
@@ -202,6 +210,11 @@ export async function revokePrivateShare(articleId) {
   revalidatePath('/admin/publication-center');
   revalidatePath('/');
   revalidatePath('/faits-divers');
+  if (article.slug) {
+    revalidatePath(`/article/${article.slug}`);
+    revalidatePath(`/fr/article/${article.slug}`);
+    revalidatePath(`/bsh/article/${article.slug}`);
+  }
 
   return { success: true };
 }

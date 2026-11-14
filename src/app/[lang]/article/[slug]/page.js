@@ -92,7 +92,10 @@ export default async function ArticlePage({ params }) {
       notFound(); // On simule que l'article n'existe pas pour le grand public
     }
     isPreviewMode = true;
-  } else if (article.status === 'private' || article.seo_metadata?.private_access?.is_private_only) {
+  } else if (
+    article.status === 'private' || 
+    (article.seo_metadata?.private_access?.enabled === true && article.seo_metadata?.private_access?.is_private_only)
+  ) {
     const profile = await getUserProfile();
     const isStaff = profile && (profile.role === 'admin' || profile.role === 'author');
     if (!isStaff) {

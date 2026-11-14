@@ -348,6 +348,10 @@ export default function ArticleList({ initialArticles, categories }) {
               };
               if (updated.is_private_only) {
                 selectedPrivateArticle.status = 'private';
+              } else if (updated.status) {
+                selectedPrivateArticle.status = updated.status;
+              } else if (updated.enabled === false && selectedPrivateArticle.status === 'private') {
+                selectedPrivateArticle.status = 'published';
               }
             }
           }}
