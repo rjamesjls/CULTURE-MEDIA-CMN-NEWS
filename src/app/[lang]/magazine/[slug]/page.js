@@ -14,7 +14,7 @@ export async function generateMetadata({ params }) {
 
   const { data: article } = await supabase
     .from('articles')
-    .select('title, title_bsh, description, hook_bsh, image_url, is_special_edition, pub_date, updated_at')
+    .select('title, title_bsh, description, hook_bsh, image_url, is_special_edition, pub_date, created_at')
     .eq('slug', slug)
     .single();
 
@@ -54,7 +54,7 @@ export async function generateMetadata({ params }) {
       locale: lang === 'bsh' ? 'sr_RS' : 'fr_FR',
       type: 'article',
       publishedTime: article.pub_date,
-      modifiedTime: article.updated_at || article.pub_date,
+      modifiedTime: article.created_at || article.pub_date,
       images: [
         {
           url: ogImageUrl,

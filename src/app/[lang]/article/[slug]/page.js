@@ -18,7 +18,7 @@ export async function generateMetadata({ params }) {
 
   const { data: article } = await supabase
     .from('articles')
-    .select('title, title_bsh, description, hook_bsh, image_url, category, pub_date, updated_at')
+    .select('title, title_bsh, description, hook_bsh, image_url, category, pub_date, created_at')
     .eq('slug', slug)
     .single();
 
@@ -63,7 +63,7 @@ export async function generateMetadata({ params }) {
       locale: lang === 'bsh' ? 'sr_RS' : 'fr_FR',
       type: 'article',
       publishedTime: article.pub_date,
-      modifiedTime: article.updated_at || article.pub_date,
+      modifiedTime: article.created_at || article.pub_date,
       authors: ['A FOLUKU TV'],
       section: categoryName,
       images: [
@@ -170,7 +170,7 @@ export default async function ArticlePage({ params }) {
       article.image_url || 'https://www.afolukutv.com/afoluku-tv-logo.png'
     ],
     datePublished: article.pub_date,
-    dateModified: article.updated_at || article.pub_date,
+    dateModified: article.created_at || article.pub_date,
     author: [{
       '@type': 'Organization',
       name: 'A FOLUKU TV',

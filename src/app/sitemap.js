@@ -11,20 +11,20 @@ export default async function sitemap() {
 
   const { data: articles } = await supabase
     .from('articles')
-    .select('slug, pub_date, updated_at')
+    .select('slug, pub_date, created_at')
     .eq('status', 'published')
     .order('pub_date', { ascending: false });
 
   const articleEntries = (articles || []).flatMap((article) => [
     {
       url: `${baseUrl}/fr/article/${article.slug}`,
-      lastModified: article.updated_at || article.pub_date || new Date(),
+      lastModified: article.created_at || article.pub_date || new Date(),
       changeFrequency: 'daily',
       priority: 0.8,
     },
     {
       url: `${baseUrl}/bsh/article/${article.slug}`,
-      lastModified: article.updated_at || article.pub_date || new Date(),
+      lastModified: article.created_at || article.pub_date || new Date(),
       changeFrequency: 'daily',
       priority: 0.8,
     }
