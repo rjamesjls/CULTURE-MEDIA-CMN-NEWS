@@ -147,16 +147,26 @@ export async function saveArticle(input) {
     // Insert
     articleData.pub_date = new Date().toISOString();
     articleData.user_id = profile.id;
-    const { data: inserted, error } = await supabaseServer.from('articles').insert([articleData]).select('id').single();
+    const { data: inserted, error } = await supabaseServer.from('articles').insert([articleData]).select('id, slug').single();
     if (error) throw new Error(error.message);
-    return { success: true, id: inserted?.id };
+    revalidatePath('/');
+    revalidatePath('/fr');
+    revalidatePath('/bsh');
+    revalidatePath('/admin/articles');
+    return { success: true, id: inserted?.id, slug: inserted?.slug };
   }
 
   revalidatePath('/');
+  revalidatePath('/fr');
+  revalidatePath('/bsh');
   revalidatePath('/faits-divers');
   revalidatePath('/admin/articles');
+  if (slug) {
+    revalidatePath(`/fr/article/${slug}`);
+    revalidatePath(`/bsh/article/${slug}`);
+  }
   
-  return { success: true, id };
+  return { success: true, id, slug };
 }
 
 export async function createCategory(formData) {

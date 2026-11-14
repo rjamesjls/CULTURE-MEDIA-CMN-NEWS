@@ -75,7 +75,7 @@ export default function PrivateReaderGate({
     return (
       <div style={{ backgroundColor: '#fafafa', minHeight: '100vh', paddingBottom: '80px' }}>
         <ArticleHeaderSetter
-          badge={article.seo_metadata?.header_badge || 'Info'}
+          badge={article.seo_metadata?.header_badge || (article.seo_metadata?.article_format === 'web_magazine' ? 'Magazine' : 'News')}
           category={article.category}
           pubDate={article.pub_date}
         />

@@ -73,6 +73,7 @@ export async function getPrivateArticlePreview(token) {
       pub_date: article.pub_date,
       content: fullContent?.content || null,
       content_bsh: fullContent?.content_bsh || null,
+      seo_metadata: article.seo_metadata || null,
       recipient_name: privateAccess.recipient_name || null,
       expires_at: privateAccess.expires_at || null,
     },
@@ -162,6 +163,7 @@ export async function verifyPrivateAccessCode(token, code) {
       image_url: article.image_url,
       author: article.author,
       pub_date: article.pub_date,
+      seo_metadata: article.seo_metadata || null,
     },
   };
 }

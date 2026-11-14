@@ -21,6 +21,7 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
   const imageInputRef = useRef(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [saveSuccessMsg, setSaveSuccessMsg] = useState('');
 
   // Controlled states for live preview
   const [title, setTitle] = useState(initialData?.title || '');
@@ -433,8 +434,17 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
       cleanPayload.append('seo_metadata', JSON.stringify(mergedMetadata));
       cleanPayload.append('is_special_edition', isSpecialEdition ? 'true' : 'false');
 
-      await saveArticle(cleanPayload);
-      router.push('/admin/articles');
+      const res = await saveArticle(cleanPayload);
+      setIsSubmitting(false);
+      setErrorMsg('');
+      setSaveSuccessMsg('✓ Article enregistré avec succès ! Vous pouvez continuer à le modifier ou quitter la page quand vous le souhaitez.');
+      
+      // Si c'était la création d'un nouvel article, on met à jour l'URL sans quitter la page
+      if (res?.id && !initialData?.id) {
+        window.history.replaceState(null, '', `/admin/articles/edit/${res.id}`);
+      }
+      
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
       setErrorMsg(err.message);
       setIsSubmitting(false);
@@ -598,6 +608,22 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
             )}
           </div>
           {/* --- FIN BLOC IA --- */}
+
+          {saveSuccessMsg && (
+            <div style={{ padding: '16px 20px', backgroundColor: '#ecfdf5', color: '#065f46', borderRadius: '8px', marginBottom: '20px', border: '1px solid #a7f3d0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '15px', fontWeight: '600' }}>
+                <i className="fas fa-check-circle" style={{ fontSize: '20px', color: '#10b981' }}></i>
+                <span>{saveSuccessMsg}</span>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setSaveSuccessMsg('')}
+                style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#047857', fontSize: '16px' }}
+              >
+                <i className="fas fa-times"></i>
+              </button>
+            </div>
+          )}
 
           {errorMsg && (
             <div style={{ padding: '15px', backgroundColor: '#fee2e2', color: '#b91c1c', borderRadius: '6px', marginBottom: '20px' }}>
