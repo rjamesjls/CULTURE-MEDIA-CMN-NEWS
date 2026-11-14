@@ -224,6 +224,31 @@ export default async function ArticlePage({ params }) {
 
         <div className="article-featured-image" style={{ margin: '30px 0' }}>
           <img src={article.image_url || 'https://images.unsplash.com/photo-1620287341056-49a2f1ab2fdc?q=80&w=800&auto=format&fit=crop'} alt={getTitle(article)} style={{ width: '100%', borderRadius: '12px' }} />
+          {(article.seo_metadata?.image_caption || article.seo_metadata?.image_credit) && (
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '8px',
+              padding: '8px 4px 0 4px',
+              fontSize: '13px',
+              color: '#64748b',
+              marginTop: '6px'
+            }}>
+              {article.seo_metadata?.image_caption ? (
+                <span style={{ fontStyle: 'italic', flex: 1, minWidth: '200px' }}>
+                  {article.seo_metadata.image_caption}
+                </span>
+              ) : <span />}
+              {article.seo_metadata?.image_credit && (
+                <span style={{ fontWeight: '500', color: '#94a3b8', fontSize: '12px' }}>
+                  <i className="fas fa-camera" style={{ marginRight: '5px' }}></i>
+                  {article.seo_metadata.image_credit}
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="article-body" id="article-content" style={{ fontSize: '1.15rem', lineHeight: '1.8', color: '#374151' }}>

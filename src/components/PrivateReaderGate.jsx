@@ -257,6 +257,32 @@ export default function PrivateReaderGate({
                 alt={getTitle(article)}
                 style={{ width: '100%', height: 'auto', maxHeight: '520px', objectFit: 'cover', display: 'block' }}
               />
+              {(article.seo_metadata?.image_caption || article.seo_metadata?.image_credit) && (
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: '8px',
+                  padding: '10px 14px',
+                  backgroundColor: '#ffffff',
+                  fontSize: '13px',
+                  color: '#64748b',
+                  borderTop: '1px solid #f1f5f9'
+                }}>
+                  {article.seo_metadata?.image_caption ? (
+                    <span style={{ fontStyle: 'italic', flex: 1, minWidth: '200px' }}>
+                      {article.seo_metadata.image_caption}
+                    </span>
+                  ) : <span />}
+                  {article.seo_metadata?.image_credit && (
+                    <span style={{ fontWeight: '500', color: '#94a3b8', fontSize: '12px' }}>
+                      <i className="fas fa-camera" style={{ marginRight: '5px' }}></i>
+                      {article.seo_metadata.image_credit}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           )}
 

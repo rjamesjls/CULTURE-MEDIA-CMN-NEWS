@@ -29,8 +29,12 @@ export async function GET(request) {
 
     const data = await response.json();
     if (data.results && data.results.length > 0) {
-      // Return the regular sized image URL
-      return NextResponse.json({ url: data.results[0].urls.regular });
+      const firstPhoto = data.results[0];
+      // Return the regular sized image URL and photographer name
+      return NextResponse.json({ 
+        url: firstPhoto.urls.regular,
+        author: firstPhoto.user?.name || null
+      });
     } else {
       return NextResponse.json({ error: 'No image found for this query' }, { status: 404 });
     }

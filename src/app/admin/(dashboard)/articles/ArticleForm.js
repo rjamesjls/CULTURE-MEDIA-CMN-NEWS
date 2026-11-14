@@ -38,6 +38,8 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
   const [author, setAuthor] = useState(initialData?.author || 'La Rédaction');
   const [description, setDescription] = useState(initialData?.description || '');
   const [imageUrl, setImageUrl] = useState(initialData?.image_url || '');
+  const [imageCaption, setImageCaption] = useState(initialData?.seo_metadata?.image_caption || '');
+  const [imageCredit, setImageCredit] = useState(initialData?.seo_metadata?.image_credit || '');
   const [content, setContent] = useState(initialData?.content || '');
   const [isSpecialEdition, setIsSpecialEdition] = useState(initialData?.is_special_edition || false);
 
@@ -245,6 +247,9 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
       const data = await res.json();
       if (res.ok && data.url) {
         setImageUrl(data.url);
+        if (data.author && !imageCredit) {
+          setImageCredit(`Unsplash / ${data.author}`);
+        }
       } else {
         alert(data.error || "Aucune image trouvée ou clé API manquante.");
       }
@@ -387,6 +392,8 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
       const mergedMetadata = superMetadata ? { ...superMetadata } : { ...existingMetadata };
       mergedMetadata.article_format = articleFormat;
       mergedMetadata.header_badge = headerBadge;
+      mergedMetadata.image_caption = imageCaption ? imageCaption.trim() : '';
+      mergedMetadata.image_credit = imageCredit ? imageCredit.trim() : '';
       if (magCoverUrl) {
         mergedMetadata.magazine_cover_url = magCoverUrl;
       }
@@ -780,17 +787,37 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
                 <span style={{ backgroundColor: '#dc2626', color: '#fff', fontSize: '10px', fontWeight: 'bold', padding: '1px 6px', borderRadius: '4px' }}>HEADER</span>
                 Mention Header (Pastille rouge)
               </label>
-              <select 
-                className="admin-form-control" 
-                value={headerBadge}
-                onChange={(e) => setHeaderBadge(e.target.value)}
-                style={{ fontWeight: 'bold', color: '#dc2626' }}
-              >
-                <option value="News">News</option>
-                <option value="Actu">Actu</option>
-                <option value="Magazine">Magazine</option>
-                <option value="Info">Info</option>
-              </select>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <select 
+                  className="admin-form-control" 
+                  value={['News', 'Actu', 'Magazine', 'Info', 'Portrait', 'Web Interview'].includes(headerBadge) ? headerBadge : 'Autre'}
+                  onChange={(e) => {
+                    if (e.target.value !== 'Autre') {
+                      setHeaderBadge(e.target.value);
+                    }
+                  }}
+                  style={{ width: '160px', fontWeight: 'bold', color: '#dc2626', flexShrink: 0 }}
+                >
+                  <option value="News">News</option>
+                  <option value="Actu">Actu</option>
+                  <option value="Magazine">Magazine</option>
+                  <option value="Info">Info</option>
+                  <option value="Portrait">Portrait</option>
+                  <option value="Web Interview">Web Interview</option>
+                  <option value="Autre">Autre (Texte libre)</option>
+                </select>
+                <input 
+                  type="text" 
+                  className="admin-form-control" 
+                  value={headerBadge}
+                  onChange={(e) => setHeaderBadge(e.target.value)}
+                  placeholder="Tapez votre mention libre..."
+                  style={{ fontWeight: 'bold', color: '#dc2626' }}
+                />
+              </div>
+              <span style={{ fontSize: '11.5px', color: '#6b7280', marginTop: '4px', display: 'block' }}>
+                Choisissez une suggestion ou tapez directement votre mention personnalisée.
+              </span>
             </div>
 
             <div className="admin-form-group">
@@ -897,7 +924,43 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
                 placeholder="https://exemple.com/image.jpg"
               />
 
-              {articleFormat === 'web_magazine' && (
+              {/* Légende & Crédit photo */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginTop: '15px', marginBottom: '15px' }}>
+              <div className="admin-form-group" style={{ marginBottom: 0 }}>
+                <label className="admin-form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <i className="fas fa-align-left" style={{ color: '#2563eb', fontSize: '13px' }}></i>
+                  Légende de la photo
+                </label>
+                <input 
+                  type="text" 
+                  className="admin-form-control" 
+                  value={imageCaption}
+                  onChange={(e) => setImageCaption(e.target.value)}
+                  placeholder="Ex : Cérémonie officielle à Cayenne..."
+                />
+                <span style={{ fontSize: '11.5px', color: '#6b7280', marginTop: '4px', display: 'block' }}>
+                  Description affichée sous la photo principale
+                </span>
+              </div>
+              <div className="admin-form-group" style={{ marginBottom: 0 }}>
+                <label className="admin-form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <i className="fas fa-camera" style={{ color: '#2563eb', fontSize: '13px' }}></i>
+                  Crédit photo
+                </label>
+                <input 
+                  type="text" 
+                  className="admin-form-control" 
+                  value={imageCredit}
+                  onChange={(e) => setImageCredit(e.target.value)}
+                  placeholder="Ex : © AFP / Jean Dupont / DR"
+                />
+                <span style={{ fontSize: '11.5px', color: '#6b7280', marginTop: '4px', display: 'block' }}>
+                  Mention de copyright ou auteur de la photo
+                </span>
+              </div>
+            </div>
+
+            {articleFormat === 'web_magazine' && (
                 <div className="admin-form-row" style={{ marginTop: '20px' }}>
                   <div className="admin-form-group">
                     <label className="admin-form-label" style={{ color: '#c026d3' }}>
