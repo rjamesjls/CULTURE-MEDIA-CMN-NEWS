@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 // Mock data for Traffic
@@ -32,6 +33,7 @@ const earningsData = [
 export default function DashboardClient({ initialStats, latestArticles }) {
   const [profile] = useState({ name: "Admin" }); // Should be dynamic based on auth
   const [isMounted, setIsMounted] = useState(false);
+  const [selectedArticle, setSelectedArticle] = useState(null);
 
   useEffect(() => {
     setIsMounted(true);
@@ -95,19 +97,42 @@ export default function DashboardClient({ initialStats, latestArticles }) {
             {/* Latest Post */}
             <div style={styles.card}>
               <div style={styles.cardHeaderFlex}>
-                <h3 style={styles.cardTitle}>Latest Post</h3>
-                <span style={styles.cardLink}>Last 7 days</span>
+                <h3 style={styles.cardTitle}>Derniers articles</h3>
+                <Link href="/admin/articles" style={{ ...styles.cardLink, textDecoration: 'none' }}>
+                  Voir tout <i className="fas fa-arrow-right" style={{ fontSize: '11px', marginLeft: '4px' }}></i>
+                </Link>
               </div>
               <div style={styles.latestPostList}>
                 {latestArticles.map(article => (
-                  <div key={article.id} style={styles.latestPostItem}>
+                  <div 
+                    key={article.id} 
+                    style={{ 
+                      ...styles.latestPostItem, 
+                      cursor: 'pointer', 
+                      transition: 'all 0.2s', 
+                      padding: '8px 10px', 
+                      borderRadius: '8px' 
+                    }}
+                    onClick={() => setSelectedArticle(article)}
+                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f1f5f9'}
+                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                    title="Cliquer pour ouvrir l'aperçu et les actions"
+                  >
                     <div style={styles.latestPostImgWrapper}>
                       <img src={article.image_url || 'https://images.unsplash.com/photo-1620287341056-49a2f1ab2fdc?q=80&w=200&auto=format&fit=crop'} alt={article.title} style={styles.latestPostImg} />
                     </div>
-                    <div>
-                      <div style={styles.latestPostTitle}>{article.title.length > 30 ? article.title.substring(0, 30) + '...' : article.title}</div>
-                      <div style={styles.latestPostDate}>{new Date(article.pub_date).toLocaleDateString()}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={styles.latestPostTitle}>{article.title.length > 40 ? article.title.substring(0, 40) + '...' : article.title}</div>
+                      <div style={{ ...styles.latestPostDate, display: 'flex', alignItems: 'center', gap: '8px', marginTop: '3px' }}>
+                        <span>{new Date(article.pub_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</span>
+                        {article.category && (
+                          <span style={{ backgroundColor: '#e0e7ff', color: '#3730a3', fontSize: '11px', fontWeight: 'bold', padding: '1px 6px', borderRadius: '4px' }}>
+                            {article.category}
+                          </span>
+                        )}
+                      </div>
                     </div>
+                    <i className="fas fa-chevron-right" style={{ color: '#cbd5e1', fontSize: '12px' }}></i>
                   </div>
                 ))}
                 {latestArticles.length === 0 && <p style={{ color: '#6b7280', fontSize: '14px' }}>Aucun article récent.</p>}
@@ -167,6 +192,266 @@ export default function DashboardClient({ initialStats, latestArticles }) {
 
         </div>
       </div>
+
+      {/* ── POP-UP MODAL PRÉVISUALISATION ARTICLE ── */}
+      {selectedArticle && (
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(15, 23, 42, 0.75)',
+            backdropFilter: 'blur(6px)',
+            WebkitBackdropFilter: 'blur(6px)',
+            zIndex: 99999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px',
+          }}
+          onClick={() => setSelectedArticle(null)}
+        >
+          <div 
+            style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '16px',
+              maxWidth: '820px',
+              width: '100%',
+              maxHeight: '90vh',
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.35)',
+              overflow: 'hidden',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header du Pop-up */}
+            <div style={{
+              padding: '16px 24px',
+              borderBottom: '1px solid #e5e7eb',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              backgroundColor: '#f8fafc',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span style={{
+                  backgroundColor: '#facc15',
+                  color: '#000000',
+                  fontWeight: '800',
+                  fontSize: '12px',
+                  padding: '4px 10px',
+                  borderRadius: '6px',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                }}>
+                  {selectedArticle.category || 'Actualité'}
+                </span>
+                <span style={{ fontSize: '13px', color: '#64748b' }}>
+                  <i className="far fa-calendar-alt" style={{ marginRight: '6px' }}></i>
+                  {new Date(selectedArticle.pub_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                </span>
+                {selectedArticle.author && (
+                  <span style={{ fontSize: '13px', color: '#64748b' }}>
+                    <i className="far fa-user" style={{ marginRight: '6px' }}></i>
+                    {selectedArticle.author}
+                  </span>
+                )}
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setSelectedArticle(null)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  fontSize: '22px',
+                  color: '#94a3b8',
+                  cursor: 'pointer',
+                  padding: '4px 8px',
+                  borderRadius: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'color 0.2s',
+                }}
+                onMouseOver={(e) => e.currentTarget.style.color = '#0f172a'}
+                onMouseOut={(e) => e.currentTarget.style.color = '#94a3b8'}
+                title="Fermer"
+              >
+                <i className="fas fa-times"></i>
+              </button>
+            </div>
+
+            {/* Corps du Pop-up (Scrollable) */}
+            <div style={{
+              padding: '24px',
+              overflowY: 'auto',
+              flex: 1,
+            }}>
+              {selectedArticle.image_url && (
+                <div style={{
+                  width: '100%',
+                  height: '280px',
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  marginBottom: '20px',
+                  backgroundColor: '#0f172a',
+                }}>
+                  <img 
+                    src={selectedArticle.image_url} 
+                    alt={selectedArticle.title} 
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                </div>
+              )}
+
+              <h2 style={{
+                fontSize: '24px',
+                fontWeight: '800',
+                color: '#0f172a',
+                lineHeight: '1.3',
+                marginBottom: '14px',
+                fontFamily: 'var(--font-heading)',
+              }}>
+                {selectedArticle.title}
+              </h2>
+
+              {selectedArticle.description && (
+                <p style={{
+                  fontSize: '15px',
+                  fontWeight: '500',
+                  color: '#475569',
+                  lineHeight: '1.6',
+                  fontStyle: 'italic',
+                  paddingBottom: '16px',
+                  borderBottom: '1px solid #e2e8f0',
+                  marginBottom: '18px',
+                }}>
+                  {selectedArticle.description}
+                </p>
+              )}
+
+              {selectedArticle.content ? (
+                <div 
+                  style={{
+                    fontSize: '15px',
+                    lineHeight: '1.7',
+                    color: '#334155',
+                  }}
+                  dangerouslySetInnerHTML={{ __html: selectedArticle.content }}
+                />
+              ) : (
+                <p style={{ color: '#94a3b8', fontStyle: 'italic' }}>Aucun contenu rédigé pour cet article.</p>
+              )}
+            </div>
+
+            {/* Barre d'actions en bas du Pop-up */}
+            <div style={{
+              padding: '16px 24px',
+              borderTop: '1px solid #e5e7eb',
+              backgroundColor: '#f8fafc',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '12px',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                {/* 1. Regarder l'article entier sur le site */}
+                <a 
+                  href={`/fr/article/${selectedArticle.slug}`} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  style={{
+                    backgroundColor: '#0d2899',
+                    color: '#ffffff',
+                    padding: '9px 16px',
+                    borderRadius: '8px',
+                    fontSize: '13.5px',
+                    fontWeight: '600',
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '7px',
+                    boxShadow: '0 2px 4px rgba(13, 40, 153, 0.25)',
+                    transition: 'opacity 0.2s',
+                  }}
+                >
+                  <i className="fas fa-external-link-alt"></i>
+                  Regarder sur le site
+                </a>
+
+                {/* 2. Modifier l'article */}
+                <Link 
+                  href={`/admin/articles/edit/${selectedArticle.id}`}
+                  style={{
+                    backgroundColor: '#2563eb',
+                    color: '#ffffff',
+                    padding: '9px 16px',
+                    borderRadius: '8px',
+                    fontSize: '13.5px',
+                    fontWeight: '600',
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '7px',
+                    boxShadow: '0 2px 4px rgba(37, 99, 235, 0.25)',
+                    transition: 'opacity 0.2s',
+                  }}
+                >
+                  <i className="fas fa-edit"></i>
+                  Modifier
+                </Link>
+
+                {/* 3. Créer un visuel post Instagram ou autre réseau social */}
+                <Link 
+                  href={`/admin/articles/${selectedArticle.id}/social`}
+                  style={{
+                    background: 'linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045)',
+                    color: '#ffffff',
+                    padding: '9px 16px',
+                    borderRadius: '8px',
+                    fontSize: '13.5px',
+                    fontWeight: '700',
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '7px',
+                    boxShadow: '0 2px 6px rgba(225, 48, 108, 0.35)',
+                    transition: 'opacity 0.2s',
+                  }}
+                >
+                  <i className="fab fa-instagram"></i>
+                  Créer visuel (Social)
+                </Link>
+              </div>
+
+              {/* 4. Quitter / Fermer */}
+              <button 
+                type="button" 
+                onClick={() => setSelectedArticle(null)}
+                style={{
+                  backgroundColor: '#ffffff',
+                  color: '#475569',
+                  border: '1px solid #cbd5e1',
+                  padding: '9px 18px',
+                  borderRadius: '8px',
+                  fontSize: '13.5px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                }}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f1f5f9'}
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#ffffff'}
+              >
+                Fermer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -187,6 +472,266 @@ function PlatformBar({ icon, name, percentage, color }) {
           <div style={{ width: `${percentage}%`, backgroundColor: color, height: '100%', borderRadius: '3px' }}></div>
         </div>
       </div>
+
+      {/* ── POP-UP MODAL PRÉVISUALISATION ARTICLE ── */}
+      {selectedArticle && (
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(15, 23, 42, 0.75)',
+            backdropFilter: 'blur(6px)',
+            WebkitBackdropFilter: 'blur(6px)',
+            zIndex: 99999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px',
+          }}
+          onClick={() => setSelectedArticle(null)}
+        >
+          <div 
+            style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '16px',
+              maxWidth: '820px',
+              width: '100%',
+              maxHeight: '90vh',
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.35)',
+              overflow: 'hidden',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header du Pop-up */}
+            <div style={{
+              padding: '16px 24px',
+              borderBottom: '1px solid #e5e7eb',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              backgroundColor: '#f8fafc',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span style={{
+                  backgroundColor: '#facc15',
+                  color: '#000000',
+                  fontWeight: '800',
+                  fontSize: '12px',
+                  padding: '4px 10px',
+                  borderRadius: '6px',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                }}>
+                  {selectedArticle.category || 'Actualité'}
+                </span>
+                <span style={{ fontSize: '13px', color: '#64748b' }}>
+                  <i className="far fa-calendar-alt" style={{ marginRight: '6px' }}></i>
+                  {new Date(selectedArticle.pub_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                </span>
+                {selectedArticle.author && (
+                  <span style={{ fontSize: '13px', color: '#64748b' }}>
+                    <i className="far fa-user" style={{ marginRight: '6px' }}></i>
+                    {selectedArticle.author}
+                  </span>
+                )}
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setSelectedArticle(null)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  fontSize: '22px',
+                  color: '#94a3b8',
+                  cursor: 'pointer',
+                  padding: '4px 8px',
+                  borderRadius: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'color 0.2s',
+                }}
+                onMouseOver={(e) => e.currentTarget.style.color = '#0f172a'}
+                onMouseOut={(e) => e.currentTarget.style.color = '#94a3b8'}
+                title="Fermer"
+              >
+                <i className="fas fa-times"></i>
+              </button>
+            </div>
+
+            {/* Corps du Pop-up (Scrollable) */}
+            <div style={{
+              padding: '24px',
+              overflowY: 'auto',
+              flex: 1,
+            }}>
+              {selectedArticle.image_url && (
+                <div style={{
+                  width: '100%',
+                  height: '280px',
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  marginBottom: '20px',
+                  backgroundColor: '#0f172a',
+                }}>
+                  <img 
+                    src={selectedArticle.image_url} 
+                    alt={selectedArticle.title} 
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                </div>
+              )}
+
+              <h2 style={{
+                fontSize: '24px',
+                fontWeight: '800',
+                color: '#0f172a',
+                lineHeight: '1.3',
+                marginBottom: '14px',
+                fontFamily: 'var(--font-heading)',
+              }}>
+                {selectedArticle.title}
+              </h2>
+
+              {selectedArticle.description && (
+                <p style={{
+                  fontSize: '15px',
+                  fontWeight: '500',
+                  color: '#475569',
+                  lineHeight: '1.6',
+                  fontStyle: 'italic',
+                  paddingBottom: '16px',
+                  borderBottom: '1px solid #e2e8f0',
+                  marginBottom: '18px',
+                }}>
+                  {selectedArticle.description}
+                </p>
+              )}
+
+              {selectedArticle.content ? (
+                <div 
+                  style={{
+                    fontSize: '15px',
+                    lineHeight: '1.7',
+                    color: '#334155',
+                  }}
+                  dangerouslySetInnerHTML={{ __html: selectedArticle.content }}
+                />
+              ) : (
+                <p style={{ color: '#94a3b8', fontStyle: 'italic' }}>Aucun contenu rédigé pour cet article.</p>
+              )}
+            </div>
+
+            {/* Barre d'actions en bas du Pop-up */}
+            <div style={{
+              padding: '16px 24px',
+              borderTop: '1px solid #e5e7eb',
+              backgroundColor: '#f8fafc',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '12px',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                {/* 1. Regarder l'article entier sur le site */}
+                <a 
+                  href={`/fr/article/${selectedArticle.slug}`} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  style={{
+                    backgroundColor: '#0d2899',
+                    color: '#ffffff',
+                    padding: '9px 16px',
+                    borderRadius: '8px',
+                    fontSize: '13.5px',
+                    fontWeight: '600',
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '7px',
+                    boxShadow: '0 2px 4px rgba(13, 40, 153, 0.25)',
+                    transition: 'opacity 0.2s',
+                  }}
+                >
+                  <i className="fas fa-external-link-alt"></i>
+                  Regarder sur le site
+                </a>
+
+                {/* 2. Modifier l'article */}
+                <Link 
+                  href={`/admin/articles/edit/${selectedArticle.id}`}
+                  style={{
+                    backgroundColor: '#2563eb',
+                    color: '#ffffff',
+                    padding: '9px 16px',
+                    borderRadius: '8px',
+                    fontSize: '13.5px',
+                    fontWeight: '600',
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '7px',
+                    boxShadow: '0 2px 4px rgba(37, 99, 235, 0.25)',
+                    transition: 'opacity 0.2s',
+                  }}
+                >
+                  <i className="fas fa-edit"></i>
+                  Modifier
+                </Link>
+
+                {/* 3. Créer un visuel post Instagram ou autre réseau social */}
+                <Link 
+                  href={`/admin/articles/${selectedArticle.id}/social`}
+                  style={{
+                    background: 'linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045)',
+                    color: '#ffffff',
+                    padding: '9px 16px',
+                    borderRadius: '8px',
+                    fontSize: '13.5px',
+                    fontWeight: '700',
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '7px',
+                    boxShadow: '0 2px 6px rgba(225, 48, 108, 0.35)',
+                    transition: 'opacity 0.2s',
+                  }}
+                >
+                  <i className="fab fa-instagram"></i>
+                  Créer visuel (Social)
+                </Link>
+              </div>
+
+              {/* 4. Quitter / Fermer */}
+              <button 
+                type="button" 
+                onClick={() => setSelectedArticle(null)}
+                style={{
+                  backgroundColor: '#ffffff',
+                  color: '#475569',
+                  border: '1px solid #cbd5e1',
+                  padding: '9px 18px',
+                  borderRadius: '8px',
+                  fontSize: '13.5px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                }}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f1f5f9'}
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#ffffff'}
+              >
+                Fermer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -452,11 +452,11 @@ textarea.input {
   left: 0;
   right: 0;
   z-index: var(--z-fixed);
-  background: rgba(15, 23, 42, 0.96); /* Bleu Nuit Profond épuré */
+  background: linear-gradient(90deg, #060b45 0%, #0a1a6b 40%, #0d2899 75%, #081454 100%);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 24px rgba(6, 11, 69, 0.35);
   transition: transform var(--transition-base);
 }
 

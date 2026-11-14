@@ -24,12 +24,12 @@ export default async function AdminDashboard() {
     .from('comments')
     .select('*', { count: 'exact', head: true });
 
-  // Fetch 3 latest articles
+  // Fetch latest articles with all fields needed for pop-up preview
   const { data: latestArticles, error: latestError } = await supabase
     .from('articles')
-    .select('id, title, pub_date, image_url')
+    .select('id, slug, title, description, content, category, pub_date, image_url, author')
     .order('pub_date', { ascending: false })
-    .limit(3);
+    .limit(5);
 
   const initialStats = {
     totalArticles: totalArticles,
