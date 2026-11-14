@@ -36,6 +36,27 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
     (initialData?.seo_metadata?.article_format === 'web_magazine' ? 'Magazine' : 'News')
   );
   const [author, setAuthor] = useState(initialData?.author || 'La Rédaction');
+  
+  // Publication Date State (Manuelle)
+  const formatToDatetimeLocal = (isoString) => {
+    if (!isoString) return '';
+    const date = new Date(isoString);
+    if (isNaN(date.getTime())) return '';
+    const pad = (n) => String(n).padStart(2, '0');
+    const yyyy = date.getFullYear();
+    const MM = pad(date.getMonth() + 1);
+    const dd = pad(date.getDate());
+    const hh = pad(date.getHours());
+    const mm = pad(date.getMinutes());
+    return `${yyyy}-${MM}-${dd}T${hh}:${mm}`;
+  };
+
+  const [pubDate, setPubDate] = useState(
+    initialData?.pub_date 
+      ? formatToDatetimeLocal(initialData.pub_date) 
+      : formatToDatetimeLocal(new Date().toISOString())
+  );
+
   const [description, setDescription] = useState(initialData?.description || '');
   const [imageUrl, setImageUrl] = useState(initialData?.image_url || '');
   const [imageCaption, setImageCaption] = useState(initialData?.seo_metadata?.image_caption || '');
@@ -440,6 +461,7 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
       cleanPayload.append('content_bsh', cleanContentBsh || '');
       cleanPayload.append('category', category || 'Non classé');
       cleanPayload.append('author', author || 'La Rédaction');
+      cleanPayload.append('pub_date', pubDate && !isNaN(new Date(pubDate).getTime()) ? new Date(pubDate).toISOString() : (initialData?.pub_date || new Date().toISOString()));
       cleanPayload.append('status', status);
       cleanPayload.append('image_url', finalImageUrl || '');
       cleanPayload.append('seo_metadata', JSON.stringify(mergedMetadata));
@@ -823,7 +845,9 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
                 Choisissez une suggestion ou tapez directement votre mention personnalisée.
               </span>
             </div>
+          </div>
 
+          <div className="admin-form-row">
             <div className="admin-form-group">
               <label className="admin-form-label">Auteur</label>
               <input 
@@ -835,6 +859,43 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
                 onChange={(e) => setAuthor(e.target.value)}
                 placeholder="Ex: La Rédaction"
               />
+            </div>
+
+            <div className="admin-form-group">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <label className="admin-form-label" style={{ marginBottom: 0 }}>
+                  <i className="far fa-calendar-alt" style={{ marginRight: '6px', color: '#dc2626' }}></i>
+                  Date de publication (manuelle)
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setPubDate(formatToDatetimeLocal(new Date().toISOString()))}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#2563eb',
+                    fontSize: '11.5px',
+                    cursor: 'pointer',
+                    padding: 0,
+                    textDecoration: 'underline',
+                    fontWeight: '500'
+                  }}
+                  title="Rétablir à la date et heure actuelles"
+                >
+                  Définir sur Maintenant
+                </button>
+              </div>
+              <input 
+                type="datetime-local" 
+                name="pub_date" 
+                className="admin-form-control" 
+                value={pubDate}
+                onChange={(e) => setPubDate(e.target.value)}
+                style={{ marginTop: '5px' }}
+              />
+              <span style={{ fontSize: '11.5px', color: '#6b7280', marginTop: '4px', display: 'block' }}>
+                Modifiez librement la date et l'heure pour antidater ou programmer la parution.
+              </span>
             </div>
           </div>
 
@@ -1356,7 +1417,7 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
 
             {/* Auteur et Date */}
             <div style={{ fontSize: '13px', color: '#6b7280', marginBottom: '15px' }}>
-              Par <span style={{ fontWeight: '600' }}>{author || 'La Rédaction'}</span> - {new Date().toLocaleDateString('fr-FR')}
+              Par <span style={{ fontWeight: '600' }}>{author || 'La Rédaction'}</span> - {pubDate ? new Date(pubDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
             </div>
             
             {/* Description */}

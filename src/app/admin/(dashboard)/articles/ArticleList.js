@@ -1,24 +1,30 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import DeleteButton from './DeleteButton';
 import ToggleStatusButton from './ToggleStatusButton';
 import { LayoutGrid, List, Search, Kanban, Calendar } from 'lucide-react';
 import KanbanView from './KanbanView';
 import CalendarView from './CalendarView';
-import { updateArticleStatus } from '../../actions';
+import { updateArticleStatus, updateArticlePubDate } from '../../actions';
 import PrivateShareModal from '@/components/admin/PrivateShareModal';
 
 export default function ArticleList({ initialArticles, categories }) {
+  const [articles, setArticles] = useState(initialArticles || []);
   const [view, setView] = useState('list'); // 'list' or 'grid'
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState(''); // '' = all, 'published' = published, 'draft' = draft, 'private' = private
   const [selectedPrivateArticle, setSelectedPrivateArticle] = useState(null);
+  const [selectedDateArticle, setSelectedDateArticle] = useState(null);
+
+  useEffect(() => {
+    setArticles(initialArticles || []);
+  }, [initialArticles]);
 
   // Filtrage
-  const filteredArticles = initialArticles.filter((article) => {
+  const filteredArticles = articles.filter((article) => {
     const matchesSearch = article.title?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = categoryFilter ? article.category === categoryFilter : true;
     const matchesStatus = statusFilter ? article.status === statusFilter : true;
@@ -155,8 +161,29 @@ export default function ArticleList({ initialArticles, categories }) {
                 </h4>
                 <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '10px', borderTop: '1px solid #f3f4f6' }}>
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <span style={{ fontSize: '12px', color: '#6b7280' }}>{article.pub_date ? new Date(article.pub_date).toLocaleDateString('fr-FR') : 'Date inconnue'}</span>
-                    <span style={{ fontSize: '11px', color: '#9ca3af' }}>{article.author}</span>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedDateArticle(article)}
+                      title="Modifier la date de publication manuellement"
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        padding: 0,
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        color: '#4b5563',
+                        fontSize: '12px',
+                        fontWeight: '500',
+                        textAlign: 'left'
+                      }}
+                    >
+                      <i className="far fa-calendar-alt" style={{ color: '#dc2626' }}></i>
+                      <span>{article.pub_date ? new Date(article.pub_date).toLocaleDateString('fr-FR') : 'Date inconnue'}</span>
+                      <i className="fas fa-pen" style={{ fontSize: '9px', color: '#9ca3af', marginLeft: '2px' }}></i>
+                    </button>
+                    <span style={{ fontSize: '11px', color: '#9ca3af', marginTop: '2px' }}>{article.author}</span>
                     <div style={{ display: 'flex', gap: '10px', fontSize: '11px', marginTop: '4px', fontWeight: '600' }}>
                       <span style={{ color: '#10b981' }} title="Vues"><i className="fas fa-eye"></i> {article.views_count || 0}</span>
                       <span style={{ color: '#f43f5e' }} title="Likes"><i className="fas fa-heart"></i> {article.likes_count || 0}</span>
@@ -265,7 +292,39 @@ export default function ArticleList({ initialArticles, categories }) {
                       <span style={{ color: '#3b82f6' }} title="Partages"><i className="fas fa-share"></i> {article.shares_count || 0}</span>
                     </div>
                   </td>
-                  <td>{article.pub_date ? new Date(article.pub_date).toLocaleDateString('fr-FR') : 'Date inconnue'}</td>
+                  <td style={{ whiteSpace: 'nowrap' }}>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedDateArticle(article)}
+                      title="Modifier la date de publication manuellement"
+                      style={{
+                        background: 'none',
+                        border: '1px solid transparent',
+                        padding: '4px 8px',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        color: '#374151',
+                        fontSize: '13px',
+                        fontWeight: '500',
+                        transition: 'all 0.15s ease',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = '#f3f4f6';
+                        e.currentTarget.style.borderColor = '#d1d5db';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                        e.currentTarget.style.borderColor = 'transparent';
+                      }}
+                    >
+                      <i className="far fa-calendar-alt" style={{ color: '#dc2626' }}></i>
+                      <span>{article.pub_date ? new Date(article.pub_date).toLocaleDateString('fr-FR') : 'Date inconnue'}</span>
+                      <i className="fas fa-pen" style={{ fontSize: '10px', color: '#9ca3af', marginLeft: '2px' }}></i>
+                    </button>
+                  </td>
                   <td>
                     <div className="admin-actions" style={{ justifyContent: 'flex-end', display: 'flex', gap: '5px' }}>
                       <button
@@ -357,6 +416,152 @@ export default function ArticleList({ initialArticles, categories }) {
           }}
         />
       )}
+
+      {/* Modal Modification Date de Publication */}
+      {selectedDateArticle && (
+        <DateEditModal
+          article={selectedDateArticle}
+          onClose={() => setSelectedDateArticle(null)}
+          onSaved={(newPubDate) => {
+            setArticles(prev => prev.map(a => a.id === selectedDateArticle.id ? { ...a, pub_date: newPubDate } : a));
+            setSelectedDateArticle(null);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function DateEditModal({ article, onClose, onSaved }) {
+  const formatToDatetimeLocal = (isoString) => {
+    if (!isoString) return '';
+    const date = new Date(isoString);
+    if (isNaN(date.getTime())) return '';
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  };
+
+  const [dateVal, setDateVal] = useState(formatToDatetimeLocal(article?.pub_date || new Date().toISOString()));
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    if (!dateVal) return;
+    setSaving(true);
+    setError('');
+    try {
+      const iso = new Date(dateVal).toISOString();
+      await updateArticlePubDate(article.id, iso);
+      onSaved(iso);
+    } catch (err) {
+      setError(err.message || 'Erreur lors de la mise à jour de la date');
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000,
+      padding: '20px'
+    }}>
+      <div style={{
+        backgroundColor: '#fff',
+        borderRadius: '12px',
+        padding: '24px',
+        maxWidth: '460px',
+        width: '100%',
+        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '700', color: '#111827', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <i className="far fa-calendar-alt" style={{ color: '#dc2626' }}></i>
+            Date de publication
+          </h3>
+          <button 
+            type="button" 
+            onClick={onClose} 
+            style={{ background: 'none', border: 'none', fontSize: '20px', color: '#9ca3af', cursor: 'pointer', lineHeight: 1 }}
+          >
+            &times;
+          </button>
+        </div>
+
+        <p style={{ fontSize: '13px', color: '#4b5563', margin: '0 0 16px 0', lineHeight: '1.4' }}>
+          Article : <strong>{article.title}</strong>
+        </p>
+
+        {error && (
+          <div style={{ padding: '10px', backgroundColor: '#fee2e2', color: '#b91c1c', borderRadius: '6px', fontSize: '13px', marginBottom: '14px' }}>
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSave}>
+          <div style={{ marginBottom: '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+              <label style={{ fontSize: '13px', fontWeight: '600', color: '#374151' }}>
+                Choisir la date et l'heure :
+              </label>
+              <button
+                type="button"
+                onClick={() => setDateVal(formatToDatetimeLocal(new Date().toISOString()))}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#2563eb',
+                  fontSize: '12px',
+                  cursor: 'pointer',
+                  padding: 0,
+                  textDecoration: 'underline',
+                  fontWeight: '500'
+                }}
+              >
+                Définir sur Maintenant
+              </button>
+            </div>
+            <input 
+              type="datetime-local" 
+              className="admin-form-control" 
+              value={dateVal}
+              onChange={(e) => setDateVal(e.target.value)}
+              required
+              style={{ width: '100%', margin: 0 }}
+            />
+            <span style={{ fontSize: '11.5px', color: '#6b7280', marginTop: '6px', display: 'block' }}>
+              Vous pouvez antidater ou modifier la parution pour réorganiser l'ordre d'affichage sur le site.
+            </span>
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={saving}
+              className="admin-btn"
+              style={{ backgroundColor: '#f3f4f6', color: '#4b5563' }}
+            >
+              Annuler
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="admin-btn admin-btn-primary"
+            >
+              {saving ? 'Enregistrement...' : 'Enregistrer la date'}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

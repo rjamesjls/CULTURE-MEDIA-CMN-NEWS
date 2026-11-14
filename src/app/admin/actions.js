@@ -52,6 +52,7 @@ export async function saveArticle(input) {
   const author = get('author') || 'La Rédaction';
   const status = get('status') || 'published';
   let image_url = get('image_url');
+  const pub_date = get('pub_date');
   
   let seo_metadata = {};
   const rawSeoMetadata = get('seo_metadata');
@@ -135,6 +136,13 @@ export async function saveArticle(input) {
     is_special_edition: isSpecialEdition,
   };
 
+  if (pub_date) {
+    const parsedDate = new Date(pub_date);
+    if (!isNaN(parsedDate.getTime())) {
+      articleData.pub_date = parsedDate.toISOString();
+    }
+  }
+
   if (id) {
     // Check if authorized to update
     if (profile.role === 'author') {
@@ -145,7 +153,9 @@ export async function saveArticle(input) {
     if (error) throw new Error(error.message);
   } else {
     // Insert
-    articleData.pub_date = new Date().toISOString();
+    if (!articleData.pub_date) {
+      articleData.pub_date = new Date().toISOString();
+    }
     articleData.user_id = profile.id;
     const { data: inserted, error } = await supabaseServer.from('articles').insert([articleData]).select('id, slug').single();
     if (error) throw new Error(error.message);
@@ -247,4 +257,42 @@ export async function updateArticleStatus(id, newStatus) {
   revalidatePath('/admin/articles');
   revalidatePath('/');
   return newStatus;
+}
+
+export async function updateArticlePubDate(id, newPubDate) {
+  const { getUserProfile } = await import('@/utils/supabase/auth');
+  const { createClient } = await import('@/utils/supabase/server');
+  
+  const profile = await getUserProfile();
+  if (!profile) throw new Error("Non autorisé");
+
+  const parsedDate = new Date(newPubDate);
+  if (isNaN(parsedDate.getTime())) throw new Error("Date invalide");
+
+  const supabaseServer = await createClient();
+
+  if (profile.role === 'author') {
+    const { data: existing } = await supabaseServer.from('articles').select('user_id').eq('id', id).single();
+    if (existing?.user_id !== profile.id) throw new Error("Non autorisé à modifier cet article");
+  }
+
+  const { data: article, error } = await supabaseServer
+    .from('articles')
+    .update({ pub_date: parsedDate.toISOString() })
+    .eq('id', id)
+    .select('slug')
+    .single();
+    
+  if (error) throw new Error("Erreur lors de la mise à jour de la date : " + error.message);
+  
+  revalidatePath('/');
+  revalidatePath('/fr');
+  revalidatePath('/bsh');
+  revalidatePath('/faits-divers');
+  revalidatePath('/admin/articles');
+  if (article?.slug) {
+    revalidatePath(`/fr/article/${article.slug}`);
+    revalidatePath(`/bsh/article/${article.slug}`);
+  }
+  return { success: true, pub_date: parsedDate.toISOString() };
 }
