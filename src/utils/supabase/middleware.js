@@ -39,7 +39,7 @@ export async function updateSession(request) {
       // Redirect to login if not logged in
       const url = request.nextUrl.clone();
       url.pathname = '/admin/login';
-      if (request.nextUrl.pathname === '/admin/webradio') url.searchParams.set('next', '/admin/webradio');
+      if (['/admin/webradio','/admin/interviews/video'].includes(request.nextUrl.pathname)) url.searchParams.set('next', request.nextUrl.pathname);
       return NextResponse.redirect(url);
     }
   }

@@ -9,7 +9,8 @@
     "lint": "eslint",
     "test:radio": "node tests/radio/integration.mjs && node tests/radio/timeline.integration.mjs && node --test tests/radio/*.test.mjs",
     "prebuild": "node scripts/prepare-radio-encoder.mjs",
-    "predev": "node scripts/prepare-radio-encoder.mjs"
+    "predev": "node scripts/prepare-radio-encoder.mjs",
+    "test:interviews": "node tests/interviews/integration.mjs"
   },
   "dependencies": {
     "@distube/ytdl-core": "^4.16.12",

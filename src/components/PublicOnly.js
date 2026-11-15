@@ -6,7 +6,7 @@ export default function PublicOnly({ children }) {
   const pathname = usePathname();
   
   // Si on est sur une route admin, on ne rend pas le contenu (Header/Footer)
-  if (pathname && pathname.startsWith('/admin')) {
+  if (pathname && (pathname.startsWith('/admin') || pathname === '/interviews')) {
     return null;
   }
   

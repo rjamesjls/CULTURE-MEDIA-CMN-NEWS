@@ -1,0 +1,32 @@
+import assert from 'node:assert/strict';
+import {postgres,identity} from '../radio/runtime.mjs';
+import '../radio/register.mjs';
+process.env.RADIO_DATABASE_URL='postgresql://local-test-only';
+const list=await import('../../src/app/api/interviews/route.js'),room=await import('../../src/app/api/interviews/[id]/route.js');
+const req=(method,data,token,origin='https://afolukutv.test')=>new Request('https://afolukutv.test/api/interviews',{method,headers:{Origin:origin,...(data?{'Content-Type':'application/json'}:{}),...(token?{Authorization:'Bearer '+token}:{})},...(data?{body:JSON.stringify(data)}:{})});
+const call=async(route,method,data,token,id,origin)=>{const r=await route[method](req(method,data,token,origin),{params:Promise.resolve({id})});return {status:r.status,data:await r.json()}};
+try{
+ identity.user=null;assert.equal((await call(list,'GET')).status,401);identity.user={id:'admin'};
+ identity.profile={role:'author',status:'active'};assert.equal((await call(list,'POST',{title:'Test',hostName:'H'})).status,403);identity.profile={role:'admin',status:'active'};
+ assert.equal((await call(list,'POST',{title:'Test',hostName:'H'},null,null,'https://evil.test')).status,403);
+ const created=await call(list,'POST',{title:'Entretien culture',hostName:'Romario'});assert.equal(created.status,201,JSON.stringify(created));const{id,token}=created.data;
+ const stored=(await postgres.query('SELECT * FROM afoluku_interviews.rooms')).rows[0];assert.notEqual(stored.token_hash,token);
+ assert.equal((await call(list,'GET')).data.length,1);
+ identity.user=null;assert.equal((await call(room,'GET',null,null,id)).status,401);assert.equal((await call(room,'GET',null,'wrong',id)).status,403);
+ const valid=await call(room,'GET',null,token,id);assert.equal(valid.status,200);assert.equal(valid.data.token_hash,undefined);
+ const client=crypto.randomUUID(),other=crypto.randomUUID();assert.equal((await call(room,'POST',{action:'join',client,name:'Invité',consent:false},token,id)).status,400);
+ assert.equal((await call(room,'POST',{action:'join',client,name:'Invité',consent:true},token,id)).status,200);
+ assert.equal((await call(room,'POST',{action:'join',client:other,name:'Second',consent:true},token,id)).status,409);
+ for(const action of ['record','offer','close','invite'])assert.equal((await call(room,'POST',{action,client,recording:true},token,id)).status,403);
+ identity.user={id:'admin'};const offerId=crypto.randomUUID();assert.equal((await call(room,'POST',{action:'offer',offerId,description:{type:'offer',sdp:'v=0'}},null,id)).status,200);
+ identity.user=null;assert.equal((await call(room,'POST',{action:'answer',client,offerId:'stale',description:{type:'answer',sdp:'v=0'}},token,id)).status,409);
+ assert.equal((await call(room,'POST',{action:'answer',client,offerId,description:{type:'answer',sdp:'v=0'}},token,id)).status,200);
+ identity.user={id:'admin'};assert.equal((await call(room,'POST',{action:'record',recording:true},null,id)).status,200);
+ assert.equal((await call(room,'GET',null,token,id)).data.recording,true);
+ assert.equal((await call(room,'POST',{action:'record',recording:false},null,id)).status,200);
+ assert.equal((await call(room,'POST',{action:'leave',client},token,id)).status,200);
+ const renewed=await call(room,'POST',{action:'invite'},null,id);assert.equal(renewed.status,200,JSON.stringify(renewed));assert.equal((await call(room,'GET',null,token,id)).status,403);
+ assert.equal((await call(room,'POST',{action:'close'},null,id)).status,200);assert.equal((await call(room,'GET',null,renewed.data.token,id)).status,410);
+ const c2=(await call(list,'POST',{title:'Expiry',hostName:'H'})).data;await postgres.query('UPDATE afoluku_interviews.rooms SET expires_at=0 WHERE id=$1',[c2.id]);assert.equal((await call(room,'GET',null,c2.token,c2.id)).status,410);
+ console.log('PASS interview auth, CSRF, private hashed invitation, guest consent, single guest, signaling, stale offers, recording notification, revocation and expiry.');
+}finally{await postgres.close()}

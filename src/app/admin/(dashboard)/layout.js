@@ -109,6 +109,7 @@ export default async function AdminLayout({ children }) {
           <Link href="/admin/charts" className="admin-nav-link">
             <i className="fas fa-chart-bar"></i> Classements YouTube
           </Link>
+          <Link href="/admin/interviews/video" className="admin-nav-link"><i className="fas fa-video"></i> Interviews vidéo</Link>
           <Link href="/admin/webradio" className="admin-nav-link" style={{ background: 'linear-gradient(45deg, #4f46e5 0%, #7c3aed 100%)', color: 'white', fontWeight: 'bold' }}>
             <i className="fas fa-broadcast-tower"></i> Web Radio
           </Link>

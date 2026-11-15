@@ -1,4 +1,4 @@
 // Only known admin destinations can be used after signing in.
 export function adminDestination(value) {
-  return value === '/admin/webradio' ? '/admin/webradio' : '/admin';
+  return ['/admin/webradio','/admin/interviews/video'].includes(value) ? value : '/admin';
 }
