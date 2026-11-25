@@ -24,7 +24,9 @@ import {
   FileText,
   Search,
   Sparkles,
-  Play
+  Play,
+  Move,
+  EyeOff
 } from 'lucide-react';
 import { saveBannerData, deleteBannerData } from '@/lib/ads';
 import { supabase } from '@/lib/supabase';
@@ -46,6 +48,33 @@ const PLACEMENTS = [
   { id: 'all', label: 'Tous les emplacements' },
 ];
 
+export function extractCoords(url, objectPosition) {
+  if (objectPosition) {
+    const parts = objectPosition.split(' ');
+    const x = parseInt(parts[0], 10);
+    const y = parseInt(parts[1], 10);
+    return { x: isNaN(x) ? 50 : x, y: isNaN(y) ? 50 : y };
+  }
+  if (!url) return { x: 50, y: 50 };
+  const match = url.match(/#pos=([^&]+)/);
+  if (match && match[1]) {
+    const raw = decodeURIComponent(match[1]).replace(/_/g, ' ');
+    const parts = raw.split(' ');
+    const x = parseInt(parts[0], 10);
+    const y = parseInt(parts[1], 10);
+    return { x: isNaN(x) ? 50 : x, y: isNaN(y) ? 50 : y };
+  }
+  return { x: 50, y: 50 };
+}
+
+export function applyMediaPosition(url, position) {
+  if (!url) return '';
+  const cleanUrl = url.replace(/#pos=[^&]+/, '').replace(/#$/, '');
+  if (!position || position === 'center' || position === '50% 50%') return cleanUrl;
+  const encoded = encodeURIComponent(position.replace(/\s+/g, '_'));
+  return `${cleanUrl}#pos=${encoded}`;
+}
+
 export default function AdsAdminClient({ initialBanners = [], articles = [] }) {
   const [banners, setBanners] = useState(initialBanners);
   const [filterPlacement, setFilterPlacement] = useState('all');
@@ -59,11 +88,14 @@ export default function AdsAdminClient({ initialBanners = [], articles = [] }) {
   const [articleSearchQuery, setArticleSearchQuery] = useState('');
 
   // Form State
+  const [isMediaOnly, setIsMediaOnly] = useState(false);
   const [title, setTitle] = useState('');
   const [subtitle, setSubtitle] = useState('');
   const [sponsorName, setSponsorName] = useState('');
   const [badgeText, setBadgeText] = useState('Sponsorisé');
   const [imageUrl, setImageUrl] = useState('');
+  const [positionX, setPositionX] = useState(50);
+  const [positionY, setPositionY] = useState(50);
   const [mediaType, setMediaType] = useState('image'); // 'image' | 'video'
   const [linkUrl, setLinkUrl] = useState('');
   const [ctaText, setCtaText] = useState('En savoir plus');
@@ -89,11 +121,14 @@ export default function AdsAdminClient({ initialBanners = [], articles = [] }) {
 
   const openNewModal = () => {
     setEditingBanner(null);
+    setIsMediaOnly(false);
     setTitle('');
     setSubtitle('');
     setSponsorName('');
     setBadgeText('Sponsorisé');
     setImageUrl('');
+    setPositionX(50);
+    setPositionY(50);
     setMediaType('image');
     setLinkUrl('');
     setCtaText('En savoir plus');
@@ -107,14 +142,21 @@ export default function AdsAdminClient({ initialBanners = [], articles = [] }) {
 
   const openEditModal = (banner) => {
     setEditingBanner(banner);
+    const coords = extractCoords(banner.image_url, banner.object_position);
+    setPositionX(coords.x);
+    setPositionY(coords.y);
+
+    const hasAnyText = Boolean(banner.title || banner.subtitle || banner.sponsor_name || banner.badge_text || banner.cta_text);
+    setIsMediaOnly(!hasAnyText);
+
     setTitle(banner.title || '');
     setSubtitle(banner.subtitle || '');
     setSponsorName(banner.sponsor_name || '');
-    setBadgeText(banner.badge_text || 'Sponsorisé');
-    setImageUrl(banner.image_url || '');
+    setBadgeText(banner.badge_text || '');
+    setImageUrl(banner.image_url ? banner.image_url.replace(/#pos=[^&]+/, '').replace(/#$/, '') : '');
     setMediaType(banner.media_type || (checkIsVideo(banner.image_url) ? 'video' : 'image'));
     setLinkUrl(banner.link_url || '');
-    setCtaText(banner.cta_text || 'En savoir plus');
+    setCtaText(banner.cta_text || '');
     setPlacement(banner.placement || 'header');
     setStartDate(banner.start_date ? banner.start_date.substring(0, 10) : '');
     setEndDate(banner.end_date ? banner.end_date.substring(0, 10) : '');
@@ -168,6 +210,7 @@ export default function AdsAdminClient({ initialBanners = [], articles = [] }) {
     setSponsorName(art.author ? `Par ${art.author}` : 'Rédaction AFOLUKU TV');
     setBadgeText('À la une');
     setCtaText('Lire l’article');
+    setIsMediaOnly(false);
     setShowArticlePicker(false);
   };
 
@@ -182,25 +225,42 @@ export default function AdsAdminClient({ initialBanners = [], articles = [] }) {
     ).slice(0, 15);
   }, [articles, articleSearchQuery]);
 
+  const clearAllTexts = () => {
+    setTitle('');
+    setSubtitle('');
+    setSponsorName('');
+    setBadgeText('');
+    setCtaText('');
+    setIsMediaOnly(true);
+  };
+
   const handleSave = async (e) => {
     e.preventDefault();
-    if (!title) {
-      alert('Veuillez renseigner un titre pour la bannière.');
+
+    if (!isMediaOnly && !title.trim()) {
+      alert('Veuillez renseigner un titre pour la bannière ou cocher "Bannière 100% visuelle".');
+      return;
+    }
+
+    if (isMediaOnly && !imageUrl.trim()) {
+      alert('Veuillez fournir une image ou une vidéo pour une bannière 100% visuelle.');
       return;
     }
 
     setSaving(true);
     try {
+      const finalImageUrl = applyMediaPosition(imageUrl.trim(), `${positionX}% ${positionY}%`);
       const payload = {
         id: editingBanner?.id,
-        title,
-        subtitle,
-        sponsor_name: sponsorName,
-        badge_text: badgeText,
-        image_url: imageUrl,
+        title: isMediaOnly ? '' : title.trim(),
+        subtitle: isMediaOnly ? '' : subtitle.trim(),
+        sponsor_name: isMediaOnly ? '' : sponsorName.trim(),
+        badge_text: isMediaOnly ? '' : badgeText.trim(),
+        image_url: finalImageUrl,
+        object_position: `${positionX}% ${positionY}%`,
         media_type: mediaType,
-        link_url: linkUrl,
-        cta_text: ctaText,
+        link_url: linkUrl.trim(),
+        cta_text: isMediaOnly ? '' : ctaText.trim(),
         placement,
         start_date: startDate ? new Date(startDate).toISOString() : null,
         end_date: endDate ? new Date(endDate).toISOString() : null,
@@ -286,7 +346,7 @@ export default function AdsAdminClient({ initialBanners = [], articles = [] }) {
             Régie Publicitaire & Bannières
           </h1>
           <p style={{ color: '#6b7280', margin: '4px 0 0 0', fontSize: '14px' }}>
-            Gérez vos encarts publicitaires, sponsorisations, vidéos et mise en avant d'articles sur AFOLUKU TV.
+            Gérez vos encarts publicitaires, bannières visuelles pures, photos, vidéos et articles à la une.
           </p>
         </div>
         <button
@@ -397,6 +457,8 @@ export default function AdsAdminClient({ initialBanners = [], articles = [] }) {
               {filteredBanners.map((banner, index) => {
                 const ctr = banner.views_count > 0 ? (((banner.clicks_count || 0) / banner.views_count) * 100).toFixed(1) : 0;
                 const isVideo = checkIsVideo(banner.image_url, banner.media_type);
+                const coords = extractCoords(banner.image_url, banner.object_position);
+                const hasText = Boolean(banner.title || banner.subtitle);
                 return (
                   <tr key={banner.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                     <td>
@@ -426,13 +488,13 @@ export default function AdsAdminClient({ initialBanners = [], articles = [] }) {
                         <div style={{ width: '100px', height: '60px', borderRadius: '6px', overflow: 'hidden', backgroundColor: '#0f172a', position: 'relative' }}>
                           {isVideo ? (
                             <>
-                              <video src={banner.image_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} muted />
+                              <video src={banner.image_url} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: `${coords.x}% ${coords.y}%` }} muted />
                               <span style={{ position: 'absolute', bottom: '3px', right: '3px', backgroundColor: 'rgba(0,0,0,0.7)', color: '#ffce00', padding: '2px 4px', borderRadius: '3px', fontSize: '9px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '2px' }}>
                                 <Play size={8} /> VIDÉO
                               </span>
                             </>
                           ) : (
-                            <img src={banner.image_url} alt={banner.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            <img src={banner.image_url} alt={banner.title || ''} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: `${coords.x}% ${coords.y}%` }} />
                           )}
                         </div>
                       ) : (
@@ -443,13 +505,15 @@ export default function AdsAdminClient({ initialBanners = [], articles = [] }) {
                     </td>
                     <td>
                       <div style={{ fontWeight: '700', fontSize: '15px', color: '#111827', marginBottom: '2px' }}>
-                        {banner.title}
+                        {hasText ? banner.title : <span style={{ fontStyle: 'italic', color: '#64748b' }}>[Visuel 100% pur sans texte]</span>}
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#6b7280' }}>
-                        <span style={{ backgroundColor: '#fef3c7', color: '#b45309', padding: '1px 6px', borderRadius: '4px', fontWeight: '700' }}>
-                          {banner.badge_text || 'Sponsorisé'}
-                        </span>
-                        <span>{banner.sponsor_name || 'AFOLUKU TV'}</span>
+                        {banner.badge_text && (
+                          <span style={{ backgroundColor: '#fef3c7', color: '#b45309', padding: '1px 6px', borderRadius: '4px', fontWeight: '700' }}>
+                            {banner.badge_text}
+                          </span>
+                        )}
+                        {banner.sponsor_name && <span>{banner.sponsor_name}</span>}
                         {banner.link_url && (
                           <a href={banner.link_url} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb', display: 'inline-flex', alignItems: 'center', gap: '2px' }}>
                             <ExternalLink size={11} />
@@ -566,7 +630,7 @@ export default function AdsAdminClient({ initialBanners = [], articles = [] }) {
                   {editingBanner ? 'Modifier l’encart publicitaire' : 'Créer un nouvel encart publicitaire'}
                 </h2>
                 <p style={{ margin: '3px 0 0 0', fontSize: '13px', color: '#64748b' }}>
-                  Diffusez des bannières photos, vidéos ou des articles mis en avant.
+                  Bannières photos, vidéos, articles ou affichage 100% visuel sans texte.
                 </p>
               </div>
               <button
@@ -582,14 +646,14 @@ export default function AdsAdminClient({ initialBanners = [], articles = [] }) {
             <form onSubmit={handleSave} style={{ padding: '24px' }}>
               
               {/* ACTION : IMPORTER DEPUIS UN ARTICLE */}
-              <div style={{ marginBottom: '20px', padding: '14px 16px', borderRadius: '10px', backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0' }}>
+              <div style={{ marginBottom: '16px', padding: '14px 16px', borderRadius: '10px', backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <Sparkles size={18} color="#16a34a" />
                     <div>
                       <strong style={{ fontSize: '14px', color: '#166534' }}>Mettre en avant un article du site</strong>
                       <div style={{ fontSize: '12px', color: '#15803d' }}>
-                        Importez en 1 clic le titre, le texte, l'image et le lien d'un article existant.
+                        Importez en 1 clic le titre, le texte, l'image et le lien d'un article.
                       </div>
                     </div>
                   </div>
@@ -678,119 +742,72 @@ export default function AdsAdminClient({ initialBanners = [], articles = [] }) {
                 )}
               </div>
 
-              <div className="admin-form-group">
-                <label className="admin-form-label">Titre de la campagne *</label>
-                <input
-                  type="text"
-                  required
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Ex: Nouvelle édition de La Folle du Couvent disponible !"
-                  className="admin-form-control"
-                />
-              </div>
-
-              <div className="admin-form-group">
-                <label className="admin-form-label">Sous-titre / Message descriptif</label>
-                <textarea
-                  rows={2}
-                  value={subtitle}
-                  onChange={(e) => setSubtitle(e.target.value)}
-                  placeholder="Ex: Découvrez le reportage exclusif et toutes les vidéos en direct sur notre chaîne."
-                  className="admin-form-control"
-                  style={{ resize: 'vertical' }}
-                />
-              </div>
-
-              <div className="admin-form-row">
-                <div className="admin-form-group">
-                  <label className="admin-form-label">Nom de l'Annonceur / Auteur</label>
+              {/* OPTION : BANNIÈRE 100% VISUELLE SANS AUCUN TEXTE */}
+              <div
+                style={{
+                  marginBottom: '20px',
+                  padding: '14px 16px',
+                  borderRadius: '10px',
+                  backgroundColor: isMediaOnly ? '#eff6ff' : '#f8fafc',
+                  border: `2px solid ${isMediaOnly ? '#2563eb' : '#e2e8f0'}`,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  transition: 'all 0.2s',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <input
-                    type="text"
-                    value={sponsorName}
-                    onChange={(e) => setSponsorName(e.target.value)}
-                    placeholder="Ex: AFOLUKU TV / Partenaire"
-                    className="admin-form-control"
+                    type="checkbox"
+                    id="mediaOnlyToggle"
+                    checked={isMediaOnly}
+                    onChange={(e) => {
+                      setIsMediaOnly(e.target.checked);
+                      if (e.target.checked) {
+                        clearAllTexts();
+                      }
+                    }}
+                    style={{ width: '20px', height: '20px', cursor: 'pointer' }}
                   />
-                </div>
-
-                <div className="admin-form-group">
-                  <label className="admin-form-label">Badge publicitaire</label>
-                  <input
-                    type="text"
-                    value={badgeText}
-                    onChange={(e) => setBadgeText(e.target.value)}
-                    placeholder="Ex: Sponsorisé"
-                    className="admin-form-control"
-                  />
-                  <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '6px' }}>
-                    {BADGE_PRESETS.map((bp) => (
-                      <button
-                        key={bp}
-                        type="button"
-                        onClick={() => setBadgeText(bp)}
-                        style={{
-                          fontSize: '11px',
-                          padding: '2px 6px',
-                          borderRadius: '4px',
-                          border: '1px solid #d1d5db',
-                          background: badgeText === bp ? '#ffce00' : '#f9fafb',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        {bp}
-                      </button>
-                    ))}
+                  <div>
+                    <label htmlFor="mediaOnlyToggle" style={{ fontSize: '14px', fontWeight: '800', color: isMediaOnly ? '#1e40af' : '#1e293b', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <EyeOff size={16} />
+                      Bannière 100% visuelle (sans texte, sans titre ni mention)
+                    </label>
+                    <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
+                      Affiche uniquement votre photo ou vidéo plein écran, sans ombre ni bouton CTA.
+                    </div>
                   </div>
                 </div>
-              </div>
-
-              <div className="admin-form-row">
-                <div className="admin-form-group">
-                  <label className="admin-form-label">Emplacement</label>
-                  <select
-                    value={placement}
-                    onChange={(e) => setPlacement(e.target.value)}
-                    className="admin-form-control"
+                {!isMediaOnly && (
+                  <button
+                    type="button"
+                    onClick={clearAllTexts}
+                    style={{
+                      fontSize: '12px',
+                      color: '#dc2626',
+                      background: 'none',
+                      border: '1px solid #fca5a5',
+                      padding: '4px 10px',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      fontWeight: '600',
+                    }}
                   >
-                    {PLACEMENTS.map((p) => (
-                      <option key={p.id} value={p.id}>{p.label}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="admin-form-group">
-                  <label className="admin-form-label">Texte du bouton (CTA)</label>
-                  <input
-                    type="text"
-                    value={ctaText}
-                    onChange={(e) => setCtaText(e.target.value)}
-                    placeholder="Ex: Lire l’article ou En savoir plus"
-                    className="admin-form-control"
-                  />
-                </div>
+                    Effacer tous les textes
+                  </button>
+                )}
               </div>
 
-              <div className="admin-form-group">
-                <label className="admin-form-label">Lien de redirection (Clic)</label>
-                <input
-                  type="text"
-                  value={linkUrl}
-                  onChange={(e) => setLinkUrl(e.target.value)}
-                  placeholder="Ex: /fr/article/mon-article ou https://site-partenaire.com"
-                  className="admin-form-control"
-                />
-              </div>
-
-              {/* UPLOAD VISUEL: PHOTO OU VIDÉO */}
-              <div className="admin-form-group" style={{ padding: '16px', borderRadius: '10px', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0' }}>
+              {/* UPLOAD VISUEL: PHOTO OU VIDÉO AVEC REPOSITIONNEMENT */}
+              <div className="admin-form-group" style={{ padding: '16px', borderRadius: '10px', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', marginBottom: '20px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                   <label className="admin-form-label" style={{ margin: 0, fontWeight: '700', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <Film size={16} color="#dc2626" />
-                    Visuel publicitaire (Photo ou Vidéo)
+                    Visuel publicitaire (Photo ou Vidéo) *
                   </label>
                   <span style={{ fontSize: '11px', color: '#64748b' }}>
-                    Formats supportés : JPG, PNG, WebP, MP4, WebM
+                    Formats : JPG, PNG, WebP, MP4, WebM
                   </span>
                 </div>
 
@@ -826,53 +843,222 @@ export default function AdsAdminClient({ initialBanners = [], articles = [] }) {
                   </button>
                 </div>
 
-                {/* PRÉVISUALISATION DIRECTE */}
+                {/* OUTIL DE REPOSITIONNEMENT ET CADRAGE */}
                 {imageUrl && (
-                  <div style={{ marginTop: '12px', display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
-                    <div style={{ width: '220px', height: '120px', borderRadius: '8px', overflow: 'hidden', backgroundColor: '#0f172a', border: '1px solid #cbd5e1', position: 'relative' }}>
+                  <div style={{ marginTop: '16px', padding: '14px', borderRadius: '8px', backgroundColor: '#ffffff', border: '1px solid #cbd5e1' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                      <strong style={{ fontSize: '13px', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Move size={15} color="#2563eb" />
+                        Replacer / Cadrer la photo ou vidéo
+                      </strong>
+                      <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '700' }}>
+                        Axe X: {positionX}% • Axe Y: {positionY}%
+                      </span>
+                    </div>
+
+                    {/* Raccourcis de position 9-points */}
+                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '12px' }}>
+                      {[
+                        { label: 'Haut', x: 50, y: 0 },
+                        { label: 'Centre', x: 50, y: 50 },
+                        { label: 'Bas', x: 50, y: 100 },
+                        { label: 'Gauche', x: 0, y: 50 },
+                        { label: 'Droite', x: 100, y: 50 },
+                        { label: 'Haut-G.', x: 0, y: 0 },
+                        { label: 'Haut-D.', x: 100, y: 0 },
+                      ].map((pos) => (
+                        <button
+                          key={pos.label}
+                          type="button"
+                          onClick={() => {
+                            setPositionX(pos.x);
+                            setPositionY(pos.y);
+                          }}
+                          style={{
+                            fontSize: '11px',
+                            padding: '4px 10px',
+                            borderRadius: '4px',
+                            border: '1px solid #cbd5e1',
+                            backgroundColor: positionX === pos.x && positionY === pos.y ? '#2563eb' : '#f8fafc',
+                            color: positionX === pos.x && positionY === pos.y ? '#fff' : '#334155',
+                            cursor: 'pointer',
+                            fontWeight: '700',
+                          }}
+                        >
+                          {pos.label}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Curseurs de réglage fin X et Y */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '12px' }}>
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#475569', marginBottom: '3px' }}>
+                          <span>Gauche ↔ Droite</span>
+                          <strong>{positionX}%</strong>
+                        </div>
+                        <input
+                          type="range"
+                          min="0"
+                          max="100"
+                          value={positionX}
+                          onChange={(e) => setPositionX(Number(e.target.value))}
+                          style={{ width: '100%', cursor: 'pointer' }}
+                        />
+                      </div>
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#475569', marginBottom: '3px' }}>
+                          <span>Haut ↕ Bas</span>
+                          <strong>{positionY}%</strong>
+                        </div>
+                        <input
+                          type="range"
+                          min="0"
+                          max="100"
+                          value={positionY}
+                          onChange={(e) => setPositionY(Number(e.target.value))}
+                          style={{ width: '100%', cursor: 'pointer' }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Aperçu direct du cadrage */}
+                    <div style={{ width: '100%', height: '140px', borderRadius: '8px', overflow: 'hidden', backgroundColor: '#090d16', border: '1px solid #94a3b8', position: 'relative' }}>
                       {checkIsVideo(imageUrl, mediaType) ? (
                         <video
                           src={imageUrl}
-                          controls
+                          autoPlay
+                          loop
                           muted
-                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          playsInline
+                          style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: `${positionX}% ${positionY}%` }}
                         />
                       ) : (
                         <img
                           src={imageUrl}
-                          alt="Aperçu"
-                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          alt="Cadrage"
+                          style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: `${positionX}% ${positionY}%` }}
                         />
                       )}
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: '12px', fontWeight: '700', color: '#334155', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        {checkIsVideo(imageUrl, mediaType) ? (
-                          <span style={{ color: '#2563eb', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <Film size={14} /> Vidéo active (lecture automatique en boucle)
-                          </span>
-                        ) : (
-                          <span style={{ color: '#16a34a', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <ImageIcon size={14} /> Image active
-                          </span>
-                        )}
+                      <div style={{ position: 'absolute', bottom: '6px', right: '8px', backgroundColor: 'rgba(0,0,0,0.7)', color: '#ffce00', fontSize: '10px', padding: '2px 8px', borderRadius: '4px', fontWeight: '700' }}>
+                        Aperçu cadrage en direct
                       </div>
-                      <p style={{ fontSize: '11px', color: '#64748b', margin: '4px 0 8px 0', wordBreak: 'break-all' }}>
-                        {imageUrl}
-                      </p>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setImageUrl('');
-                          setMediaType('image');
-                        }}
-                        style={{ fontSize: '11px', color: '#dc2626', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-                      >
-                        Supprimer ce visuel
-                      </button>
                     </div>
                   </div>
                 )}
+              </div>
+
+              {/* CHAMPS TEXTES (DÉSACTIVÉS SI MODE 100% VISUEL) */}
+              {!isMediaOnly ? (
+                <>
+                  <div className="admin-form-group">
+                    <label className="admin-form-label">Titre de la campagne *</label>
+                    <input
+                      type="text"
+                      required={!isMediaOnly}
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      placeholder="Ex: Nouvelle édition de La Folle du Couvent disponible !"
+                      className="admin-form-control"
+                    />
+                  </div>
+
+                  <div className="admin-form-group">
+                    <label className="admin-form-label">Sous-titre / Message descriptif</label>
+                    <textarea
+                      rows={2}
+                      value={subtitle}
+                      onChange={(e) => setSubtitle(e.target.value)}
+                      placeholder="Ex: Découvrez le reportage exclusif et toutes les vidéos en direct sur notre chaîne."
+                      className="admin-form-control"
+                      style={{ resize: 'vertical' }}
+                    />
+                  </div>
+
+                  <div className="admin-form-row">
+                    <div className="admin-form-group">
+                      <label className="admin-form-label">Nom de l'Annonceur / Auteur</label>
+                      <input
+                        type="text"
+                        value={sponsorName}
+                        onChange={(e) => setSponsorName(e.target.value)}
+                        placeholder="Ex: AFOLUKU TV / Partenaire"
+                        className="admin-form-control"
+                      />
+                    </div>
+
+                    <div className="admin-form-group">
+                      <label className="admin-form-label">Badge publicitaire</label>
+                      <input
+                        type="text"
+                        value={badgeText}
+                        onChange={(e) => setBadgeText(e.target.value)}
+                        placeholder="Ex: Sponsorisé"
+                        className="admin-form-control"
+                      />
+                      <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '6px' }}>
+                        {BADGE_PRESETS.map((bp) => (
+                          <button
+                            key={bp}
+                            type="button"
+                            onClick={() => setBadgeText(bp)}
+                            style={{
+                              fontSize: '11px',
+                              padding: '2px 6px',
+                              borderRadius: '4px',
+                              border: '1px solid #d1d5db',
+                              background: badgeText === bp ? '#ffce00' : '#f9fafb',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            {bp}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="admin-form-group">
+                    <label className="admin-form-label">Texte du bouton (CTA)</label>
+                    <input
+                      type="text"
+                      value={ctaText}
+                      onChange={(e) => setCtaText(e.target.value)}
+                      placeholder="Ex: Lire l’article ou En savoir plus"
+                      className="admin-form-control"
+                    />
+                  </div>
+                </>
+              ) : (
+                <div style={{ padding: '12px 16px', borderRadius: '8px', backgroundColor: '#f1f5f9', color: '#475569', fontSize: '13px', marginBottom: '20px' }}>
+                  ℹ️ <strong>Mode Visuel Pur Actif :</strong> aucun titre, texte, badge ni bouton CTA ne sera affiché par-dessus le visuel.
+                </div>
+              )}
+
+              <div className="admin-form-row">
+                <div className="admin-form-group">
+                  <label className="admin-form-label">Emplacement</label>
+                  <select
+                    value={placement}
+                    onChange={(e) => setPlacement(e.target.value)}
+                    className="admin-form-control"
+                  >
+                    {PLACEMENTS.map((p) => (
+                      <option key={p.id} value={p.id}>{p.label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="admin-form-group">
+                  <label className="admin-form-label">Lien de redirection au clic (optionnel)</label>
+                  <input
+                    type="text"
+                    value={linkUrl}
+                    onChange={(e) => setLinkUrl(e.target.value)}
+                    placeholder="Ex: /fr/article/mon-article ou https://site-partenaire.com"
+                    className="admin-form-control"
+                  />
+                </div>
               </div>
 
               <div className="admin-form-row">

@@ -4,6 +4,15 @@ import { useState, useEffect, useRef } from 'react';
 import { ArrowUpRight, Megaphone } from 'lucide-react';
 import { getActiveBanners } from '@/lib/ads';
 
+export function extractMediaPosition(url) {
+  if (!url) return 'center';
+  const match = url.match(/#pos=([^&]+)/);
+  if (match && match[1]) {
+    return decodeURIComponent(match[1]).replace(/_/g, ' ');
+  }
+  return 'center';
+}
+
 export default function AdBannerCarousel({ 
   placement = 'header', 
   initialBanners = null,
@@ -57,6 +66,15 @@ export default function AdBannerCarousel({
     current?.image_url && /\.(mp4|webm|mov|ogg)($|\?)/i.test(current.image_url)
   );
 
+  const mediaPosition = current?.object_position || extractMediaPosition(current?.image_url) || 'center';
+
+  const hasTitle = Boolean(current.title?.trim());
+  const hasSubtitle = Boolean(current.subtitle?.trim());
+  const hasSponsor = Boolean(current.sponsor_name?.trim());
+  const hasBadge = Boolean(current.badge_text?.trim());
+  const hasCta = Boolean(current.cta_text?.trim());
+  const hasAnyText = hasTitle || hasSubtitle || hasSponsor || hasBadge || hasCta;
+
   const handleBannerClick = () => {
     if (!current) return;
     fetch('/api/ads/track', {
@@ -68,8 +86,6 @@ export default function AdBannerCarousel({
 
   const isSidebar = placement === 'sidebar';
   const isInFeed = placement === 'in_feed';
-
-  // Height matching BoLivro style
   const bannerHeight = isSidebar ? '280px' : isInFeed ? '220px' : '260px';
 
   return (
@@ -105,7 +121,7 @@ export default function AdBannerCarousel({
           position: 'relative',
         }}
       >
-        {/* Visuel immersif plein cadre (Image ou Vidéo comme dans BoLivro) */}
+        {/* Visuel immersif plein cadre (Image ou Vidéo avec repositionnement) */}
         {current.image_url ? (
           isVideo ? (
             <video
@@ -121,13 +137,14 @@ export default function AdBannerCarousel({
                 width: '100%',
                 height: '100%',
                 objectFit: 'cover',
+                objectPosition: mediaPosition,
                 display: 'block',
               }}
             />
           ) : (
             <img
               src={current.image_url}
-              alt={current.title}
+              alt={current.title || 'Bannière publicitaire'}
               style={{
                 position: 'absolute',
                 top: 0,
@@ -135,6 +152,7 @@ export default function AdBannerCarousel({
                 width: '100%',
                 height: '100%',
                 objectFit: 'cover',
+                objectPosition: mediaPosition,
                 display: 'block',
                 transition: 'transform 0.8s ease',
               }}
@@ -154,148 +172,159 @@ export default function AdBannerCarousel({
           />
         )}
 
-        {/* Dégradé sombre d'assombrissement immersif */}
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.15) 100%)',
-            pointerEvents: 'none',
-          }}
-        />
-
-        {/* Badge Annonceur / Sponsor en haut à gauche */}
-        <div
-          style={{
-            position: 'absolute',
-            top: '14px',
-            left: '16px',
-            zIndex: 10,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-          }}
-        >
-          <span
+        {/* Dégradé sombre : UNIQUEMENT s'il y a du texte à afficher */}
+        {hasAnyText && (
+          <div
             style={{
-              backgroundColor: 'rgba(0, 0, 0, 0.65)',
-              backdropFilter: 'blur(8px)',
-              color: '#ffce00',
-              padding: '4px 10px',
-              borderRadius: '6px',
-              fontSize: '11px',
-              fontWeight: '800',
-              textTransform: 'uppercase',
-              letterSpacing: '0.6px',
-              display: 'inline-flex',
+              position: 'absolute',
+              inset: 0,
+              background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.15) 100%)',
+              pointerEvents: 'none',
+            }}
+          />
+        )}
+
+        {/* Badge Annonceur / Sponsor : UNIQUEMENT si renseigné */}
+        {(hasBadge || hasSponsor) && (
+          <div
+            style={{
+              position: 'absolute',
+              top: '14px',
+              left: '16px',
+              zIndex: 10,
+              display: 'flex',
               alignItems: 'center',
-              gap: '5px',
-              border: '1px solid rgba(255,255,255,0.15)',
+              gap: '8px',
             }}
           >
-            <Megaphone size={12} />
-            {current.badge_text || 'Sponsorisé'}
-          </span>
-          {current.sponsor_name && (
-            <span
-              style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                backdropFilter: 'blur(8px)',
-                color: '#f8fafc',
-                padding: '4px 10px',
-                borderRadius: '6px',
-                fontSize: '11px',
-                fontWeight: '600',
-                letterSpacing: '0.3px',
-              }}
-            >
-              {current.sponsor_name}
-            </span>
-          )}
-        </div>
-
-        {/* Contenu textuel et bouton CTA BoLivro en bas */}
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            padding: isSidebar ? '16px' : '20px 28px',
-            zIndex: 10,
-            display: 'flex',
-            alignItems: 'flex-end',
-            justifyContent: 'space-between',
-            gap: '16px',
-          }}
-        >
-          <div style={{ flex: 1, minWidth: 0, paddingRight: '8px' }}>
-            <h3
-              style={{
-                margin: '0 0 6px 0',
-                fontSize: isSidebar ? '16px' : '22px',
-                fontWeight: '900',
-                lineHeight: '1.25',
-                color: '#ffffff',
-                textShadow: '0 2px 10px rgba(0,0,0,0.8)',
-                fontFamily: 'var(--font-heading, inherit)',
-                display: '-webkit-box',
-                WebkitLineClamp: isSidebar ? 2 : 2,
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden',
-              }}
-            >
-              {current.title}
-            </h3>
-
-            {current.subtitle && (
-              <p
+            {hasBadge && (
+              <span
                 style={{
-                  margin: 0,
-                  fontSize: isSidebar ? '12px' : '14px',
-                  color: 'rgba(255, 255, 255, 0.85)',
-                  lineHeight: '1.35',
-                  textShadow: '0 1px 4px rgba(0,0,0,0.8)',
-                  display: '-webkit-box',
-                  WebkitLineClamp: isSidebar ? 2 : 2,
-                  WebkitBoxOrient: 'vertical',
-                  overflow: 'hidden',
-                  maxWidth: '700px',
+                  backgroundColor: 'rgba(0, 0, 0, 0.65)',
+                  backdropFilter: 'blur(8px)',
+                  color: '#ffce00',
+                  padding: '4px 10px',
+                  borderRadius: '6px',
+                  fontSize: '11px',
+                  fontWeight: '800',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.6px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  border: '1px solid rgba(255,255,255,0.15)',
                 }}
               >
-                {current.subtitle}
-              </p>
+                <Megaphone size={12} />
+                {current.badge_text}
+              </span>
+            )}
+            {hasSponsor && (
+              <span
+                style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                  backdropFilter: 'blur(8px)',
+                  color: '#f8fafc',
+                  padding: '4px 10px',
+                  borderRadius: '6px',
+                  fontSize: '11px',
+                  fontWeight: '600',
+                  letterSpacing: '0.3px',
+                }}
+              >
+                {current.sponsor_name}
+              </span>
             )}
           </div>
+        )}
 
-          {/* Bouton CTA BoLivro (Glassmorphism arrondi avec flèche montante) */}
-          <div style={{ flexShrink: 0 }}>
-            <span
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                backgroundColor: 'rgba(255, 255, 255, 0.22)',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.35)',
-                color: '#ffffff',
-                padding: isSidebar ? '6px 12px' : '8px 16px',
-                borderRadius: '9999px',
-                fontSize: isSidebar ? '12px' : '13px',
-                fontWeight: '700',
-                boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
-                transition: 'all 0.2s',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              <span>{current.cta_text || 'En savoir plus'}</span>
-              <ArrowUpRight size={15} />
-            </span>
+        {/* Contenu textuel et bouton CTA BoLivro : UNIQUEMENT si renseigné */}
+        {hasAnyText && (
+          <div
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              padding: isSidebar ? '16px' : '20px 28px',
+              zIndex: 10,
+              display: 'flex',
+              alignItems: 'flex-end',
+              justifyContent: 'space-between',
+              gap: '16px',
+            }}
+          >
+            <div style={{ flex: 1, minWidth: 0, paddingRight: '8px' }}>
+              {hasTitle && (
+                <h3
+                  style={{
+                    margin: '0 0 6px 0',
+                    fontSize: isSidebar ? '16px' : '22px',
+                    fontWeight: '900',
+                    lineHeight: '1.25',
+                    color: '#ffffff',
+                    textShadow: '0 2px 10px rgba(0,0,0,0.8)',
+                    fontFamily: 'var(--font-heading, inherit)',
+                    display: '-webkit-box',
+                    WebkitLineClamp: isSidebar ? 2 : 2,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                  }}
+                >
+                  {current.title}
+                </h3>
+              )}
+
+              {hasSubtitle && (
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: isSidebar ? '12px' : '14px',
+                    color: 'rgba(255, 255, 255, 0.85)',
+                    lineHeight: '1.35',
+                    textShadow: '0 1px 4px rgba(0,0,0,0.8)',
+                    display: '-webkit-box',
+                    WebkitLineClamp: isSidebar ? 2 : 2,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                    maxWidth: '700px',
+                  }}
+                >
+                  {current.subtitle}
+                </p>
+              )}
+            </div>
+
+            {hasCta && (
+              <div style={{ flexShrink: 0 }}>
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    backgroundColor: 'rgba(255, 255, 255, 0.22)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.35)',
+                    color: '#ffffff',
+                    padding: isSidebar ? '6px 12px' : '8px 16px',
+                    borderRadius: '9999px',
+                    fontSize: isSidebar ? '12px' : '13px',
+                    fontWeight: '700',
+                    boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+                    transition: 'all 0.2s',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  <span>{current.cta_text}</span>
+                  <ArrowUpRight size={15} />
+                </span>
+              </div>
+            )}
           </div>
-        </div>
+        )}
       </a>
 
-      {/* UNIQUEMENT LES POINTS / TIRETS EN BAS (Aucun gros bouton) */}
+      {/* Pagination : petits tirets discrets en bas */}
       {banners.length > 1 && (
         <div
           style={{

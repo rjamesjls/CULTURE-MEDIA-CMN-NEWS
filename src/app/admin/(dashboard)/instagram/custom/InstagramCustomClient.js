@@ -614,6 +614,217 @@ Découvrez la suite sur notre site ! 🔗 Lien en bio ou en story.
       );
     }
 
+    if (template === 't10') {
+      // SPECIAL CELEBRATIONS / SREFIDENSI DEY (SURINAME INDEPENDENCE - 25 NOVEMBRE)
+      const currentYear = new Date().getFullYear();
+
+      return (
+        <div style={{ 
+          width: '1080px', 
+          height: '1350px', 
+          background: 'radial-gradient(ellipse at 50% 15%, #064E3B 0%, #03251D 40%, #0B1410 75%, #020704 100%)', 
+          position: 'relative', 
+          overflow: 'hidden', 
+          fontFamily: 'Inter, system-ui, -apple-system, sans-serif' 
+        }}>
+          {/* Subtle Festive Bokeh / Gold Starfield Overlay */}
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0.12, pointerEvents: 'none', backgroundImage: 'radial-gradient(#FBBF24 1.5px, transparent 1.5px)', backgroundSize: '40px 40px' }} />
+          <div style={{ position: 'absolute', top: '2%', left: '50%', transform: 'translateX(-50%)', width: '850px', height: '650px', background: 'radial-gradient(circle, rgba(251,191,36,0.18) 0%, rgba(220,38,38,0.14) 45%, rgba(0,0,0,0) 75%)', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', bottom: '0', left: 0, right: 0, height: '350px', background: 'linear-gradient(to top, rgba(2,7,4,0.95) 0%, rgba(2,7,4,0) 100%)', pointerEvents: 'none', zIndex: 3 }} />
+
+          {/* Background Image fallback if uploaded */}
+          {bgImage && (
+            <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1, opacity: 0.22 }}>
+              <img src={getProxiedImageUrl(bgImage)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} referrerPolicy="no-referrer" />
+            </div>
+          )}
+
+          {/* Content Layout */}
+          <div style={{ position: 'relative', zIndex: 10, width: '1080px', height: '1350px', display: 'flex', flexDirection: 'column', padding: '42px 55px', boxSizing: 'border-box', justifyContent: 'space-between' }}>
+            
+            {/* Top National Ribbon & Official Branding */}
+            <div>
+              {/* Suriname Flag Ribbon Header (Green - White - Red - White - Green) */}
+              <div style={{ display: 'flex', width: '100%', height: '9px', borderRadius: '4px', overflow: 'hidden', marginBottom: '22px', boxShadow: '0 4px 15px rgba(0,0,0,0.6)' }}>
+                <div style={{ flex: 2, background: '#007A3D' }} />
+                <div style={{ flex: 1, background: '#FFFFFF' }} />
+                <div style={{ flex: 4, background: '#B91C1C' }} />
+                <div style={{ flex: 1, background: '#FFFFFF' }} />
+                <div style={{ flex: 2, background: '#007A3D' }} />
+              </div>
+
+              {/* Logo & Category Bar */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                  <img src={logoSrc} alt="AFOLUKUTV" style={{ height: '46px', filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.6))' }} />
+                  <div style={{ height: '24px', width: '2px', background: 'rgba(255,255,255,0.2)' }} />
+                  <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '14px', fontWeight: '800', letterSpacing: '3px', textTransform: 'uppercase' }}>
+                    ÉDITION SPÉCIALE
+                  </span>
+                </div>
+
+                {/* Srefidensi Dey Badge */}
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '8px', 
+                  background: 'linear-gradient(135deg, rgba(185,28,28,0.4) 0%, rgba(6,95,70,0.5) 100%)', 
+                  border: '1.5px solid rgba(251,191,36,0.7)', 
+                  padding: '6px 16px', 
+                  borderRadius: '30px',
+                  boxShadow: '0 0 20px rgba(251,191,36,0.3)'
+                }}>
+                  <span style={{ fontSize: '18px' }}>🇸🇷</span>
+                  <span style={{ color: '#FDE047', fontSize: '13px', fontWeight: '900', letterSpacing: '1.5px', textTransform: 'uppercase' }}>
+                    <EditableText text={tag || '25 NOVEMBRE • SREFIDENSI DEY'} onChange={(val) => updateActivePage('tag', val)} style={{ color: '#FDE047' }} />
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Main Festive Header & Golden 5-Point Star Emblem */}
+            <div style={{ textAlign: 'center', marginTop: '4px' }}>
+              {/* Golden 5-point Star Emblem */}
+              <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '80px', height: '80px', borderRadius: '50%', background: 'radial-gradient(circle, #FDE047 0%, #D97706 70%, #78350F 100%)', boxShadow: '0 0 35px rgba(251,191,36,0.6), inset 0 2px 4px rgba(255,255,255,0.6)', marginBottom: '10px' }}>
+                <span style={{ fontSize: '46px', color: '#78350F', lineHeight: 1, textShadow: '0 2px 4px rgba(255,255,255,0.4)' }}>★</span>
+              </div>
+
+              {/* Sub-headline / Sranan Tongo greeting */}
+              <div style={{ 
+                color: '#FBBF24', 
+                fontSize: '17px', 
+                fontWeight: '900', 
+                letterSpacing: '6px', 
+                textTransform: 'uppercase', 
+                marginBottom: '8px',
+                textShadow: '0 2px 10px rgba(0,0,0,0.7)'
+              }}>
+                <EditableText text={partnerText || 'FRIYARI FU SRANAN • 1975 - ' + currentYear} onChange={(val) => updateActivePage('partnerText', val)} style={{ color: '#FBBF24' }} />
+              </div>
+
+              {/* Giant Headline */}
+              <h1 style={{ 
+                margin: '0 auto', 
+                maxWidth: '960px',
+                fontSize: `${Math.min(titleSize || 76, 80)}px`, 
+                fontWeight: '950', 
+                lineHeight: '1.02', 
+                letterSpacing: '-1px',
+                textTransform: 'uppercase',
+                background: 'linear-gradient(180deg, #FFFFFF 20%, #FEF08A 70%, #F59E0B 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                filter: 'drop-shadow(0 4px 20px rgba(0,0,0,0.8))',
+                fontFamily: '"Montserrat", "Arial Black", sans-serif'
+              }}>
+                <EditableText text={title || 'WAN SWITI SREFIDENSI DEY'} onChange={(val) => updateActivePage('title', val)} style={{ color: '#FFF' }} />
+              </h1>
+            </div>
+
+            {/* Central Visual Frame (Hero Photo or Commemorative Flag & Star Crest) */}
+            <div style={{ 
+              position: 'relative', 
+              width: '100%', 
+              height: '490px', 
+              borderRadius: '24px', 
+              overflow: 'hidden', 
+              border: '3px solid rgba(251,191,36,0.5)', 
+              boxShadow: '0 20px 50px rgba(0,0,0,0.7), 0 0 30px rgba(251,191,36,0.25)',
+              background: 'linear-gradient(180deg, #064E3B 0%, #1E1B4B 50%, #7F1D1D 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '8px 0'
+            }}>
+              {(activePage.items && activePage.items[0]?.image) ? (
+                <img src={getProxiedImageUrl(activePage.items[0].image)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} referrerPolicy="no-referrer" />
+              ) : bgImage ? (
+                <img src={getProxiedImageUrl(bgImage)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} referrerPolicy="no-referrer" />
+              ) : (
+                /* Suriname National Flag Crest & Glowing Star */
+                <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                  <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ flex: 2, background: '#007A3D' }} />
+                    <div style={{ flex: 1, background: '#FFFFFF' }} />
+                    <div style={{ flex: 4, background: '#B91C1C', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{ 
+                        fontSize: '135px', 
+                        color: '#FBBF24', 
+                        filter: 'drop-shadow(0 0 30px rgba(251,191,36,0.85))',
+                        lineHeight: 1
+                      }}>
+                        ★
+                      </div>
+                    </div>
+                    <div style={{ flex: 1, background: '#FFFFFF' }} />
+                    <div style={{ flex: 2, background: '#007A3D' }} />
+                  </div>
+                  <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle, transparent 40%, rgba(0,0,0,0.55) 100%)' }} />
+                  
+                  {/* Decorative Motto Pill */}
+                  <div style={{ position: 'absolute', bottom: '22px', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', padding: '10px 24px', borderRadius: '30px', border: '1.5px solid rgba(251,191,36,0.65)' }}>
+                    <span style={{ color: '#FDE047', fontSize: '15px', fontWeight: '900', letterSpacing: '2px' }}>
+                      JUSTITIA • PIETAS • FIDES
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Watermark badge on photo */}
+              <div style={{ position: 'absolute', top: '16px', right: '16px', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)', padding: '6px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ fontSize: '13px' }}>🇸🇷</span>
+                <span style={{ color: '#FFF', fontSize: '11px', fontWeight: '800', letterSpacing: '1px' }}>SURINAME 1975</span>
+              </div>
+            </div>
+
+            {/* Narrative / Celebration Message Box */}
+            <div style={{ 
+              background: 'linear-gradient(135deg, rgba(6,78,59,0.8) 0%, rgba(15,23,42,0.9) 100%)', 
+              border: '1.5px solid rgba(251,191,36,0.4)', 
+              borderRadius: '20px', 
+              padding: '20px 26px', 
+              boxShadow: '0 12px 30px rgba(0,0,0,0.5)',
+              position: 'relative'
+            }}>
+              <p style={{ 
+                color: 'rgba(255,255,255,0.95)', 
+                fontSize: `${Math.min(contentSize || 24, 26)}px`, 
+                lineHeight: '1.38', 
+                fontWeight: '500', 
+                margin: 0, 
+                textAlign: 'center',
+                fontStyle: 'normal'
+              }}>
+                <EditableText 
+                  text={content || "Joyeuse fête de l'Indépendance à tout le peuple surinamais, au pays et à travers toute la diaspora ! Wan Switi Srefidensi gi ala Srananman nanga Srananuma !"} 
+                  onChange={(val) => updateActivePage('content', val)} 
+                  style={{ color: '#FFF' }} 
+                />
+              </p>
+            </div>
+
+            {/* Bottom Footer & Cultural Unity Bar */}
+            <div style={{ borderTop: '1.5px solid rgba(251,191,36,0.3)', paddingTop: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '20px' }}>✨</span>
+                <div style={{ color: '#FBBF24', fontSize: '15px', fontWeight: '800', letterSpacing: '2px', textTransform: 'uppercase' }}>
+                  <EditableText text={footerText || 'SURINAME 🇸🇷 • GUYANE 🇬🇫 • AFOLUKU.COM'} onChange={(val) => updateActivePage('footerText', val)} style={{ color: '#FBBF24' }} />
+                </div>
+              </div>
+
+              {/* Social Handles */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'rgba(255,255,255,0.8)', fontSize: '14px', fontWeight: '700' }}>
+                <span>@AFOLUKUTV</span>
+                <span style={{ opacity: 0.4 }}>•</span>
+                <span>AFOLUKU MEDIA</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      );
+    }
+
     if (template === 't6') {
       // CYBER TECH NEON 4.0 TEMPLATE (HBR SLANTED COLUMNS STYLE)
       const itemsList = (page.items || []).length > 0 ? page.items.slice(0, 4) : [
@@ -1616,8 +1827,58 @@ Découvrez la suite sur notre site ! 🔗 Lien en bio ou en story.
                 <option value="t7">Modèle 7 : Web3 Glassmorphism (Halo Néon & Cartes - Style Crypto)</option>
                 <option value="t8">Modèle 8 : Purple Rocket Pop (Duo/Trio Cartes Event - Style Tech)</option>
                 <option value="t9">Modèle 9 : InnovateX Neon Speaker (Copie Conforme Affiche)</option>
+                <option value="t10">Modèle 10 : Fête Nationale • Srefidensi Dey (Suriname 🇸🇷)</option>
               </select>
             </div>
+
+            {activePage.template === 't10' && (
+              <div style={{ gridColumn: '1 / -1', background: 'linear-gradient(135deg, #064E3B 0%, #1E1B4B 50%, #7F1D1D 100%)', padding: '16px 20px', borderRadius: '14px', border: '1.5px solid #FBBF24', color: '#FFF', display: 'flex', flexDirection: 'column', gap: '12px', boxShadow: '0 8px 24px rgba(0,0,0,0.3)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '20px' }}>🇸🇷</span>
+                    <span style={{ fontWeight: '900', fontSize: '15px', color: '#FEF08A' }}>
+                      Édition Spéciale : Srefidensi Dey (25 Novembre)
+                    </span>
+                  </div>
+                  <span style={{ fontSize: '11px', background: '#FBBF24', color: '#0F172A', padding: '3px 10px', borderRadius: '20px', fontWeight: '900', letterSpacing: '1px' }}>
+                    FÊTE NATIONALE
+                  </span>
+                </div>
+                <p style={{ margin: 0, fontSize: '13px', color: 'rgba(255,255,255,0.9)', lineHeight: '1.4' }}>
+                  Célébrez l'Indépendance du Suriname (1975) avec le ruban tricolore, l'étoile d'or et les messages festifs en Sranan Tongo.
+                </p>
+                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      updateActivePage('title', 'WAN SWITI SREFIDENSI DEY');
+                      updateActivePage('tag', '🇸🇷 25 NOVEMBRE • SREFIDENSI DEY');
+                      updateActivePage('partnerText', `FRIYARI FU SRANAN • 1975 - ${new Date().getFullYear()}`);
+                      updateActivePage('content', "Joyeuse fête de l'Indépendance à tout le peuple surinamais, au pays et à travers toute la diaspora ! Wan Switi Srefidensi gi ala Srananman nanga Srananuma !");
+                      updateActivePage('footerText', 'SURINAME 🇸🇷 • GUYANE 🇬🇫 • AFOLUKU.COM');
+                      updateActivePage('themeColor', '#007A3D');
+                      updateActivePage('highlightColor', '#FBBF24');
+                    }}
+                    style={{ background: '#FBBF24', color: '#0F172A', border: 'none', padding: '9px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    ⚡ Remplir avec les textes officiels Srefidensi
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      updateActivePage('title', 'JUSTITIA • PIETAS • FIDES');
+                      updateActivePage('tag', '🇸🇷 CÉLÉBRATION DE LA LIBERTÉ');
+                      updateActivePage('partnerText', 'UN OPÉRATEUR CULTUREL ENGAGÉ');
+                      updateActivePage('content', "Unité, dignité et rayonnement culturel. Hommage à l'histoire et à la diversité qui font la richesse du Suriname.");
+                      updateActivePage('footerText', 'SURINAME • AFOLUKU TV');
+                    }}
+                    style={{ background: 'rgba(255,255,255,0.15)', color: '#FFF', border: '1px solid rgba(255,255,255,0.35)', padding: '9px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    🕊️ Variante Devise & Unité
+                  </button>
+                </div>
+              </div>
+            )}
 
             <div 
               style={{ gridColumn: '1 / -1', padding: '15px', border: '2px dashed #CBD5E1', borderRadius: '8px', background: '#F8FAFC', outline: 'none', transition: 'all 0.2s' }}
