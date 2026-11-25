@@ -16,7 +16,7 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
   const getDesc = (article) =>
     lang === 'bsh' && article.hook_bsh ? article.hook_bsh : article.description;
 
-  // Auto-play timer
+  // Auto-play timer (5.5s)
   useEffect(() => {
     if (slides.length <= 1 || isPaused) return;
 
@@ -49,9 +49,9 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
     if (!touchStartX.current || !touchEndX.current) return;
     const diff = touchStartX.current - touchEndX.current;
     if (diff > 50) {
-      goToNext(); // Swipe left -> next
+      goToNext();
     } else if (diff < -50) {
-      goToPrev(); // Swipe right -> prev
+      goToPrev();
     }
     touchStartX.current = null;
     touchEndX.current = null;
@@ -111,46 +111,43 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
         })}
       </div>
 
-      {/* Prev / Next buttons */}
+      {/* UNIQUEMENT LES POINTS EN BAS (Pas de gros boutons latéraux) */}
       {slides.length > 1 && (
-        <>
-          <button
-            type="button"
-            className="carousel-prev"
-            onClick={goToPrev}
-            aria-label="Article précédent"
-          >
-            <i className="fas fa-chevron-left"></i>
-          </button>
-          <button
-            type="button"
-            className="carousel-next"
-            onClick={goToNext}
-            aria-label="Article suivant"
-          >
-            <i className="fas fa-chevron-right"></i>
-          </button>
-        </>
-      )}
-
-      {/* Indicators */}
-      {slides.length > 1 && (
-        <div className="carousel-indicators">
-          {slides.map((_, index) => (
-            <button
-              key={index}
-              type="button"
-              className={`indicator${index === currentIndex ? ' active' : ''}`}
-              aria-label={`Slide ${index + 1}`}
-              onClick={() => setCurrentIndex(index)}
-              style={{
-                backgroundColor:
-                  index === currentIndex
-                    ? 'var(--color-primary, #dc2626)'
-                    : 'rgba(255, 255, 255, 0.5)',
-              }}
-            />
-          ))}
+        <div
+          className="carousel-indicators"
+          style={{
+            position: 'absolute',
+            bottom: '16px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            zIndex: 20,
+          }}
+        >
+          {slides.map((_, index) => {
+            const isActive = index === currentIndex;
+            return (
+              <button
+                key={index}
+                type="button"
+                className={`indicator${isActive ? ' active' : ''}`}
+                aria-label={`Article ${index + 1}`}
+                onClick={() => setCurrentIndex(index)}
+                style={{
+                  width: isActive ? '24px' : '8px',
+                  height: '8px',
+                  borderRadius: '4px',
+                  backgroundColor: isActive ? '#dc2626' : 'rgba(255, 255, 255, 0.45)',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: 0,
+                  transition: 'all 0.3s ease',
+                }}
+              />
+            );
+          })}
         </div>
       )}
     </section>

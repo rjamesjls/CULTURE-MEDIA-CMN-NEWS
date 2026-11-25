@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { ExternalLink, ChevronLeft, ChevronRight, Megaphone } from 'lucide-react';
+import { ArrowUpRight, Megaphone } from 'lucide-react';
 import { getActiveBanners } from '@/lib/ads';
 
 export default function AdBannerCarousel({ 
@@ -39,7 +39,7 @@ export default function AdBannerCarousel({
     }
   }, [currentIndex, banners]);
 
-  // Auto-rotation
+  // Auto-rotation (6 seconds like BoLivro)
   useEffect(() => {
     if (banners.length <= 1 || isPaused) return;
     const interval = setInterval(() => {
@@ -48,11 +48,14 @@ export default function AdBannerCarousel({
     return () => clearInterval(interval);
   }, [banners.length, isPaused]);
 
-  if (loading || !banners.length) {
+  if (loading || !banners || banners.length === 0) {
     return null;
   }
 
   const current = banners[currentIndex];
+  const isVideo = current?.media_type === 'video' || (
+    current?.image_url && /\.(mp4|webm|mov|ogg)($|\?)/i.test(current.image_url)
+  );
 
   const handleBannerClick = () => {
     if (!current) return;
@@ -65,23 +68,26 @@ export default function AdBannerCarousel({
 
   const isSidebar = placement === 'sidebar';
   const isInFeed = placement === 'in_feed';
-  const isVideo = current?.media_type === 'video' || (
-    current?.image_url && /\.(mp4|webm|mov|ogg)($|\?)/i.test(current.image_url)
-  );
+
+  // Height matching BoLivro style
+  const bannerHeight = isSidebar ? '280px' : isInFeed ? '220px' : '260px';
 
   return (
     <div
-      className={`ad-banner-container ${className}`}
+      className={`ad-banner-bolivro ${className}`}
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       style={{
         position: 'relative',
-        borderRadius: '12px',
+        width: '100%',
+        height: bannerHeight,
+        borderRadius: isSidebar ? '14px' : '20px',
         overflow: 'hidden',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
-        backgroundColor: '#0f172a',
+        boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
+        backgroundColor: '#090d16',
         color: '#fff',
-        margin: isSidebar ? '20px 0' : isInFeed ? '30px 0' : '20px 0',
+        margin: isSidebar ? '20px 0' : isInFeed ? '28px 0' : '20px 0',
+        cursor: 'pointer',
         ...style,
       }}
     >
@@ -91,225 +97,240 @@ export default function AdBannerCarousel({
         rel="noopener noreferrer"
         onClick={handleBannerClick}
         style={{
-          display: 'flex',
-          flexDirection: isSidebar ? 'column' : 'row',
-          alignItems: 'stretch',
+          display: 'block',
+          width: '100%',
+          height: '100%',
           textDecoration: 'none',
           color: 'inherit',
-          minHeight: isSidebar ? 'auto' : '120px',
+          position: 'relative',
         }}
       >
-        {/* Visuel Image ou Vidéo */}
-        {current.image_url && (
-          <div
-            style={{
-              width: isSidebar ? '100%' : '35%',
-              minWidth: isSidebar ? '100%' : '260px',
-              height: isSidebar ? '180px' : 'auto',
-              minHeight: isSidebar ? '180px' : '130px',
-              position: 'relative',
-              backgroundColor: '#1e293b',
-              overflow: 'hidden',
-              flexShrink: 0,
-            }}
-          >
-            {isVideo ? (
-              <video
-                src={current.image_url}
-                autoPlay
-                loop
-                muted
-                playsInline
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                  display: 'block',
-                }}
-              />
-            ) : (
-              <img
-                src={current.image_url}
-                alt={current.title}
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                  display: 'block',
-                  transition: 'transform 0.4s ease',
-                }}
-                className="hover-zoom"
-              />
-            )}
-            {/* Tag Sponsor / Badge sur l'image */}
-            <div
+        {/* Visuel immersif plein cadre (Image ou Vidéo comme dans BoLivro) */}
+        {current.image_url ? (
+          isVideo ? (
+            <video
+              src={current.image_url}
+              autoPlay
+              loop
+              muted
+              playsInline
               style={{
                 position: 'absolute',
-                top: '10px',
-                left: '10px',
-                backgroundColor: 'rgba(0,0,0,0.75)',
-                backdropFilter: 'blur(4px)',
-                color: '#ffce00',
-                padding: '3px 8px',
-                borderRadius: '4px',
-                fontSize: '11px',
-                fontWeight: '700',
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                display: 'block',
               }}
-            >
-              <Megaphone size={12} />
-              {current.badge_text || 'Sponsorisé'}
-            </div>
-          </div>
+            />
+          ) : (
+            <img
+              src={current.image_url}
+              alt={current.title}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                display: 'block',
+                transition: 'transform 0.8s ease',
+              }}
+              className="hover-zoom"
+            />
+          )
+        ) : (
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+            }}
+          />
         )}
 
-        {/* Contenu Texte & CTA */}
+        {/* Dégradé sombre d'assombrissement immersif */}
         <div
           style={{
-            flex: 1,
-            padding: isSidebar ? '16px' : '20px 24px',
+            position: 'absolute',
+            inset: 0,
+            background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.15) 100%)',
+            pointerEvents: 'none',
+          }}
+        />
+
+        {/* Badge Annonceur / Sponsor en haut à gauche */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '14px',
+            left: '16px',
+            zIndex: 10,
             display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+            alignItems: 'center',
+            gap: '8px',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-            <span style={{ fontSize: '11px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: '600' }}>
-              {current.sponsor_name || 'Partenaire AFOLUKU TV'}
-            </span>
-          </div>
-
-          <h3
+          <span
             style={{
-              margin: '0 0 6px 0',
-              fontSize: isSidebar ? '16px' : '20px',
+              backgroundColor: 'rgba(0, 0, 0, 0.65)',
+              backdropFilter: 'blur(8px)',
+              color: '#ffce00',
+              padding: '4px 10px',
+              borderRadius: '6px',
+              fontSize: '11px',
               fontWeight: '800',
-              lineHeight: '1.3',
-              color: '#ffffff',
-              fontFamily: 'var(--font-heading, inherit)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.6px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '5px',
+              border: '1px solid rgba(255,255,255,0.15)',
             }}
           >
-            {current.title}
-          </h3>
-
-          {current.subtitle && (
-            <p
+            <Megaphone size={12} />
+            {current.badge_text || 'Sponsorisé'}
+          </span>
+          {current.sponsor_name && (
+            <span
               style={{
-                margin: '0 0 12px 0',
-                fontSize: isSidebar ? '13px' : '14px',
-                color: '#cbd5e1',
-                lineHeight: '1.4',
+                backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                backdropFilter: 'blur(8px)',
+                color: '#f8fafc',
+                padding: '4px 10px',
+                borderRadius: '6px',
+                fontSize: '11px',
+                fontWeight: '600',
+                letterSpacing: '0.3px',
+              }}
+            >
+              {current.sponsor_name}
+            </span>
+          )}
+        </div>
+
+        {/* Contenu textuel et bouton CTA BoLivro en bas */}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            padding: isSidebar ? '16px' : '20px 28px',
+            zIndex: 10,
+            display: 'flex',
+            alignItems: 'flex-end',
+            justifyContent: 'space-between',
+            gap: '16px',
+          }}
+        >
+          <div style={{ flex: 1, minWidth: 0, paddingRight: '8px' }}>
+            <h3
+              style={{
+                margin: '0 0 6px 0',
+                fontSize: isSidebar ? '16px' : '22px',
+                fontWeight: '900',
+                lineHeight: '1.25',
+                color: '#ffffff',
+                textShadow: '0 2px 10px rgba(0,0,0,0.8)',
+                fontFamily: 'var(--font-heading, inherit)',
                 display: '-webkit-box',
                 WebkitLineClamp: isSidebar ? 2 : 2,
                 WebkitBoxOrient: 'vertical',
                 overflow: 'hidden',
               }}
             >
-              {current.subtitle}
-            </p>
-          )}
+              {current.title}
+            </h3>
 
-          <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            {current.subtitle && (
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: isSidebar ? '12px' : '14px',
+                  color: 'rgba(255, 255, 255, 0.85)',
+                  lineHeight: '1.35',
+                  textShadow: '0 1px 4px rgba(0,0,0,0.8)',
+                  display: '-webkit-box',
+                  WebkitLineClamp: isSidebar ? 2 : 2,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                  maxWidth: '700px',
+                }}
+              >
+                {current.subtitle}
+              </p>
+            )}
+          </div>
+
+          {/* Bouton CTA BoLivro (Glassmorphism arrondi avec flèche montante) */}
+          <div style={{ flexShrink: 0 }}>
             <span
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '6px',
-                backgroundColor: 'var(--color-primary, #dc2626)',
+                backgroundColor: 'rgba(255, 255, 255, 0.22)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255, 255, 255, 0.35)',
                 color: '#ffffff',
-                padding: '6px 14px',
-                borderRadius: '6px',
-                fontSize: '13px',
+                padding: isSidebar ? '6px 12px' : '8px 16px',
+                borderRadius: '9999px',
+                fontSize: isSidebar ? '12px' : '13px',
                 fontWeight: '700',
-                transition: 'opacity 0.2s',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+                transition: 'all 0.2s',
+                whiteSpace: 'nowrap',
               }}
             >
-              {current.cta_text || 'En savoir plus'}
-              <ExternalLink size={14} />
+              <span>{current.cta_text || 'En savoir plus'}</span>
+              <ArrowUpRight size={15} />
             </span>
-
-            {/* Navigation flèches si multiple */}
-            {banners.length > 1 && (
-              <div
-                style={{ display: 'flex', gap: '4px' }}
-                onClick={(e) => e.preventDefault()}
-              >
-                <button
-                  type="button"
-                  onClick={() => setCurrentIndex((prev) => (prev - 1 + banners.length) % banners.length)}
-                  style={{
-                    background: 'rgba(255,255,255,0.1)',
-                    border: 'none',
-                    color: '#fff',
-                    borderRadius: '4px',
-                    width: '28px',
-                    height: '28px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                  }}
-                  title="Précédent"
-                >
-                  <ChevronLeft size={16} />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setCurrentIndex((prev) => (prev + 1) % banners.length)}
-                  style={{
-                    background: 'rgba(255,255,255,0.1)',
-                    border: 'none',
-                    color: '#fff',
-                    borderRadius: '4px',
-                    width: '28px',
-                    height: '28px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                  }}
-                  title="Suivant"
-                >
-                  <ChevronRight size={16} />
-                </button>
-              </div>
-            )}
           </div>
         </div>
       </a>
 
-      {/* Barre d'indicateurs si multiple */}
+      {/* UNIQUEMENT LES POINTS / TIRETS EN BAS (Aucun gros bouton) */}
       {banners.length > 1 && (
         <div
           style={{
             position: 'absolute',
-            bottom: '4px',
+            bottom: '8px',
             left: '50%',
             transform: 'translateX(-50%)',
             display: 'flex',
+            alignItems: 'center',
             gap: '6px',
-            zIndex: 10,
+            zIndex: 20,
           }}
+          onClick={(e) => e.stopPropagation()}
         >
-          {banners.map((_, idx) => (
-            <span
-              key={idx}
-              onClick={() => setCurrentIndex(idx)}
-              style={{
-                width: idx === currentIndex ? '16px' : '6px',
-                height: '4px',
-                borderRadius: '2px',
-                backgroundColor: idx === currentIndex ? '#ffce00' : 'rgba(255,255,255,0.3)',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-              }}
-            />
-          ))}
+          {banners.map((_, idx) => {
+            const isActive = idx === currentIndex;
+            return (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => setCurrentIndex(idx)}
+                aria-label={`Bannière ${idx + 1}`}
+                style={{
+                  width: isActive ? '24px' : '6px',
+                  height: '5px',
+                  borderRadius: '3px',
+                  backgroundColor: isActive ? '#ffce00' : 'rgba(255, 255, 255, 0.4)',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: 0,
+                  transition: 'all 0.3s ease',
+                }}
+              />
+            );
+          })}
         </div>
       )}
     </div>
