@@ -276,10 +276,12 @@ export default function SocialGenerator({ article, recentArticles = [] }) {
     body_fr: getInitialBody(),
     category_fr: article.category || "Actualité",
 
-    title_bsh: article.title || "",
-    body_bsh: getInitialBody(),
+    title_bsh: article.title_bsh || article.title || "",
+    body_bsh: article.hook_bsh || getInitialBody(),
     category_bsh: article.category || "Actualité",
 
+    location: "CAYENNE",
+    logoHeight: 75,
     date: getInitialDate(),
     source: "A FOLUKU TV",
     logoTheme: "white",
@@ -302,7 +304,11 @@ export default function SocialGenerator({ article, recentArticles = [] }) {
 
   const [activeLang, setActiveLang] = useState(article.instagram_state?.activeLang || "fr"); // "fr" ou "bsh"
   const [selectedTemplateFr, setSelectedTemplateFr] = useState(article.instagram_state?.selectedTemplateFr || "template-2"); // default to Editorial Bleu
-  const [selectedTemplateBsh, setSelectedTemplateBsh] = useState(article.instagram_state?.selectedTemplateBsh || "template-3"); // default to Editorial Blanc
+  const [selectedTemplateBsh, setSelectedTemplateBsh] = useState(
+    article.instagram_state?.selectedTemplateBsh === "template-3"
+      ? "template-2"
+      : (article.instagram_state?.selectedTemplateBsh || "template-2")
+  ); // default to Editorial Bleu (template-2) comme en FR
 
   // Utilisation du proxy d'image personnalisé pour éviter les problèmes CORS et de configuration Next.js
   const proxiedImageUrl = article.image_url
@@ -341,7 +347,7 @@ export default function SocialGenerator({ article, recentArticles = [] }) {
     const sharedFields = [
       "title_fr", "body_fr", "category_fr",
       "title_bsh", "body_bsh", "category_bsh",
-      "date", "source"
+      "date", "source", "location", "logoHeight"
     ];
 
     setTemplateData((prev) => {
@@ -835,7 +841,17 @@ Contenu: ${article.content || ''}`;
       }}>
         {/* Left: Logo + NEWS badge + Tagline */}
         <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-          <img src="/afoluku-tv-logo.png" alt="AFOLUKU TV" style={{ height: "120px", objectFit: "contain", objectPosition: "left", marginTop: "-20px" }} crossOrigin="anonymous" />
+          <img 
+            src="/afoluku-tv-logo.png" 
+            alt="AFOLUKU TV" 
+            style={{ 
+              height: `${currentData.logoHeight || 75}px`, 
+              objectFit: "contain", 
+              objectPosition: "left", 
+              marginTop: "4px" 
+            }} 
+            crossOrigin="anonymous" 
+          />
           <div style={{ display: "flex", alignItems: "center", marginTop: "12px", gap: "14px" }}>
             <div style={{ backgroundColor: "#e41318", color: "#fff", padding: "1px 18px", borderRadius: "8px", fontWeight: "900", fontSize: "24px", letterSpacing: "2px", WebkitTextStroke: "1px #fff" }}>
               NEWS
@@ -1876,8 +1892,8 @@ return (
                   <button
                     key={tpl.id}
                     onClick={() => {
-                      if (activeLang === "fr") setSelectedTemplateFr(tpl.id);
-                      else setSelectedTemplateBsh(tpl.id);
+                      setSelectedTemplateFr(tpl.id);
+                      setSelectedTemplateBsh(tpl.id);
                     }}
                     style={templateBtnStyle(activeTemplate === tpl.id)}
                   >
@@ -2169,6 +2185,91 @@ return (
                   onChange={(e) => updateData("date", e.target.value)}
                   className="admin-form-control"
                 />
+              </div>
+            )}
+
+            {activeTemplate === "template-2" && (
+              <div style={{ marginBottom: "15px" }}>
+                <label
+                  style={{
+                    display: "block",
+                    fontWeight: "bold",
+                    marginBottom: "8px",
+                  }}
+                >
+                  📍 Lieu (Badge jaune à droite) :
+                </label>
+                <input
+                  type="text"
+                  value={currentData.location || "CAYENNE"}
+                  onChange={(e) => updateData("location", e.target.value.toUpperCase())}
+                  className="admin-form-control"
+                  placeholder="Ex: CAYENNE, KOUROU, ST-LAURENT, APATOU..."
+                  style={{ fontWeight: "bold" }}
+                />
+                <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginTop: "8px" }}>
+                  {["CAYENNE", "KOUROU", "ST-LAURENT", "MATOURY", "REMIRE", "APATOU", "MARIPASOULA", "MANA", "GRAND-SANTI"].map((city) => (
+                    <button
+                      key={city}
+                      type="button"
+                      onClick={() => updateData("location", city)}
+                      style={{
+                        padding: "3px 8px",
+                        fontSize: "11px",
+                        borderRadius: "4px",
+                        border: "1px solid #d1d5db",
+                        backgroundColor: (currentData.location || "CAYENNE") === city ? "#ffce00" : "#f3f4f6",
+                        color: (currentData.location || "CAYENNE") === city ? "#000" : "#374151",
+                        fontWeight: "700",
+                        cursor: "pointer"
+                      }}
+                    >
+                      {city}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {activeTemplate === "template-2" && (
+              <div style={{ marginBottom: "15px" }}>
+                <label
+                  style={{
+                    display: "block",
+                    fontWeight: "bold",
+                    marginBottom: "8px",
+                  }}
+                >
+                  Taille du logo AFOLUKU TV ({currentData.logoHeight || 75}px) :
+                </label>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <input
+                    type="range"
+                    min="50"
+                    max="110"
+                    step="5"
+                    value={currentData.logoHeight || 75}
+                    onChange={(e) => updateData("logoHeight", parseInt(e.target.value))}
+                    style={{ flex: 1, accentColor: "#e41318" }}
+                  />
+                  <span style={{ fontSize: "13px", fontWeight: "bold", minWidth: "45px" }}>
+                    {currentData.logoHeight || 75}px
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => updateData("logoHeight", 75)}
+                    style={{
+                      padding: "2px 8px",
+                      fontSize: "11px",
+                      borderRadius: "4px",
+                      border: "1px solid #d1d5db",
+                      backgroundColor: "#fff",
+                      cursor: "pointer"
+                    }}
+                  >
+                    Défaut (75px)
+                  </button>
+                </div>
               </div>
             )}
 
