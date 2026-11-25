@@ -16,10 +16,10 @@ export default async function InstagramDashboardPage() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h1 style={{ fontFamily: 'var(--font-heading)' }}>Création de Posts Instagram</h1>
-        <Link href="/admin/instagram/custom" className="admin-btn admin-btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', fontWeight: 'bold' }}>
-          <i className="fas fa-magic"></i> Info Courte Libre (1080x1350)
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
+        <h1 style={{ fontFamily: 'var(--font-heading)' }}>Création de Posts Instagram & Réseaux</h1>
+        <Link href="/admin/instagram/custom" className="admin-btn admin-btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 22px', fontWeight: 'bold', background: 'linear-gradient(45deg, #059669 0%, #10b981 100%)', color: '#fff', boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }}>
+          <i className="fas fa-wand-magic-sparkles"></i> Ouvrir le Creator Studio (Modèles & Fêtes : Srefidensi Dey, Top 10...)
         </Link>
       </div>
 

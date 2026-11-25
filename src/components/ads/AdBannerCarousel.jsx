@@ -68,12 +68,13 @@ export default function AdBannerCarousel({
 
   const mediaPosition = current?.object_position || extractMediaPosition(current?.image_url) || 'center';
 
-  const hasTitle = Boolean(current.title?.trim());
-  const hasSubtitle = Boolean(current.subtitle?.trim());
-  const hasSponsor = Boolean(current.sponsor_name?.trim());
-  const hasBadge = Boolean(current.badge_text?.trim());
-  const hasCta = Boolean(current.cta_text?.trim());
-  const hasAnyText = hasTitle || hasSubtitle || hasSponsor || hasBadge || hasCta;
+  const isMediaOnly = Boolean(current?.is_media_only);
+  const hasTitle = !isMediaOnly && Boolean(current?.title?.trim());
+  const hasSubtitle = !isMediaOnly && Boolean(current?.subtitle?.trim());
+  const hasSponsor = !isMediaOnly && Boolean(current?.sponsor_name?.trim());
+  const hasBadge = !isMediaOnly && Boolean(current?.badge_text?.trim());
+  const hasCta = !isMediaOnly && Boolean(current?.cta_text?.trim());
+  const hasAnyText = !isMediaOnly && (hasTitle || hasSubtitle || hasSponsor || hasBadge || hasCta);
 
   const handleBannerClick = () => {
     if (!current) return;

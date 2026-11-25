@@ -147,7 +147,7 @@ export default function AdsAdminClient({ initialBanners = [], articles = [] }) {
     setPositionY(coords.y);
 
     const hasAnyText = Boolean(banner.title || banner.subtitle || banner.sponsor_name || banner.badge_text || banner.cta_text);
-    setIsMediaOnly(!hasAnyText);
+    setIsMediaOnly(Boolean(banner.is_media_only) || (!hasAnyText && Boolean(banner.image_url)));
 
     setTitle(banner.title || '');
     setSubtitle(banner.subtitle || '');
@@ -237,7 +237,9 @@ export default function AdsAdminClient({ initialBanners = [], articles = [] }) {
   const handleSave = async (e) => {
     e.preventDefault();
 
-    if (!isMediaOnly && !title.trim()) {
+    const finalTitle = title.trim() || (isMediaOnly ? 'Bannière visuelle' : '');
+
+    if (!isMediaOnly && !finalTitle) {
       alert('Veuillez renseigner un titre pour la bannière ou cocher "Bannière 100% visuelle".');
       return;
     }
@@ -252,7 +254,7 @@ export default function AdsAdminClient({ initialBanners = [], articles = [] }) {
       const finalImageUrl = applyMediaPosition(imageUrl.trim(), `${positionX}% ${positionY}%`);
       const payload = {
         id: editingBanner?.id,
-        title: isMediaOnly ? '' : title.trim(),
+        title: finalTitle,
         subtitle: isMediaOnly ? '' : subtitle.trim(),
         sponsor_name: isMediaOnly ? '' : sponsorName.trim(),
         badge_text: isMediaOnly ? '' : badgeText.trim(),
@@ -261,6 +263,7 @@ export default function AdsAdminClient({ initialBanners = [], articles = [] }) {
         media_type: mediaType,
         link_url: linkUrl.trim(),
         cta_text: isMediaOnly ? '' : ctaText.trim(),
+        is_media_only: isMediaOnly,
         placement,
         start_date: startDate ? new Date(startDate).toISOString() : null,
         end_date: endDate ? new Date(endDate).toISOString() : null,
@@ -504,8 +507,13 @@ export default function AdsAdminClient({ initialBanners = [], articles = [] }) {
                       )}
                     </td>
                     <td>
-                      <div style={{ fontWeight: '700', fontSize: '15px', color: '#111827', marginBottom: '2px' }}>
-                        {hasText ? banner.title : <span style={{ fontStyle: 'italic', color: '#64748b' }}>[Visuel 100% pur sans texte]</span>}
+                      <div style={{ fontWeight: '700', fontSize: '15px', color: '#111827', marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                        <span>{banner.title || '[Bannière sans nom]'}</span>
+                        {banner.is_media_only && (
+                          <span style={{ fontSize: '11px', backgroundColor: '#eff6ff', color: '#1d4ed8', border: '1px solid #bfdbfe', padding: '1px 8px', borderRadius: '4px', fontWeight: '800' }}>
+                            Visuel pur (aucun texte sur le site)
+                          </span>
+                        )}
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#6b7280' }}>
                         {banner.badge_text && (
@@ -764,7 +772,10 @@ export default function AdsAdminClient({ initialBanners = [], articles = [] }) {
                     onChange={(e) => {
                       setIsMediaOnly(e.target.checked);
                       if (e.target.checked) {
-                        clearAllTexts();
+                        setSubtitle('');
+                        setSponsorName('');
+                        setBadgeText('');
+                        setCtaText('');
                       }
                     }}
                     style={{ width: '20px', height: '20px', cursor: 'pointer' }}
@@ -948,14 +959,32 @@ export default function AdsAdminClient({ initialBanners = [], articles = [] }) {
                 )}
               </div>
 
-              {/* CHAMPS TEXTES (DÉSACTIVÉS SI MODE 100% VISUEL) */}
-              {!isMediaOnly ? (
+              {/* CHAMPS TEXTES (ADAPTÉS SELON LE MODE VISUEL PUR OU STANDARD) */}
+              {isMediaOnly ? (
+                <div className="admin-form-group" style={{ backgroundColor: '#eff6ff', padding: '16px', borderRadius: '10px', border: '1.5px solid #93c5fd' }}>
+                  <label className="admin-form-label" style={{ fontWeight: '800', color: '#1e40af', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', marginBottom: '6px' }}>
+                    <Tag size={16} />
+                    Intitulé / Nom de repère interne (visible uniquement en administration)
+                  </label>
+                  <input
+                    type="text"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Ex: Campagne Srefidensi Suriname, Affiche Promo Partenaire..."
+                    className="admin-form-control"
+                    style={{ backgroundColor: '#fff', borderColor: '#60a5fa', fontWeight: '600' }}
+                  />
+                  <div style={{ fontSize: '12px', color: '#475569', marginTop: '6px', lineHeight: '1.4' }}>
+                    💡 <strong>Mode visuel pur activé</strong> : Ce titre sert exclusivement de repère dans votre tableau de bord admin pour identifier et classer vos campagnes. <u>Aucun texte ni bouton ne sera affiché sur le site web</u>.
+                  </div>
+                </div>
+              ) : (
                 <>
                   <div className="admin-form-group">
                     <label className="admin-form-label">Titre de la campagne *</label>
                     <input
                       type="text"
-                      required={!isMediaOnly}
+                      required
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
                       placeholder="Ex: Nouvelle édition de La Folle du Couvent disponible !"
@@ -1029,10 +1058,6 @@ export default function AdsAdminClient({ initialBanners = [], articles = [] }) {
                     />
                   </div>
                 </>
-              ) : (
-                <div style={{ padding: '12px 16px', borderRadius: '8px', backgroundColor: '#f1f5f9', color: '#475569', fontSize: '13px', marginBottom: '20px' }}>
-                  ℹ️ <strong>Mode Visuel Pur Actif :</strong> aucun titre, texte, badge ni bouton CTA ne sera affiché par-dessus le visuel.
-                </div>
               )}
 
               <div className="admin-form-row">

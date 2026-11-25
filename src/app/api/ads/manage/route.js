@@ -58,8 +58,11 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const banner = await request.json();
-    if (!banner.title) {
-      return NextResponse.json({ success: false, error: 'Titre manquant' }, { status: 400 });
+    const hasTitle = Boolean(banner.title && banner.title.trim());
+    const hasMedia = Boolean(banner.image_url && banner.image_url.trim());
+
+    if (!hasTitle && !hasMedia) {
+      return NextResponse.json({ success: false, error: 'Veuillez renseigner un titre ou ajouter une photo/vidéo' }, { status: 400 });
     }
 
     const supabase = getAdminClient();
@@ -67,6 +70,11 @@ export async function POST(request) {
     const bannerPayload = {
       ...banner,
       id: bannerId,
+      title: banner.title || '',
+      subtitle: banner.subtitle || '',
+      sponsor_name: banner.sponsor_name || '',
+      badge_text: banner.badge_text || '',
+      cta_text: banner.cta_text || '',
       updated_at: new Date().toISOString(),
       views_count: banner.views_count || 0,
       clicks_count: banner.clicks_count || 0,
