@@ -26,7 +26,8 @@ import {
   Sparkles,
   Play,
   Move,
-  EyeOff
+  EyeOff,
+  Tag
 } from 'lucide-react';
 import { saveBannerData, deleteBannerData } from '@/lib/ads';
 import { supabase } from '@/lib/supabase';
