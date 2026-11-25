@@ -144,6 +144,10 @@ export default async function AdminLayout({ children }) {
           <Link href="/admin/companies" className="admin-nav-link">
             <i className="fas fa-building"></i> Entreprises PRO
           </Link>
+
+          <Link href="/admin/ads" className="admin-nav-link" style={{ background: 'linear-gradient(45deg, #f59e0b 0%, #d97706 100%)', color: 'white', fontWeight: 'bold' }}>
+            <i className="fas fa-rectangle-ad"></i> Régie Publicitaire
+          </Link>
           
           <Link href="/admin/magazines" className="admin-nav-link" style={{ background: 'linear-gradient(45deg, #10b981 0%, #059669 100%)', color: 'white', fontWeight: 'bold' }}>
             <i className="fas fa-book-open"></i> Magazines

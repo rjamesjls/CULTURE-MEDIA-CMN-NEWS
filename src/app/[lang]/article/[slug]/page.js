@@ -7,6 +7,7 @@ import ViewTracker from '@/components/ViewTracker';
 import TextToSpeechButton from '@/components/TextToSpeechButton';
 import ArticleHeaderSetter from '@/components/ArticleHeaderSetter';
 import { getUserProfile } from '@/utils/supabase/auth';
+import AdBannerCarousel from '@/components/ads/AdBannerCarousel';
 
 export const revalidate = 60; // Revalidate every minute
 
@@ -281,6 +282,9 @@ export default async function ArticlePage({ params }) {
           <div dangerouslySetInnerHTML={{ __html: getContent(article) ? getContent(article).replace(/&nbsp;/g, ' ') : '' }} />
         </div>
 
+        {/* AD BANNER: IN FEED */}
+        <AdBannerCarousel placement="in_feed" />
+
         <ArticleInteractions articleId={article.id} initialLikes={article.likes_count || 0} />
         <ArticleComments articleId={article.id} initialComments={comments || []} />
 
@@ -311,6 +315,9 @@ export default async function ArticlePage({ params }) {
           </Link>
         ))}
         </div>
+
+        {/* AD BANNER: SIDEBAR */}
+        <AdBannerCarousel placement="sidebar" />
       </aside>
 
       <style>{`

@@ -2,6 +2,7 @@ import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import NewsletterForm from '@/components/NewsletterForm';
 import { getDictionary } from '@/i18n/dictionaries';
+import AdBannerCarousel from '@/components/ads/AdBannerCarousel';
 
 export const revalidate = 60; // Revalidate every minute
 
@@ -91,6 +92,11 @@ export default async function Home({ params }) {
         </div>
       </section>
 
+      {/* AD BANNER: HEADER */}
+      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '15px 20px 0 20px' }}>
+        <AdBannerCarousel placement="header" />
+      </div>
+
       {/* MAIN CONTENT AREA */}
       <section className="section" style={{ padding: '40px 0' }}>
         <div className="article-layout-wrapper" style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 20px', display: 'flex', gap: '40px', alignItems: 'flex-start' }}>
@@ -145,6 +151,9 @@ export default async function Home({ params }) {
                 </article>
               ))}
             </div>
+
+            {/* AD BANNER: IN FEED */}
+            <AdBannerCarousel placement="in_feed" />
           </div>
 
           {/* Right Sidebar: Most Read Articles */}
@@ -167,6 +176,9 @@ export default async function Home({ params }) {
               </Link>
             ))}
             </div>
+
+            {/* AD BANNER: SIDEBAR */}
+            <AdBannerCarousel placement="sidebar" />
           </aside>
 
         </div>
