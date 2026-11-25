@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS public.ad_banners (
     title TEXT NOT NULL,
     subtitle TEXT,
     image_url TEXT,
+    media_type TEXT DEFAULT 'image', -- 'image' | 'video'
     badge_text TEXT DEFAULT 'Sponsorisé',
     sponsor_name TEXT DEFAULT 'Partenaire AFOLUKU TV',
     cta_text TEXT DEFAULT 'En savoir plus',

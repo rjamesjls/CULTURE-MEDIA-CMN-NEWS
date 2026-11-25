@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import {
   Megaphone,
   Plus,
@@ -18,7 +18,13 @@ import {
   X,
   Upload,
   Percent,
-  Sliders
+  Sliders,
+  Film,
+  Image as ImageIcon,
+  FileText,
+  Search,
+  Sparkles,
+  Play
 } from 'lucide-react';
 import { saveBannerData, deleteBannerData } from '@/lib/ads';
 import { supabase } from '@/lib/supabase';
@@ -26,6 +32,7 @@ import { supabase } from '@/lib/supabase';
 const BADGE_PRESETS = [
   'Sponsorisé',
   'À la une',
+  'Article Partenaire',
   'Offre Partenaire',
   'Événement',
   'Nouveau',
@@ -39,13 +46,17 @@ const PLACEMENTS = [
   { id: 'all', label: 'Tous les emplacements' },
 ];
 
-export default function AdsAdminClient({ initialBanners = [] }) {
+export default function AdsAdminClient({ initialBanners = [], articles = [] }) {
   const [banners, setBanners] = useState(initialBanners);
   const [filterPlacement, setFilterPlacement] = useState('all');
   const [showModal, setShowModal] = useState(false);
   const [editingBanner, setEditingBanner] = useState(null);
   const [saving, setSaving] = useState(false);
-  const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadingMedia, setUploadingMedia] = useState(false);
+
+  // Article Picker State
+  const [showArticlePicker, setShowArticlePicker] = useState(false);
+  const [articleSearchQuery, setArticleSearchQuery] = useState('');
 
   // Form State
   const [title, setTitle] = useState('');
@@ -53,6 +64,7 @@ export default function AdsAdminClient({ initialBanners = [] }) {
   const [sponsorName, setSponsorName] = useState('');
   const [badgeText, setBadgeText] = useState('Sponsorisé');
   const [imageUrl, setImageUrl] = useState('');
+  const [mediaType, setMediaType] = useState('image'); // 'image' | 'video'
   const [linkUrl, setLinkUrl] = useState('');
   const [ctaText, setCtaText] = useState('En savoir plus');
   const [placement, setPlacement] = useState('header');
@@ -61,6 +73,13 @@ export default function AdsAdminClient({ initialBanners = [] }) {
   const [isActive, setIsActive] = useState(true);
 
   const fileInputRef = useRef(null);
+
+  // Helper check if URL is video
+  const checkIsVideo = (url, type) => {
+    if (type === 'video') return true;
+    if (!url) return false;
+    return /\.(mp4|webm|mov|ogg)($|\?)/i.test(url);
+  };
 
   // Stats calculation
   const totalViews = banners.reduce((sum, b) => sum + (b.views_count || 0), 0);
@@ -75,12 +94,14 @@ export default function AdsAdminClient({ initialBanners = [] }) {
     setSponsorName('');
     setBadgeText('Sponsorisé');
     setImageUrl('');
+    setMediaType('image');
     setLinkUrl('');
     setCtaText('En savoir plus');
     setPlacement('header');
     setStartDate('');
     setEndDate('');
     setIsActive(true);
+    setShowArticlePicker(false);
     setShowModal(true);
   };
 
@@ -91,23 +112,34 @@ export default function AdsAdminClient({ initialBanners = [] }) {
     setSponsorName(banner.sponsor_name || '');
     setBadgeText(banner.badge_text || 'Sponsorisé');
     setImageUrl(banner.image_url || '');
+    setMediaType(banner.media_type || (checkIsVideo(banner.image_url) ? 'video' : 'image'));
     setLinkUrl(banner.link_url || '');
     setCtaText(banner.cta_text || 'En savoir plus');
     setPlacement(banner.placement || 'header');
     setStartDate(banner.start_date ? banner.start_date.substring(0, 10) : '');
     setEndDate(banner.end_date ? banner.end_date.substring(0, 10) : '');
     setIsActive(banner.is_active ?? true);
+    setShowArticlePicker(false);
     setShowModal(true);
   };
 
-  const handleImageUpload = async (e) => {
+  const handleMediaUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setUploadingImage(true);
+    const isVideo = file.type.startsWith('video/');
+    const maxSize = isVideo ? 60 * 1024 * 1024 : 15 * 1024 * 1024;
+    if (file.size > maxSize) {
+      alert(`Fichier trop volumineux. Limite : ${isVideo ? '60 Mo pour une vidéo' : '15 Mo pour une photo'}.`);
+      return;
+    }
+
+    setUploadingMedia(true);
     try {
       const fileExt = file.name.split('.').pop();
-      const fileName = `ads/banner_${Date.now()}.${fileExt}`;
+      const folder = isVideo ? 'ads/videos' : 'ads/images';
+      const fileName = `${folder}/banner_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
+
       const { error: uploadError } = await supabase.storage
         .from('media')
         .upload(fileName, file, { cacheControl: '3600', upsert: false });
@@ -116,12 +148,39 @@ export default function AdsAdminClient({ initialBanners = [] }) {
 
       const { data } = supabase.storage.from('media').getPublicUrl(fileName);
       setImageUrl(data.publicUrl);
+      setMediaType(isVideo ? 'video' : 'image');
     } catch (err) {
       alert("Erreur lors de l'upload : " + err.message);
     } finally {
-      setUploadingImage(false);
+      setUploadingMedia(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
+
+  const handleSelectArticle = (art) => {
+    setTitle(art.title || '');
+    setSubtitle(art.description || art.hook_bsh || '');
+    if (art.image_url) {
+      setImageUrl(art.image_url);
+      setMediaType('image');
+    }
+    setLinkUrl(`/fr/article/${art.slug}`);
+    setSponsorName(art.author ? `Par ${art.author}` : 'Rédaction AFOLUKU TV');
+    setBadgeText('À la une');
+    setCtaText('Lire l’article');
+    setShowArticlePicker(false);
+  };
+
+  const filteredArticles = useMemo(() => {
+    if (!articleSearchQuery.trim()) return articles.slice(0, 15);
+    const q = articleSearchQuery.toLowerCase();
+    return articles.filter(
+      (a) =>
+        a.title?.toLowerCase().includes(q) ||
+        a.category?.toLowerCase().includes(q) ||
+        a.author?.toLowerCase().includes(q)
+    ).slice(0, 15);
+  }, [articles, articleSearchQuery]);
 
   const handleSave = async (e) => {
     e.preventDefault();
@@ -139,6 +198,7 @@ export default function AdsAdminClient({ initialBanners = [] }) {
         sponsor_name: sponsorName,
         badge_text: badgeText,
         image_url: imageUrl,
+        media_type: mediaType,
         link_url: linkUrl,
         cta_text: ctaText,
         placement,
@@ -182,144 +242,150 @@ export default function AdsAdminClient({ initialBanners = [] }) {
       await saveBannerData(updated);
       setBanners((prev) => prev.map((b) => (b.id === banner.id ? updated : b)));
     } catch (err) {
-      alert('Erreur : ' + err.message);
+      alert('Erreur de mise à jour du statut : ' + err.message);
     }
   };
 
   const handleMove = async (index, direction) => {
-    const targetIndex = index + direction;
-    if (targetIndex < 0 || targetIndex >= banners.length) return;
-
     const newBanners = [...banners];
-    const [moved] = newBanners.splice(index, 1);
-    newBanners.splice(targetIndex, 0, moved);
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= newBanners.length) return;
 
-    // Mettre à jour display_order
-    const reordered = newBanners.map((b, i) => ({ ...b, display_order: i }));
-    setBanners(reordered);
+    const temp = newBanners[index];
+    newBanners[index] = newBanners[targetIndex];
+    newBanners[targetIndex] = temp;
+
+    newBanners.forEach((b, idx) => {
+      b.display_order = idx;
+    });
+
+    setBanners(newBanners);
 
     try {
       await Promise.all([
-        saveBannerData(reordered[index]),
-        saveBannerData(reordered[targetIndex]),
+        saveBannerData(newBanners[index]),
+        saveBannerData(newBanners[targetIndex]),
       ]);
-    } catch (e) {
-      console.error(e);
+    } catch (err) {
+      console.error('Erreur réordonnancement:', err);
     }
   };
 
-  const filteredBanners = filterPlacement === 'all'
-    ? banners
-    : banners.filter((b) => b.placement === filterPlacement || b.placement === 'all');
+  const filteredBanners = banners.filter((b) => {
+    if (filterPlacement === 'all') return true;
+    return b.placement === filterPlacement || b.placement === 'all';
+  });
 
   return (
-    <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '20px 0' }}>
-      {/* En-tête */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '15px' }}>
+    <div className="admin-page">
+      {/* Top Header */}
+      <div className="admin-page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <div>
-          <h1 style={{ fontSize: '28px', fontWeight: '800', margin: '0 0 6px 0', fontFamily: 'var(--font-heading)' }}>
+          <h1 className="admin-page-title" style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: 0 }}>
+            <Megaphone size={28} color="#dc2626" />
             Régie Publicitaire & Bannières
           </h1>
-          <p style={{ margin: 0, color: '#6b7280', fontSize: '14px' }}>
-            Gérez les campagnes de vos sponsors et partenaires sur AFOLUKU TV (Header, Articles, Sidebar).
+          <p style={{ color: '#6b7280', margin: '4px 0 0 0', fontSize: '14px' }}>
+            Gérez vos encarts publicitaires, sponsorisations, vidéos et mise en avant d'articles sur AFOLUKU TV.
           </p>
         </div>
         <button
           onClick={openNewModal}
           className="admin-btn admin-btn-primary"
-          style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 18px', fontSize: '14px' }}
+          style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 18px' }}
         >
           <Plus size={18} />
-          Créer un encart publicitaire
+          Nouvelle Campagne
         </button>
       </div>
 
-      {/* Cartes Statistiques Globales */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginBottom: '30px' }}>
-        <div style={{ backgroundColor: '#fff', padding: '18px', borderRadius: '12px', border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#6b7280', marginBottom: '8px' }}>
-            <span style={{ fontSize: '13px', fontWeight: '600' }}>Bannières Actives</span>
-            <Megaphone size={18} color="#2563eb" />
-          </div>
-          <div style={{ fontSize: '26px', fontWeight: '800', color: '#111827' }}>
-            {activeCount} <span style={{ fontSize: '14px', fontWeight: 'normal', color: '#9ca3af' }}>/ {banners.length}</span>
+      {/* KPI Cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+        <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px 20px', border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+          <div style={{ fontSize: '13px', color: '#6b7280', textTransform: 'uppercase', fontWeight: '600' }}>Campagnes Actives</div>
+          <div style={{ fontSize: '28px', fontWeight: '800', color: '#16a34a', marginTop: '4px' }}>
+            {activeCount} <span style={{ fontSize: '14px', color: '#9ca3af', fontWeight: '400' }}>/ {banners.length}</span>
           </div>
         </div>
 
-        <div style={{ backgroundColor: '#fff', padding: '18px', borderRadius: '12px', border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#6b7280', marginBottom: '8px' }}>
-            <span style={{ fontSize: '13px', fontWeight: '600' }}>Impressions / Vues</span>
-            <Eye size={18} color="#10b981" />
+        <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px 20px', border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+          <div style={{ fontSize: '13px', color: '#6b7280', textTransform: 'uppercase', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Eye size={16} /> Total Impressions
           </div>
-          <div style={{ fontSize: '26px', fontWeight: '800', color: '#111827' }}>
+          <div style={{ fontSize: '28px', fontWeight: '800', color: '#1e293b', marginTop: '4px' }}>
             {totalViews.toLocaleString('fr-FR')}
           </div>
         </div>
 
-        <div style={{ backgroundColor: '#fff', padding: '18px', borderRadius: '12px', border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#6b7280', marginBottom: '8px' }}>
-            <span style={{ fontSize: '13px', fontWeight: '600' }}>Clics Partenaires</span>
-            <MousePointerClick size={18} color="#f59e0b" />
+        <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px 20px', border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+          <div style={{ fontSize: '13px', color: '#6b7280', textTransform: 'uppercase', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <MousePointerClick size={16} /> Total Clics
           </div>
-          <div style={{ fontSize: '26px', fontWeight: '800', color: '#111827' }}>
+          <div style={{ fontSize: '28px', fontWeight: '800', color: '#2563eb', marginTop: '4px' }}>
             {totalClicks.toLocaleString('fr-FR')}
           </div>
         </div>
 
-        <div style={{ backgroundColor: '#fff', padding: '18px', borderRadius: '12px', border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#6b7280', marginBottom: '8px' }}>
-            <span style={{ fontSize: '13px', fontWeight: '600' }}>Taux de Clics (CTR)</span>
-            <Percent size={18} color="#8b5cf6" />
+        <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px 20px', border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+          <div style={{ fontSize: '13px', color: '#6b7280', textTransform: 'uppercase', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Percent size={16} /> Taux de Clic (CTR)
           </div>
-          <div style={{ fontSize: '26px', fontWeight: '800', color: '#111827' }}>
+          <div style={{ fontSize: '28px', fontWeight: '800', color: '#d97706', marginTop: '4px' }}>
             {averageCtr}%
           </div>
         </div>
       </div>
 
-      {/* Filtres par emplacement */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', flexWrap: 'wrap' }}>
-        {[{ id: 'all', label: 'Toutes les bannières' }, ...PLACEMENTS].map((p) => (
+      {/* Filter Tabs */}
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', overflowX: 'auto', paddingBottom: '4px' }}>
+        {[
+          { id: 'all', label: 'Toutes les bannières' },
+          { id: 'header', label: 'Haut de page' },
+          { id: 'in_feed', label: 'Dans les articles' },
+          { id: 'sidebar', label: 'Barre latérale' },
+        ].map((tab) => (
           <button
-            key={p.id}
-            onClick={() => setFilterPlacement(p.id)}
+            key={tab.id}
+            type="button"
+            onClick={() => setFilterPlacement(tab.id)}
             style={{
-              padding: '8px 16px',
+              padding: '8px 14px',
               borderRadius: '8px',
-              border: filterPlacement === p.id ? '1px solid #2563eb' : '1px solid #e5e7eb',
-              backgroundColor: filterPlacement === p.id ? '#eff6ff' : '#fff',
-              color: filterPlacement === p.id ? '#1d4ed8' : '#4b5563',
-              fontWeight: filterPlacement === p.id ? '700' : '500',
+              border: 'none',
+              backgroundColor: filterPlacement === tab.id ? '#1e293b' : '#f1f5f9',
+              color: filterPlacement === tab.id ? '#fff' : '#475569',
+              fontWeight: '600',
               fontSize: '13px',
               cursor: 'pointer',
-              transition: 'all 0.15s',
+              transition: 'all 0.2s',
             }}
           >
-            {p.label}
+            {tab.label}
           </button>
         ))}
       </div>
 
-      {/* Liste des Bannières */}
+      {/* Banner Table */}
       {filteredBanners.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '60px 20px', backgroundColor: '#fff', borderRadius: '12px', border: '1px dashed #d1d5db' }}>
+        <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '60px 20px', textAlign: 'center', border: '1px dashed #d1d5db' }}>
           <Megaphone size={40} color="#9ca3af" style={{ margin: '0 auto 12px auto' }} />
-          <h3 style={{ margin: '0 0 6px 0', fontSize: '18px', color: '#111827' }}>Aucun encart publicitaire</h3>
-          <p style={{ margin: '0 0 16px 0', color: '#6b7280', fontSize: '14px' }}>
-            Créez votre première campagne publicitaire pour diffuser un encart sponsorisé sur le site.
+          <h3 style={{ margin: '0 0 6px 0', fontSize: '18px', fontWeight: '700' }}>Aucun encart publicitaire</h3>
+          <p style={{ color: '#6b7280', margin: '0 0 16px 0', fontSize: '14px' }}>
+            Créez votre première campagne publicitaire avec photo, vidéo ou mise en avant d'un article.
           </p>
           <button onClick={openNewModal} className="admin-btn admin-btn-primary">
+            <Plus size={16} style={{ marginRight: '6px' }} />
             Ajouter une bannière
           </button>
         </div>
       ) : (
-        <div style={{ backgroundColor: '#fff', borderRadius: '12px', border: '1px solid #e5e7eb', overflow: 'hidden' }}>
-          <table className="admin-table" style={{ margin: 0 }}>
+        <div style={{ backgroundColor: '#fff', borderRadius: '12px', border: '1px solid #e5e7eb', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+          <table className="admin-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
-              <tr>
+              <tr style={{ backgroundColor: '#f8fafc', borderBottom: '1px solid #e2e8f0', textAlign: 'left', fontSize: '12px', textTransform: 'uppercase', color: '#64748b' }}>
                 <th style={{ width: '60px' }}>Ordre</th>
                 <th style={{ width: '120px' }}>Visuel</th>
-                <th>Campagne & Sponsor</th>
+                <th>Campagne & Annonceur</th>
                 <th>Emplacement</th>
                 <th>Période</th>
                 <th>Statistiques</th>
@@ -330,8 +396,9 @@ export default function AdsAdminClient({ initialBanners = [] }) {
             <tbody>
               {filteredBanners.map((banner, index) => {
                 const ctr = banner.views_count > 0 ? (((banner.clicks_count || 0) / banner.views_count) * 100).toFixed(1) : 0;
+                const isVideo = checkIsVideo(banner.image_url, banner.media_type);
                 return (
-                  <tr key={banner.id}>
+                  <tr key={banner.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                     <td>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                         <button
@@ -356,8 +423,17 @@ export default function AdsAdminClient({ initialBanners = [] }) {
                     </td>
                     <td>
                       {banner.image_url ? (
-                        <div style={{ width: '100px', height: '60px', borderRadius: '6px', overflow: 'hidden', backgroundColor: '#f1f5f9' }}>
-                          <img src={banner.image_url} alt={banner.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <div style={{ width: '100px', height: '60px', borderRadius: '6px', overflow: 'hidden', backgroundColor: '#0f172a', position: 'relative' }}>
+                          {isVideo ? (
+                            <>
+                              <video src={banner.image_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} muted />
+                              <span style={{ position: 'absolute', bottom: '3px', right: '3px', backgroundColor: 'rgba(0,0,0,0.7)', color: '#ffce00', padding: '2px 4px', borderRadius: '3px', fontSize: '9px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                                <Play size={8} /> VIDÉO
+                              </span>
+                            </>
+                          ) : (
+                            <img src={banner.image_url} alt={banner.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          )}
                         </div>
                       ) : (
                         <div style={{ width: '100px', height: '60px', borderRadius: '6px', backgroundColor: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
@@ -461,7 +537,8 @@ export default function AdsAdminClient({ initialBanners = [] }) {
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.6)',
+            backgroundColor: 'rgba(0,0,0,0.65)',
+            backdropFilter: 'blur(3px)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -473,20 +550,25 @@ export default function AdsAdminClient({ initialBanners = [] }) {
             style={{
               backgroundColor: '#fff',
               borderRadius: '16px',
-              maxWidth: '680px',
+              maxWidth: '720px',
               width: '100%',
               maxHeight: '90vh',
               overflowY: 'auto',
-              boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
+              boxShadow: '0 25px 50px -12px rgba(0,0,0,0.3)',
               display: 'flex',
               flexDirection: 'column',
             }}
           >
             {/* Modal Header */}
             <div style={{ padding: '20px 24px', borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '800', fontFamily: 'var(--font-heading)' }}>
-                {editingBanner ? 'Modifier l’encart publicitaire' : 'Créer un nouvel encart publicitaire'}
-              </h2>
+              <div>
+                <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '800', fontFamily: 'var(--font-heading)' }}>
+                  {editingBanner ? 'Modifier l’encart publicitaire' : 'Créer un nouvel encart publicitaire'}
+                </h2>
+                <p style={{ margin: '3px 0 0 0', fontSize: '13px', color: '#64748b' }}>
+                  Diffusez des bannières photos, vidéos ou des articles mis en avant.
+                </p>
+              </div>
               <button
                 type="button"
                 onClick={() => setShowModal(false)}
@@ -498,6 +580,104 @@ export default function AdsAdminClient({ initialBanners = [] }) {
 
             {/* Modal Form */}
             <form onSubmit={handleSave} style={{ padding: '24px' }}>
+              
+              {/* ACTION : IMPORTER DEPUIS UN ARTICLE */}
+              <div style={{ marginBottom: '20px', padding: '14px 16px', borderRadius: '10px', backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Sparkles size={18} color="#16a34a" />
+                    <div>
+                      <strong style={{ fontSize: '14px', color: '#166534' }}>Mettre en avant un article du site</strong>
+                      <div style={{ fontSize: '12px', color: '#15803d' }}>
+                        Importez en 1 clic le titre, le texte, l'image et le lien d'un article existant.
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowArticlePicker(!showArticlePicker)}
+                    style={{
+                      padding: '6px 12px',
+                      borderRadius: '6px',
+                      border: '1px solid #16a34a',
+                      backgroundColor: '#fff',
+                      color: '#166534',
+                      fontSize: '13px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                    }}
+                  >
+                    <FileText size={14} />
+                    {showArticlePicker ? 'Fermer le sélecteur' : 'Choisir un article'}
+                  </button>
+                </div>
+
+                {/* SÉLECTEUR D'ARTICLE DÉPLIÉ */}
+                {showArticlePicker && (
+                  <div style={{ marginTop: '14px', borderTop: '1px solid #bbf7d0', paddingTop: '12px' }}>
+                    <div style={{ position: 'relative', marginBottom: '10px' }}>
+                      <Search size={16} color="#9ca3af" style={{ position: 'absolute', left: '10px', top: '10px' }} />
+                      <input
+                        type="text"
+                        value={articleSearchQuery}
+                        onChange={(e) => setArticleSearchQuery(e.target.value)}
+                        placeholder="Rechercher par titre, catégorie ou auteur..."
+                        style={{
+                          width: '100%',
+                          padding: '8px 12px 8px 34px',
+                          borderRadius: '6px',
+                          border: '1px solid #cbd5e1',
+                          fontSize: '13px',
+                        }}
+                      />
+                    </div>
+                    <div style={{ maxHeight: '180px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      {filteredArticles.length === 0 ? (
+                        <div style={{ fontSize: '12px', color: '#64748b', padding: '8px' }}>Aucun article trouvé.</div>
+                      ) : (
+                        filteredArticles.map((art) => (
+                          <div
+                            key={art.id}
+                            onClick={() => handleSelectArticle(art)}
+                            style={{
+                              padding: '8px 10px',
+                              borderRadius: '6px',
+                              backgroundColor: '#fff',
+                              border: '1px solid #e2e8f0',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '10px',
+                              transition: 'background 0.2s',
+                            }}
+                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f1f5f9')}
+                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#fff')}
+                          >
+                            {art.image_url && (
+                              <img src={art.image_url} alt="" style={{ width: '40px', height: '40px', borderRadius: '4px', objectFit: 'cover' }} />
+                            )}
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: '13px', fontWeight: '700', color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {art.title}
+                              </div>
+                              <div style={{ fontSize: '11px', color: '#64748b' }}>
+                                {art.category || 'Actualité'} • {art.author || 'Rédaction'}
+                              </div>
+                            </div>
+                            <span style={{ fontSize: '11px', color: '#16a34a', fontWeight: '700', whiteSpace: 'nowrap' }}>
+                              Sélectionner ➔
+                            </span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <div className="admin-form-group">
                 <label className="admin-form-label">Titre de la campagne *</label>
                 <input
@@ -505,7 +685,7 @@ export default function AdsAdminClient({ initialBanners = [] }) {
                   required
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Ex: Vol Cayenne - Paris à partir de 499€"
+                  placeholder="Ex: Nouvelle édition de La Folle du Couvent disponible !"
                   className="admin-form-control"
                 />
               </div>
@@ -516,7 +696,7 @@ export default function AdsAdminClient({ initialBanners = [] }) {
                   rows={2}
                   value={subtitle}
                   onChange={(e) => setSubtitle(e.target.value)}
-                  placeholder="Ex: Réservez dès maintenant pour bénéficier de nos offres exclusives d'hiver."
+                  placeholder="Ex: Découvrez le reportage exclusif et toutes les vidéos en direct sur notre chaîne."
                   className="admin-form-control"
                   style={{ resize: 'vertical' }}
                 />
@@ -524,12 +704,12 @@ export default function AdsAdminClient({ initialBanners = [] }) {
 
               <div className="admin-form-row">
                 <div className="admin-form-group">
-                  <label className="admin-form-label">Nom de l'Annonceur / Sponsor</label>
+                  <label className="admin-form-label">Nom de l'Annonceur / Auteur</label>
                   <input
                     type="text"
                     value={sponsorName}
                     onChange={(e) => setSponsorName(e.target.value)}
-                    placeholder="Ex: Air Guyane / Orange"
+                    placeholder="Ex: AFOLUKU TV / Partenaire"
                     className="admin-form-control"
                   />
                 </div>
@@ -567,7 +747,7 @@ export default function AdsAdminClient({ initialBanners = [] }) {
 
               <div className="admin-form-row">
                 <div className="admin-form-group">
-                  <label className="admin-form-label">Emplacement du placement</label>
+                  <label className="admin-form-label">Emplacement</label>
                   <select
                     value={placement}
                     onChange={(e) => setPlacement(e.target.value)}
@@ -585,7 +765,7 @@ export default function AdsAdminClient({ initialBanners = [] }) {
                     type="text"
                     value={ctaText}
                     onChange={(e) => setCtaText(e.target.value)}
-                    placeholder="Ex: En savoir plus"
+                    placeholder="Ex: Lire l’article ou En savoir plus"
                     className="admin-form-control"
                   />
                 </div>
@@ -597,44 +777,100 @@ export default function AdsAdminClient({ initialBanners = [] }) {
                   type="text"
                   value={linkUrl}
                   onChange={(e) => setLinkUrl(e.target.value)}
-                  placeholder="Ex: https://www.airguyane.com ou /fr/pro/air-guyane"
+                  placeholder="Ex: /fr/article/mon-article ou https://site-partenaire.com"
                   className="admin-form-control"
                 />
               </div>
 
-              {/* Visuel Image Upload */}
-              <div className="admin-form-group">
-                <label className="admin-form-label">Visuel publicitaire (Image)</label>
+              {/* UPLOAD VISUEL: PHOTO OU VIDÉO */}
+              <div className="admin-form-group" style={{ padding: '16px', borderRadius: '10px', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <label className="admin-form-label" style={{ margin: 0, fontWeight: '700', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Film size={16} color="#dc2626" />
+                    Visuel publicitaire (Photo ou Vidéo)
+                  </label>
+                  <span style={{ fontSize: '11px', color: '#64748b' }}>
+                    Formats supportés : JPG, PNG, WebP, MP4, WebM
+                  </span>
+                </div>
+
                 <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                   <input
                     type="text"
                     value={imageUrl}
-                    onChange={(e) => setImageUrl(e.target.value)}
-                    placeholder="https://... ou uploadez un fichier"
+                    onChange={(e) => {
+                      setImageUrl(e.target.value);
+                      if (checkIsVideo(e.target.value)) setMediaType('video');
+                      else setMediaType('image');
+                    }}
+                    placeholder="URL directe (https://...) ou uploadez un fichier photo/vidéo"
                     className="admin-form-control"
                     style={{ flex: 1, margin: 0 }}
                   />
                   <input
                     type="file"
                     ref={fileInputRef}
-                    onChange={handleImageUpload}
-                    accept="image/*"
+                    onChange={handleMediaUpload}
+                    accept="image/*,video/*"
                     style={{ display: 'none' }}
                   />
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    disabled={uploadingImage}
+                    disabled={uploadingMedia}
                     className="admin-btn"
-                    style={{ backgroundColor: '#f3f4f6', color: '#374151', whiteSpace: 'nowrap' }}
+                    style={{ backgroundColor: '#1e293b', color: '#fff', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '6px' }}
                   >
-                    <Upload size={14} style={{ marginRight: '6px' }} />
-                    {uploadingImage ? 'Upload...' : 'Parcourir'}
+                    <Upload size={14} />
+                    {uploadingMedia ? 'Upload en cours...' : 'Uploader Photo / Vidéo'}
                   </button>
                 </div>
+
+                {/* PRÉVISUALISATION DIRECTE */}
                 {imageUrl && (
-                  <div style={{ marginTop: '10px', height: '100px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #e5e7eb', width: '200px' }}>
-                    <img src={imageUrl} alt="Aperçu" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <div style={{ marginTop: '12px', display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
+                    <div style={{ width: '220px', height: '120px', borderRadius: '8px', overflow: 'hidden', backgroundColor: '#0f172a', border: '1px solid #cbd5e1', position: 'relative' }}>
+                      {checkIsVideo(imageUrl, mediaType) ? (
+                        <video
+                          src={imageUrl}
+                          controls
+                          muted
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                      ) : (
+                        <img
+                          src={imageUrl}
+                          alt="Aperçu"
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                      )}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: '12px', fontWeight: '700', color: '#334155', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        {checkIsVideo(imageUrl, mediaType) ? (
+                          <span style={{ color: '#2563eb', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <Film size={14} /> Vidéo active (lecture automatique en boucle)
+                          </span>
+                        ) : (
+                          <span style={{ color: '#16a34a', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <ImageIcon size={14} /> Image active
+                          </span>
+                        )}
+                      </div>
+                      <p style={{ fontSize: '11px', color: '#64748b', margin: '4px 0 8px 0', wordBreak: 'break-all' }}>
+                        {imageUrl}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setImageUrl('');
+                          setMediaType('image');
+                        }}
+                        style={{ fontSize: '11px', color: '#dc2626', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                      >
+                        Supprimer ce visuel
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -668,30 +904,29 @@ export default function AdsAdminClient({ initialBanners = [] }) {
                   onChange={(e) => setIsActive(e.target.checked)}
                   style={{ width: '18px', height: '18px' }}
                 />
-                <label htmlFor="isActiveCheck" style={{ fontSize: '14px', fontWeight: '600', color: '#111827', cursor: 'pointer' }}>
-                  Diffuser immédiatement cette bannière
+                <label htmlFor="isActiveCheck" style={{ fontSize: '14px', fontWeight: '600', color: '#374151', cursor: 'pointer' }}>
+                  Campagne active immédiatement
                 </label>
               </div>
 
-              {/* Modal Footer */}
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', paddingTop: '15px', borderTop: '1px solid #e5e7eb' }}>
+              {/* Modal Actions */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', paddingTop: '16px', borderTop: '1px solid #e5e7eb' }}>
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  disabled={saving}
                   className="admin-btn"
-                  style={{ backgroundColor: '#f3f4f6', color: '#4b5563' }}
+                  style={{ backgroundColor: '#f3f4f6', color: '#374151' }}
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
-                  disabled={saving}
+                  disabled={saving || uploadingMedia}
                   className="admin-btn admin-btn-primary"
                   style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
                 >
                   <Save size={16} />
-                  {saving ? 'Enregistrement...' : 'Enregistrer la campagne'}
+                  {saving ? 'Enregistrement...' : editingBanner ? 'Mettre à jour' : 'Créer la campagne'}
                 </button>
               </div>
             </form>

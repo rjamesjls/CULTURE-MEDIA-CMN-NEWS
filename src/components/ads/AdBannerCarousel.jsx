@@ -65,6 +65,9 @@ export default function AdBannerCarousel({
 
   const isSidebar = placement === 'sidebar';
   const isInFeed = placement === 'in_feed';
+  const isVideo = current?.media_type === 'video' || (
+    current?.image_url && /\.(mp4|webm|mov|ogg)($|\?)/i.test(current.image_url)
+  );
 
   return (
     <div
@@ -96,7 +99,7 @@ export default function AdBannerCarousel({
           minHeight: isSidebar ? 'auto' : '120px',
         }}
       >
-        {/* Visuel Image */}
+        {/* Visuel Image ou Vidéo */}
         {current.image_url && (
           <div
             style={{
@@ -110,18 +113,34 @@ export default function AdBannerCarousel({
               flexShrink: 0,
             }}
           >
-            <img
-              src={current.image_url}
-              alt={current.title}
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                display: 'block',
-                transition: 'transform 0.4s ease',
-              }}
-              className="hover-zoom"
-            />
+            {isVideo ? (
+              <video
+                src={current.image_url}
+                autoPlay
+                loop
+                muted
+                playsInline
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  display: 'block',
+                }}
+              />
+            ) : (
+              <img
+                src={current.image_url}
+                alt={current.title}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  display: 'block',
+                  transition: 'transform 0.4s ease',
+                }}
+                className="hover-zoom"
+              />
+            )}
             {/* Tag Sponsor / Badge sur l'image */}
             <div
               style={{
