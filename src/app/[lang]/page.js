@@ -3,6 +3,8 @@ import Link from 'next/link';
 import NewsletterForm from '@/components/NewsletterForm';
 import { getDictionary } from '@/i18n/dictionaries';
 import AdBannerCarousel from '@/components/ads/AdBannerCarousel';
+import HeroCarousel from '@/components/HeroCarousel';
+import { getActiveBanners } from '@/lib/ads';
 
 export const revalidate = 60; // Revalidate every minute
 
@@ -24,53 +26,39 @@ export default async function Home({ params }) {
   const resolvedParams = await params;
   const lang = resolvedParams.lang;
   const dict = await getDictionary(lang);
-  // Fetch latest articles
-  const { data: articles, error } = await supabase
-    .from('articles')
-    .select('*')
-    .eq('status', 'published')
-    .order('pub_date', { ascending: false })
-    .limit(10);
 
-  // Fetch Most Read Articles (using likes_count as proxy)
-  const { data: mostReadArticles } = await supabase
-    .from('articles')
-    .select('*') // Changed to * so it fetches title_bsh
-    .eq('status', 'published')
-    .order('likes_count', { ascending: false })
-    .limit(4);
+  // Fetch articles and banners in parallel
+  const [
+    { data: articles, error },
+    { data: mostReadArticles },
+    headerBanners,
+    inFeedBanners,
+    sidebarBanners,
+  ] = await Promise.all([
+    supabase
+      .from('articles')
+      .select('*')
+      .eq('status', 'published')
+      .order('pub_date', { ascending: false })
+      .limit(10),
+    supabase
+      .from('articles')
+      .select('*')
+      .eq('status', 'published')
+      .order('likes_count', { ascending: false })
+      .limit(4),
+    getActiveBanners('header'),
+    getActiveBanners('in_feed'),
+    getActiveBanners('sidebar'),
+  ]);
 
   const getTitle = (article) => (lang === 'bsh' && article.title_bsh) ? article.title_bsh : article.title;
   const getDesc = (article) => (lang === 'bsh' && article.hook_bsh) ? article.hook_bsh : article.description;
 
   return (
     <>
-      {/* HERO CAROUSEL (Simplified) */}
-      <section className="hero-carousel" id="heroCarousel">
-        <div className="carousel-container">
-          {articles && articles.slice(0, 3).map((article, index) => (
-            <div key={article.id} className={`carousel-slide${index === 0 ? ' active' : ''}`}>
-              <img src={article.image_url || 'https://images.unsplash.com/photo-1620287341056-49a2f1ab2fdc?q=80&w=800&auto=format&fit=crop'} alt={getTitle(article)} className="carousel-image" />
-              <div className="carousel-overlay">
-                <div className="container">
-                  <span className="badge badge-red">{dict.home.headline}</span>
-                  <h1 className="carousel-title">{getTitle(article)}</h1>
-                  <p className="carousel-excerpt">{(getDesc(article) || '').substring(0, 150) + '...'}</p>
-                  <Link href={`/${lang}/article/${article.slug}`} className="btn btn-primary">{dict.home.read_more}</Link>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-        
-        {articles && articles.length > 1 && (
-          <div className="carousel-indicators">
-            {articles.slice(0, 3).map((_, index) => (
-              <button key={index} className={`indicator${index === 0 ? ' active' : ''}`} aria-label={`Slide ${index + 1}`}></button>
-            ))}
-          </div>
-        )}
-      </section>
+      {/* HERO CAROUSEL INTERACTIF (Auto-rotation & changement manuel) */}
+      <HeroCarousel articles={articles || []} dict={dict} lang={lang} />
 
       {/* FLASH NEWS TICKER */}
       <section className="flash-ticker" id="flashTicker">
@@ -94,7 +82,7 @@ export default async function Home({ params }) {
 
       {/* AD BANNER: HEADER */}
       <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '15px 20px 0 20px' }}>
-        <AdBannerCarousel placement="header" />
+        <AdBannerCarousel placement="header" initialBanners={headerBanners} />
       </div>
 
       {/* MAIN CONTENT AREA */}
@@ -153,7 +141,7 @@ export default async function Home({ params }) {
             </div>
 
             {/* AD BANNER: IN FEED */}
-            <AdBannerCarousel placement="in_feed" />
+            <AdBannerCarousel placement="in_feed" initialBanners={inFeedBanners} />
           </div>
 
           {/* Right Sidebar: Most Read Articles */}
@@ -178,7 +166,7 @@ export default async function Home({ params }) {
             </div>
 
             {/* AD BANNER: SIDEBAR */}
-            <AdBannerCarousel placement="sidebar" />
+            <AdBannerCarousel placement="sidebar" initialBanners={sidebarBanners} />
           </aside>
 
         </div>
