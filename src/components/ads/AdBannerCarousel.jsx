@@ -38,12 +38,13 @@ export default function AdBannerCarousel({
   useEffect(() => {
     if (!banners.length) return;
     const current = banners[currentIndex];
-    if (current && !trackedImpressions.current.has(current.id)) {
+    if (current?.id && !trackedImpressions.current.has(current.id)) {
       trackedImpressions.current.add(current.id);
       fetch('/api/ads/track', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'impression', bannerId: current.id }),
+        keepalive: true,
       }).catch(() => {});
     }
   }, [currentIndex, banners]);
@@ -77,12 +78,15 @@ export default function AdBannerCarousel({
   const hasAnyText = !isMediaOnly && (hasTitle || hasSubtitle || hasSponsor || hasBadge || hasCta);
 
   const handleBannerClick = () => {
-    if (!current) return;
-    fetch('/api/ads/track', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'click', bannerId: current.id }),
-    }).catch(() => {});
+    if (!current?.id) return;
+    try {
+      fetch('/api/ads/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'click', bannerId: current.id }),
+        keepalive: true,
+      }).catch(() => {});
+    } catch (_) {}
   };
 
   const isSidebar = placement === 'sidebar';

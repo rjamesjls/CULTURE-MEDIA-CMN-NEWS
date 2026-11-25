@@ -214,12 +214,13 @@ export async function deleteBannerData(bannerId) {
  * Comptabilise une impression (vue)
  */
 export async function recordImpression(bannerId) {
-  if (!bannerId) return;
+  if (!bannerId || typeof window === 'undefined') return;
   try {
     await fetch('/api/ads/track', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'impression', bannerId }),
+      keepalive: true,
     });
   } catch (_) {}
 }
@@ -228,12 +229,13 @@ export async function recordImpression(bannerId) {
  * Comptabilise un clic
  */
 export async function recordClick(bannerId) {
-  if (!bannerId) return;
+  if (!bannerId || typeof window === 'undefined') return;
   try {
     await fetch('/api/ads/track', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'click', bannerId }),
+      keepalive: true,
     });
   } catch (_) {}
 }
