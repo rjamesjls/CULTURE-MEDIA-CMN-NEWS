@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { Heart, Share2, Download, ArrowRight } from 'lucide-react';
+import * as htmlToImage from 'html-to-image';
 import { supabase } from '@/lib/supabase';
 import { incrementLike } from '@/app/actions/analytics';
 
@@ -31,7 +32,13 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
     setToastMessage(msg);
     toastTimeoutRef.current = setTimeout(() => {
       setToastMessage('');
-    }, 3000);
+    }, 3200);
+  };
+
+  const getProxiedImageUrl = (url) => {
+    if (!url) return 'https://images.unsplash.com/photo-1620287341056-49a2f1ab2fdc?q=80&w=1200&auto=format&fit=crop';
+    if (url.startsWith('/') || url.startsWith('data:')) return url;
+    return `/api/proxy-image?url=${encodeURIComponent(url)}`;
   };
 
   // Auth & Saved Likes Initialization
@@ -200,30 +207,43 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
     }
   };
 
-  const handleDownload = async (article) => {
-    const imageUrl = article.image_url || 'https://images.unsplash.com/photo-1620287341056-49a2f1ab2fdc?q=80&w=1200&auto=format&fit=crop';
+  const handleDownload = async (article, index) => {
+    const node = document.getElementById(`hero-post-card-${article.id || index}`);
+    if (!node) return;
+
     try {
-      showToast('Téléchargement du post...');
-      const response = await fetch(imageUrl);
-      const blob = await response.blob();
-      const blobUrl = window.URL.createObjectURL(blob);
+      showToast('Préparation du post en image...');
+
+      const dataUrl = await htmlToImage.toPng(node, {
+        quality: 1,
+        pixelRatio: 2.5,
+        backgroundColor: '#ffffff',
+        style: {
+          background: '#ffffff',
+          padding: '24px 20px',
+          borderRadius: '16px',
+        },
+      });
+
       const a = document.createElement('a');
-      a.href = blobUrl;
-      a.download = `${article.slug || 'afoluku-post'}.png`;
+      a.href = dataUrl;
+      a.download = `afolukutv-${article.slug || 'post'}.png`;
       document.body.appendChild(a);
       a.click();
       a.remove();
-      window.URL.revokeObjectURL(blobUrl);
-      showToast('✅ Post téléchargé en image (PNG) !');
-    } catch {
+      showToast('✅ Post téléchargé en image PNG !');
+    } catch (err) {
+      console.error('Erreur lors du téléchargement du post:', err);
+      // Fallback
+      showToast('Téléchargement direct du visuel...');
+      const fallbackUrl = article.image_url || '/afoluku-tv-logo-black.png';
       const a = document.createElement('a');
-      a.href = imageUrl;
+      a.href = fallbackUrl;
       a.target = '_blank';
-      a.download = `${article.slug || 'afoluku-post'}.jpg`;
+      a.download = `${article.slug || 'post'}.jpg`;
       document.body.appendChild(a);
       a.click();
       a.remove();
-      showToast('✅ Téléchargement lancé !');
     }
   };
 
@@ -265,103 +285,124 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
               }}
             >
               <div className="hero-slide-wrapper">
-                {/* 1. ENCADREMENT RECTANGLE : PHOTO ENTIÈRE 100% */}
-                <Link
-                  href={`/${lang}/article/${article.slug}`}
-                  className="hero-rectangle-frame-link"
-                  title={getTitle(article)}
+                {/* ── ZONE DE CAPTURE DU POST COMPLET (TÉLÉCHARGÉ EN IMAGE) ── */}
+                <div
+                  id={`hero-post-card-${article.id || index}`}
+                  className="hero-downloadable-card"
                 >
-                  <div className="hero-rectangle-encadrement">
+                  {/* 1. LOGO AFOLUKU TV EN HAUT */}
+                  <div className="hero-card-brand-top">
                     <img
-                      src={
-                        article.image_url ||
-                        'https://images.unsplash.com/photo-1620287341056-49a2f1ab2fdc?q=80&w=1200&auto=format&fit=crop'
-                      }
-                      alt={getTitle(article)}
-                      className="hero-frame-photo-cover"
+                      src="/afoluku-tv-logo-black.png"
+                      alt="A FOLUKU TV"
+                      className="hero-card-brand-logo"
+                      crossOrigin="anonymous"
                     />
                   </div>
-                </Link>
 
-                {/* 2. JUSTE EN BAS : CATÉGORIE, TITRE, DESCRIPTION ET ACTIONS */}
-                <div className="hero-content-below">
-                  {/* Catégorie */}
-                  <div className="hero-badge-wrap">
-                    <span className="badge badge-red hero-badge">
-                      {article.category || dict.home?.headline || 'À LA UNE'}
-                    </span>
-                  </div>
-
-                  {/* Le Titre */}
-                  <Link href={`/${lang}/article/${article.slug}`} className="hero-title-link">
-                    <h2 className="hero-article-title">{getTitle(article)}</h2>
+                  {/* 2. ENCADREMENT RECTANGLE : PHOTO ENTIÈRE 100% */}
+                  <Link
+                    href={`/${lang}/article/${article.slug}`}
+                    className="hero-rectangle-frame-link"
+                    title={getTitle(article)}
+                  >
+                    <div className="hero-rectangle-encadrement">
+                      <img
+                        src={getProxiedImageUrl(article.image_url)}
+                        alt={getTitle(article)}
+                        className="hero-frame-photo-cover"
+                        crossOrigin="anonymous"
+                      />
+                    </div>
                   </Link>
 
-                  {/* La Description */}
-                  <p className="hero-article-desc">
-                    {(getDesc(article) || '').substring(0, 160) + '...'}
-                  </p>
+                  {/* 3. CATÉGORIE, TITRE, INTRODUCTION & MENTION BAS DE PAGE */}
+                  <div className="hero-content-below">
+                    {/* Catégorie */}
+                    <div className="hero-badge-wrap">
+                      <span className="badge badge-red hero-badge">
+                        {article.category || dict.home?.headline || 'À LA UNE'}
+                      </span>
+                    </div>
 
-                  {/* Boutons d'action : Lire la suite, Like, Partager, Commenter */}
-                  <div className="hero-actions-row">
-                    <Link
-                      href={`/${lang}/article/${article.slug}`}
-                      className="btn btn-primary hero-btn-read"
-                    >
-                      <span>{dict.home?.read_more || 'Lire la suite'}</span>
-                      <ArrowRight size={14} style={{ marginLeft: '4px' }} />
+                    {/* Le Titre */}
+                    <Link href={`/${lang}/article/${article.slug}`} className="hero-title-link">
+                      <h2 className="hero-article-title">{getTitle(article)}</h2>
                     </Link>
 
-                    <div className="hero-social-actions">
-                      {/* Bouton Like (sauvegarde dans les Favoris) */}
-                      <button
-                        type="button"
-                        className={`hero-social-btn ${isLiked ? 'is-liked' : ''}`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleLike(article);
-                        }}
-                        title={isLiked ? 'Retirer des favoris' : 'Liker et enregistrer dans vos favoris'}
-                        aria-label="Liker cet article"
-                      >
-                        <Heart
-                          size={16}
-                          fill={isLiked ? '#dc2626' : 'none'}
-                          color={isLiked ? '#dc2626' : '#475569'}
-                        />
-                        <span className="social-count">{likesCount}</span>
-                      </button>
+                    {/* L'Introduction */}
+                    <p className="hero-article-desc">
+                      {(getDesc(article) || '').substring(0, 190) + (getDesc(article)?.length > 190 ? '...' : '')}
+                    </p>
 
-                      {/* Bouton Partager */}
-                      <button
-                        type="button"
-                        className="hero-social-btn"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleShare(article);
-                        }}
-                        title="Partager cet article"
-                        aria-label="Partager cet article"
-                      >
-                        <Share2 size={16} color="#475569" />
-                        <span className="social-text">Partager</span>
-                      </button>
-
-                      {/* Bouton Télécharger */}
-                      <button
-                        type="button"
-                        className="hero-social-btn"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleDownload(article);
-                        }}
-                        title="Télécharger le visuel du post"
-                        aria-label="Télécharger le post"
-                      >
-                        <Download size={16} color="#475569" />
-                        <span className="social-text">Télécharger</span>
-                      </button>
+                    {/* Mention obligatoire demandée tout en bas */}
+                    <div className="hero-card-footer-mention">
+                      <span className="footer-mention-text">
+                        Article complet sur <span className="footer-mention-highlight">afolukutv.com</span>
+                      </span>
                     </div>
+                  </div>
+                </div>
+
+                {/* ── ACTIONS INTERACTIVES : EXCLUES DU TÉLÉCHARGEMENT ── */}
+                <div className="hero-actions-row">
+                  <Link
+                    href={`/${lang}/article/${article.slug}`}
+                    className="btn btn-primary hero-btn-read"
+                  >
+                    <span>{dict.home?.read_more || 'Lire la suite'}</span>
+                    <ArrowRight size={14} style={{ marginLeft: '4px' }} />
+                  </Link>
+
+                  <div className="hero-social-actions">
+                    {/* Bouton Like (sauvegarde dans les Favoris) */}
+                    <button
+                      type="button"
+                      className={`hero-social-btn ${isLiked ? 'is-liked' : ''}`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleLike(article);
+                      }}
+                      title={isLiked ? 'Retirer des favoris' : 'Liker et enregistrer dans vos favoris'}
+                      aria-label="Liker cet article"
+                    >
+                      <Heart
+                        size={16}
+                        fill={isLiked ? '#dc2626' : 'none'}
+                        color={isLiked ? '#dc2626' : '#475569'}
+                      />
+                      <span className="social-count">{likesCount}</span>
+                    </button>
+
+                    {/* Bouton Partager */}
+                    <button
+                      type="button"
+                      className="hero-social-btn"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleShare(article);
+                      }}
+                      title="Partager cet article"
+                      aria-label="Partager cet article"
+                    >
+                      <Share2 size={16} color="#475569" />
+                      <span className="social-text">Partager</span>
+                    </button>
+
+                    {/* Bouton Télécharger le post complet */}
+                    <button
+                      type="button"
+                      className="hero-social-btn hero-download-btn"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleDownload(article, index);
+                      }}
+                      title="Télécharger l'aperçu complet du post avec titre, catégorie et logo"
+                      aria-label="Télécharger le post"
+                    >
+                      <Download size={16} color="#475569" />
+                      <span className="social-text">Télécharger</span>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -407,7 +448,7 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
           transform: translateX(-50%);
           background: #0f172a;
           color: #ffffff;
-          padding: 8px 18px;
+          padding: 8px 20px;
           border-radius: 9999px;
           font-size: 12px;
           font-weight: 600;
@@ -451,13 +492,42 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
           text-align: center;
         }
 
+        /* ── ZONE DE CAPTURE TÉLÉCHARGEABLE ── */
+        .hero-downloadable-card {
+          width: 100%;
+          max-width: 680px;
+          margin: 0 auto;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+          background: #ffffff;
+          padding: 8px 10px 14px 10px;
+          border-radius: 16px;
+        }
+
+        .hero-card-brand-top {
+          margin-bottom: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 100%;
+        }
+
+        .hero-card-brand-logo {
+          height: 38px;
+          max-height: 38px;
+          width: auto;
+          object-fit: contain;
+          display: block;
+        }
+
         /* 1. ENCADREMENT RECTANGLE */
         .hero-rectangle-frame-link {
           display: block;
           width: 100%;
-          max-width: 680px;
           text-decoration: none;
-          margin: 0 auto 16px auto;
+          margin: 0 auto 14px auto;
           cursor: pointer;
         }
 
@@ -495,7 +565,7 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
           transform: scale(1.03);
         }
 
-        /* 2. CONTENU JUSTE EN BAS DU CADRE */
+        /* 2. CONTENU DU POST */
         .hero-content-below {
           display: flex;
           flex-direction: column;
@@ -544,21 +614,47 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
           font-size: 0.92rem;
           color: #475569;
           line-height: 1.45;
-          margin: 0 0 16px 0;
-          max-width: 680px;
+          margin: 0 0 14px 0;
+          max-width: 640px;
           display: -webkit-box;
-          -webkit-line-clamp: 2;
+          -webkit-line-clamp: 3;
           -webkit-box-orient: vertical;
           overflow: hidden;
         }
 
-        /* LIGNE D'ACTIONS : LIRE LA SUITE + LIKE, PARTAGER, COMMENTER */
+        /* MENTION BAS DE PAGE SUR LE POST TÉLÉCHARGÉ */
+        .hero-card-footer-mention {
+          margin-top: 6px;
+          padding-top: 10px;
+          border-top: 1px dashed #e2e8f0;
+          width: 100%;
+          max-width: 480px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .footer-mention-text {
+          font-size: 11.5px;
+          color: #64748b;
+          text-transform: uppercase;
+          letter-spacing: 0.8px;
+          font-weight: 600;
+        }
+
+        .footer-mention-highlight {
+          color: #dc2626;
+          font-weight: 800;
+        }
+
+        /* ── LIGNE D'ACTIONS INTERACTIVES ── */
         .hero-actions-row {
           display: flex;
           align-items: center;
           justify-content: center;
           gap: 12px;
           flex-wrap: wrap;
+          margin-top: 14px;
         }
 
         .hero-btn-read {
@@ -618,6 +714,11 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
           background: #fee2e2;
         }
 
+        .hero-download-btn:hover {
+          border-color: #0f172a;
+          color: #0f172a;
+        }
+
         .social-count {
           font-size: 12px;
           font-weight: 700;
@@ -658,9 +759,18 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
 
         @media (max-width: 768px) {
           .hero-rectangle-stage {
-            padding: 14px 12px 38px 12px;
+            padding: 12px 10px 38px 10px;
             border-radius: 18px;
             box-shadow: 0 2px 14px rgba(0, 0, 0, 0.05);
+          }
+
+          .hero-downloadable-card {
+            padding: 6px 6px 12px 6px;
+          }
+
+          .hero-card-brand-logo {
+            height: 30px;
+            max-height: 30px;
           }
 
           .hero-rectangle-encadrement {
@@ -678,12 +788,22 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
           .hero-article-desc {
             font-size: 0.82rem;
             line-height: 1.35;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             color: #475569;
+          }
+
+          .hero-card-footer-mention {
+            padding-top: 8px;
+            margin-top: 4px;
+          }
+
+          .footer-mention-text {
+            font-size: 10px;
           }
 
           .hero-actions-row {
             gap: 8px;
+            margin-top: 10px;
           }
 
           .hero-btn-read {
@@ -695,10 +815,6 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
             padding: 6px 10px;
             gap: 4px;
             font-size: 11px;
-          }
-
-          .social-text {
-            display: inline;
           }
 
           .carousel-indicators {
