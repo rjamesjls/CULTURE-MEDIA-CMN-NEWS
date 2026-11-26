@@ -202,16 +202,18 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
     }
   };
 
-  // MOTEUR CANVAS HAUTE DÉFINITION : Génère un post 1080x1350 net, complet et sans faille
+  // MOTEUR CANVAS 2K ULTRA-HD : Génère un post 2160x2700 net, vectoriel et complet
   const handleDownload = async (article) => {
     try {
-      showToast('Génération du post officiel...');
+      showToast('Génération du post 2K...');
 
+      const scale = 2; // Rendu 2K Ultra-HD (2160 x 2700 px)
       const canvas = document.createElement('canvas');
-      canvas.width = 1080;
-      canvas.height = 1350;
+      canvas.width = 1080 * scale;
+      canvas.height = 1350 * scale;
       const ctx = canvas.getContext('2d');
       if (!ctx) throw new Error('Impossible de créer le contexte canvas');
+      ctx.scale(scale, scale);
 
       // Helper coins arrondis
       const drawRoundRect = (x, y, width, height, radius) => {
@@ -315,11 +317,11 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
         });
       };
 
-      // SVGs officiels en noir (#0f172a)
-      const fbSvg = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="#0f172a"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>');
-      const igSvg = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="#0f172a"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>');
-      const ttSvg = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="#0f172a"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.04-.1z"/></svg>');
-      const scSvg = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="#0f172a"><path d="M12.016 2c-3.792 0-6.115 2.766-6.115 5.568 0 1.25.438 2.396.974 3.328-.24.104-.63.297-.854.432-.422.25-.662.614-.662 1.052 0 .542.443.99 1.135 1.156.094.02.193.036.297.052-.083.333-.25.802-.635 1.344-.61.854-1.37 1.135-2.026 1.135-.292 0-.583-.057-.85-.177-.182-.083-.396-.062-.562.052-.167.115-.26.302-.24.5.031.333.328.786.89 1.182.74.52 1.76.792 2.953.792.354 0 .729-.026 1.115-.083.542-.083 1.11-.27 1.63-.448.297-.104.594-.208.88-.27.188-.042.385-.01.552.094.27.167.583.479.974.792.833.667 1.844 1.229 3.125 1.229 1.27 0 2.28-.562 3.115-1.229.39-.313.708-.625.979-.792.167-.104.365-.135.552-.094.286.062.583.166.88.27.521.178 1.089.365 1.63.448.386.057.761.083 1.115.083 1.193 0 2.213-.272 2.953-.792.563-.396.86-.849.89-1.182.021-.198-.073-.385-.24-.5-.167-.114-.38-.135-.562-.052-.267.12-.558.177-.85.177-.656 0-1.416-.281-2.026-1.135-.385-.542-.552-1.011-.635-1.344.104-.016.203-.032.297-.052.692-.166 1.135-.614 1.135-1.156 0-.438-.24-.802-.662-1.052-.224-.135-.614-.328-.854-.432.536-.932.974-2.078.974-3.328 0-2.802-2.323-5.568-6.115-5.568z"/></svg>');
+      // SVGs vectoriels officiels haute définition (256x256) en noir (#0f172a)
+      const fbSvg = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="256" height="256"><path fill="#0f172a" d="M504 256C504 119 393 8 256 8S8 119 8 256c0 123.78 90.69 226.38 209.25 245V327.69h-63V256h63v-54.64c0-62.15 37-96.48 93.67-96.48 27.14 0 55.52 4.84 55.52 4.84v61h-31.28c-30.8 0-40.41 19.12-40.41 38.73V256h68.78l-11 71.69h-57.78V501C413.31 482.38 504 379.78 504 256z"/></svg>');
+      const igSvg = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="256" height="256"><path fill="#0f172a" d="M224.1 141c-63.6 0-114.9 51.3-114.9 114.9s51.3 114.9 114.9 114.9S339 319.5 339 255.9 287.7 141 224.1 141zm0 189.6c-41.1 0-74.7-33.5-74.7-74.7s33.5-74.7 74.7-74.7 74.7 33.5 74.7 74.7-33.6 74.7-74.7 74.7zm146.4-194.3c0 14.9-12 26.8-26.8 26.8-14.9 0-26.8-12-26.8-26.8s12-26.8 26.8-26.8 26.8 12 26.8 26.8zm76.1 27.2c-1.7-35.9-9.9-67.7-36.2-93.9-26.2-26.2-58-34.4-93.9-36.2-37-2.1-147.9-2.1-184.9 0-35.8 1.7-67.6 9.9-93.9 36.1s-34.4 58-36.2 93.9c-2.1 37-2.1 147.9 0 184.9 1.7 35.9 9.9 67.7 36.2 93.9s58 34.4 93.9 36.2c37 2.1 147.9 2.1 184.9 0 35.9-1.7 67.7-9.9 93.9-36.2 26.2-26.2 34.4-58 36.2-93.9 2.1-37 2.1-147.8 0-184.8zM398.8 388c-7.8 19.6-22.9 34.7-42.6 42.6-29.5 11.7-99.5 9-132.1 9s-102.7 2.6-132.1-9c-19.6-7.8-34.7-22.9-42.6-42.6-11.7-29.5-9-99.5-9-132.1s-2.6-102.7 9-132.1c7.8-19.6 22.9-34.7 42.6-42.6 29.5-11.7 99.5-9 132.1-9s102.7-2.6 132.1 9c19.6 7.8 34.7 22.9 42.6 42.6 11.7 29.5 9 99.5 9 132.1s2.7 102.7-9 132.1z"/></svg>');
+      const ttSvg = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="256" height="256"><path fill="#0f172a" d="M448 209.91a210.06 210.06 0 0 1-122.77-39.25V349.38A162.55 162.55 0 1 1 185 188.31V278.2a74.62 74.62 0 1 0 52.23 71.18V0l88 0a121.18 121.18 0 0 0 1.86 22.17h0A122.18 122.18 0 0 0 381 102.39a121.43 121.43 0 0 0 67 20.14z"/></svg>');
+      const scSvg = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="256" height="256"><path fill="#0f172a" d="M256 8c-77.9 0-141 63.1-141 141 0 28.3 8.3 54.7 22.7 76.8-4.5 1.7-10.7 4.7-14.8 7.3-10.6 6.7-17 17.5-17 29.7 0 16 11.5 29.7 28.1 33.6 2.4.6 4.9.9 7.4 1.3-1.7 8.3-5.2 20.3-14.4 34.1-14.7 22-33 29.2-48.8 29.2-7.2 0-14.3-1.5-20.9-4.5-4.4-2-9.6-1.5-13.6 1.3-4 2.8-6.3 7.3-5.8 12.2.8 8.1 7.9 19.3 21.6 29 17.8 12.6 42.4 19.2 71.1 19.2 8.6 0 17.6-.7 26.8-2 13-1.9 26.7-6.2 39.2-10.3 7.2-2.4 14.3-4.8 21.2-6.2 4.5-1 9.3-.2 13.3 2.3 6.5 4 14 11.6 23.4 19.2 20 16.1 44.4 29.7 75.3 29.7 30.8 0 55.2-13.6 75.2-29.7 9.4-7.6 16.9-15.2 23.4-19.2 4-2.5 8.8-3.3 13.3-2.3 6.9 1.4 14 3.8 21.2 6.2 12.5 4.1 26.2 8.4 39.2 10.3 9.2 1.3 18.2 2 26.8 2 28.7 0 53.3-6.6 71.1-19.2 13.7-9.7 20.8-20.9 21.6-29 .5-4.9-1.8-9.4-5.8-12.2-4-2.8-9.2-3.3-13.6-1.3-6.6 3-13.7 4.5-20.9 4.5-15.8 0-34.1-7.2-48.8-29.2-9.2-13.8-12.7-25.8-14.4-34.1 2.5-.4 5-.7 7.4-1.3 16.6-3.9 28.1-17.6 28.1-33.6 0-12.2-6.4-23-17-29.7-4.1-2.6-10.3-5.6-14.8-7.3 14.4-22.1 22.7-48.5 22.7-76.8C397 71.1 333.9 8 256 8z"/></svg>');
 
       const [logoImg, photoImg, fbImg, igImg, ttImg, scImg] = await Promise.all([
         loadImg('/afoluku-tv-logo-black.png'),
@@ -436,13 +438,16 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
       ctx.font = '500 26px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
       drawWrapText(getDesc(article) || '', 60, titleEndY + 26, 960, 40, 4);
 
-      // 8. Bas de page : Mention obligatoire + Réseaux sociaux en noir + Domaine
+      // 8. Bas de page : Séparateur pointillé foncé + Mention + Logos avec 'SUIVEZ-NOUS' + Domaine
+      ctx.save();
       ctx.beginPath();
-      ctx.moveTo(60, 1240);
-      ctx.lineTo(1020, 1240);
-      ctx.strokeStyle = '#f1f5f9';
+      ctx.setLineDash([8, 8]);
+      ctx.moveTo(60, 1225);
+      ctx.lineTo(1020, 1225);
+      ctx.strokeStyle = '#94a3b8'; // Gris plus foncé et en pointillés
       ctx.lineWidth = 2;
       ctx.stroke();
+      ctx.restore();
 
       ctx.textAlign = 'left';
       ctx.fillStyle = '#0f172a';
@@ -454,10 +459,18 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
 
       // Icônes réseaux sociaux officielles en noir (Facebook, Instagram, TikTok, Snapchat)
       const socialIcons = [fbImg, igImg, ttImg, scImg];
-      let iconStartX = 510;
-      const iconY = 1269;
       const iconSize = 30;
-      const iconGap = 20;
+      const iconGap = 18;
+      const totalIconsW = (socialIcons.length * iconSize) + ((socialIcons.length - 1) * iconGap);
+      const iconsCenterX = 585;
+      let iconStartX = iconsCenterX - (totalIconsW / 2);
+      const iconY = 1270;
+
+      // Texte 'SUIVEZ-NOUS' au-dessus des logos
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#64748b';
+      ctx.font = '800 12px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      ctx.fillText('SUIVEZ-NOUS', iconsCenterX, 1254);
 
       socialIcons.forEach((icon) => {
         if (icon) {
@@ -476,15 +489,15 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
       ctx.font = '700 17px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
       ctx.fillText('afolukutv.com', 930, 1290);
 
-      // 9. Export PNG garanti
+      // 9. Export PNG 2K garanti
       const triggerDownload = (url) => {
         const a = document.createElement('a');
         a.href = url;
-        a.download = `afolukutv-${article.slug || 'post'}.png`;
+        a.download = `afolukutv-${article.slug || 'post'}-2k.png`;
         document.body.appendChild(a);
         a.click();
         a.remove();
-        showToast('✅ Post téléchargé avec succès (1080x1350 PNG) !');
+        showToast('✅ Post officiel 2K téléchargé !');
       };
 
       try {
