@@ -19,6 +19,10 @@ export default function BottomNavClient({ lang = 'fr', categories = [] }) {
           <Newspaper size={24} />
           <span>Articles</span>
         </button>
+        <Link href={`/${lang}/radio`} className={`nav-item ${pathname?.includes('/radio') ? 'active' : ''}`}>
+          <Radio size={24} />
+          <span>Radio</span>
+        </Link>
         <Link href={`/${lang}/profile`} className={`nav-item ${pathname?.includes('/profile') ? 'active' : ''}`}>
           <User size={24} />
           <span>Compte</span>
