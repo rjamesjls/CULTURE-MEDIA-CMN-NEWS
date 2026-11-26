@@ -53,7 +53,7 @@ export default function HeaderClient({ lang = 'fr', menus = [], initialArticle =
               <div className="header-article-left">
                 <Link href={`/${lang}`} className="header-logo-link" title="A FOLUKU TV - Accueil">
                   <img 
-                    src="/afoluku-tv-logo.png" 
+                    src="/afoluku-tv-logo-black.png" 
                     alt="A FOLUKU TV" 
                     className="header-logo-compact" 
                   />
@@ -72,7 +72,7 @@ export default function HeaderClient({ lang = 'fr', menus = [], initialArticle =
               <div className="header-home-left">
                 <Link href={`/${lang}`} className="header-logo-link" title="A FOLUKU TV - Accueil">
                   <img 
-                    src="/afoluku-tv-logo.png" 
+                    src="/afoluku-tv-logo-black.png" 
                     alt="A FOLUKU TV" 
                     className="header-logo-compact" 
                   />

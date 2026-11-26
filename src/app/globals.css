@@ -452,11 +452,11 @@ textarea.input {
   left: 0;
   right: 0;
   z-index: var(--z-fixed);
-  background: linear-gradient(90deg, #050349 0%, #0300eb 100%);
+  background: #ffffff;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 4px 24px rgba(5, 3, 73, 0.35);
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.05);
   transition: transform var(--transition-base);
 }
 
@@ -564,7 +564,7 @@ textarea.input {
   font-family: var(--font-heading);
   font-size: 12px;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.92);
+  color: #0f172a;
   letter-spacing: 0.8px;
   text-transform: uppercase;
   white-space: nowrap;
@@ -572,6 +572,7 @@ textarea.input {
 
 .header-home-left .header-slogan {
   font-size: 13px;
+  color: #0f172a;
 }
 
 .header-right-article {
@@ -597,12 +598,12 @@ textarea.input {
 }
 
 .header-pub-date-label {
-  color: #94a3b8;
+  color: #64748b;
   font-weight: 500;
 }
 
 .header-pub-date-value {
-  color: #f1f5f9;
+  color: #0f172a;
   font-weight: 700;
 }
 
@@ -624,9 +625,9 @@ textarea.input {
 
 .header .nav-link {
   font-family: var(--font-heading);
-  font-weight: 500;
+  font-weight: 600;
   font-size: 0.92rem;
-  color: rgba(255, 255, 255, 0.82);
+  color: #1e293b;
   transition: color var(--transition-fast);
   position: relative;
   text-decoration: none;
@@ -634,12 +635,12 @@ textarea.input {
 }
 
 .header .nav-link:hover {
-  color: #ffffff;
+  color: #dc2626;
 }
 
 .header .nav-link.active {
-  color: var(--color-primary, #FFD700);
-  font-weight: 600;
+  color: #dc2626;
+  font-weight: 700;
 }
 
 .header .nav-link::after {
@@ -649,7 +650,7 @@ textarea.input {
   left: 0;
   width: 0;
   height: 2px;
-  background: var(--color-primary, #FFD700);
+  background: #dc2626;
   transition: width var(--transition-base);
   border-radius: 2px;
 }
@@ -663,8 +664,8 @@ textarea.input {
 .header .search-bar {
   display: flex;
   align-items: center;
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
   border-radius: var(--radius-full);
   padding: 5px 14px;
   gap: 8px;
@@ -672,9 +673,9 @@ textarea.input {
 }
 
 .header .search-bar:focus-within {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 215, 0, 0.5);
-  box-shadow: 0 0 10px rgba(255, 215, 0, 0.15);
+  background: #ffffff;
+  border-color: #cbd5e1;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.08);
 }
 
 .header .search-input {
@@ -682,7 +683,7 @@ textarea.input {
   background: transparent;
   font-size: 0.85rem;
   outline: none;
-  color: #ffffff;
+  color: #0f172a;
   width: 130px;
   transition: width 0.25s ease;
 }
@@ -692,11 +693,11 @@ textarea.input {
 }
 
 .header .search-input::placeholder {
-  color: rgba(255, 255, 255, 0.45);
+  color: #94a3b8;
 }
 
 .header .search-icon {
-  color: rgba(255, 255, 255, 0.5);
+  color: #64748b;
   font-size: 0.85rem;
 }
 
@@ -2820,6 +2821,7 @@ body.theme-alternate .reading-progress {
     font-size: 7.5px !important;
     letter-spacing: 0.1px !important;
     font-weight: 700 !important;
+    color: #0f172a !important;
     white-space: nowrap !important;
     overflow: visible !important;
     text-overflow: clip !important;
@@ -2835,6 +2837,7 @@ body.theme-alternate .reading-progress {
     text-align: center !important;
     margin: 2px auto 0 auto !important;
     overflow: visible !important;
+    color: #0f172a !important;
   }
   .header-right-article {
     gap: 2px !important;
@@ -2845,9 +2848,13 @@ body.theme-alternate .reading-progress {
     font-size: 8.5px !important;
     letter-spacing: 0.1px !important;
     white-space: nowrap !important;
+    color: #0f172a !important;
   }
   .header-pub-date-label {
     display: none !important;
+  }
+  .header-pub-date-value {
+    color: #0f172a !important;
   }
   .header-spacer {
     height: 76px !important;
@@ -2860,8 +2867,11 @@ body.theme-alternate .reading-progress {
   bottom: 0;
   left: 0;
   right: 0;
-  background: #111310;
-  border-top: 1px solid #3c492e;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid #e2e8f0;
+  box-shadow: 0 -2px 14px rgba(0, 0, 0, 0.06);
   display: none;
   justify-content: space-around;
   align-items: center;
@@ -2873,16 +2883,27 @@ body.theme-alternate .reading-progress {
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  color: #a3af97;
+  color: #0f172a;
   text-decoration: none;
   font-size: 11px;
   font-weight: 600;
   background: none;
   border: none;
   cursor: pointer;
+  transition: color 0.2s ease;
+}
+.mobile-bottom-nav .nav-item svg {
+  stroke: #0f172a;
+  transition: stroke 0.2s ease, transform 0.2s ease;
 }
 .mobile-bottom-nav .nav-item.active {
-  color: #f6cf28;
+  color: #dc2626;
+}
+.mobile-bottom-nav .nav-item.active svg {
+  stroke: #dc2626;
+}
+.mobile-bottom-nav .nav-item:hover svg {
+  transform: translateY(-1px);
 }
 
 @media (max-width: 768px) {
@@ -2898,7 +2919,9 @@ body.theme-alternate .reading-progress {
 .drawer-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   z-index: 1001;
 }
 .categories-drawer {
@@ -2907,11 +2930,12 @@ body.theme-alternate .reading-progress {
   left: -300px;
   width: 300px;
   height: 100%;
-  background: #111310;
-  color: white;
+  background: #ffffff;
+  color: #0f172a;
   z-index: 1002;
   transition: left 0.3s ease;
-  border-right: 1px solid #3c492e;
+  border-right: 1px solid #e2e8f0;
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.12);
   display: flex;
   flex-direction: column;
 }
@@ -2923,17 +2947,18 @@ body.theme-alternate .reading-progress {
   justify-content: space-between;
   align-items: center;
   padding: 20px;
-  border-bottom: 1px solid #3c492e;
+  border-bottom: 1px solid #e2e8f0;
 }
 .drawer-header h2 {
   margin: 0;
   font-size: 18px;
-  color: #f2f3e9;
+  font-weight: 700;
+  color: #0f172a;
 }
 .close-drawer {
   background: none;
   border: none;
-  color: #a3af97;
+  color: #64748b;
   cursor: pointer;
 }
 .drawer-content {
@@ -2945,14 +2970,15 @@ body.theme-alternate .reading-progress {
   gap: 16px;
 }
 .category-link {
-  color: #e2efcf;
+  color: #1e293b;
   text-decoration: none;
-  font-size: 16px;
-  font-weight: 500;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #20291b;
+  font-size: 15px;
+  font-weight: 600;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f1f5f9;
+  transition: color 0.2s ease;
 }
 .category-link:hover {
-  color: #f6cf28;
+  color: #dc2626;
 }
 
