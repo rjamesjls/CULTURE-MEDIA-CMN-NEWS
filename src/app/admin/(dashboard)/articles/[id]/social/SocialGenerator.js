@@ -771,6 +771,8 @@ Contenu: ${article.content || ''}`;
           fontSize: "20px",
           fontWeight: "bold",
           borderRadius: "4px",
+          whiteSpace: "nowrap",
+          textAlign: "center",
         }}
       >
         {currentData.date}
@@ -838,9 +840,10 @@ Contenu: ${article.content || ''}`;
         alignItems: "stretch",
         justifyContent: "space-between",
         flexShrink: 0,
+        gap: "24px",
       }}>
         {/* Left: Logo + NEWS badge + Tagline */}
-        <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", flex: 1, minWidth: 0 }}>
           <img 
             src="/afoluku-tv-logo.png" 
             alt="AFOLUKU TV" 
@@ -852,21 +855,21 @@ Contenu: ${article.content || ''}`;
             }} 
             crossOrigin="anonymous" 
           />
-          <div style={{ display: "flex", alignItems: "center", marginTop: "12px", gap: "14px" }}>
-            <div style={{ backgroundColor: "#e41318", color: "#fff", padding: "1px 18px", borderRadius: "8px", fontWeight: "900", fontSize: "24px", letterSpacing: "2px", WebkitTextStroke: "1px #fff" }}>
+          <div style={{ display: "flex", alignItems: "center", marginTop: "12px", gap: "14px", overflow: "hidden" }}>
+            <div style={{ backgroundColor: "#e41318", color: "#fff", padding: "1px 18px", borderRadius: "8px", fontWeight: "900", fontSize: "24px", letterSpacing: "2px", WebkitTextStroke: "1px #fff", flexShrink: 0 }}>
               NEWS
             </div>
-            <div style={{ fontSize: "19px", fontWeight: "600", color: "#fff", letterSpacing: "1px" }}>
+            <div style={{ fontSize: "18px", fontWeight: "600", color: "#fff", letterSpacing: "1px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
               {subtitle}
             </div>
           </div>
         </div>
         {/* Right: Date + Category */}
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", justifyContent: "space-between", paddingTop: "4px" }}>
-          <div style={{ fontSize: "18px", fontWeight: "700", color: "#fff", marginTop: "24px" }}>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", justifyContent: "space-between", paddingTop: "4px", flexShrink: 0, minWidth: "max-content" }}>
+          <div style={{ fontSize: "16px", fontWeight: "700", color: "#fff", marginTop: "24px", whiteSpace: "nowrap", textAlign: "right" }}>
             {currentData.date}
           </div>
-          <div style={{ backgroundColor: "#ffce00", color: "#000", padding: "6px 20px", fontWeight: "900", fontSize: "22px", borderRadius: "4px", textTransform: "uppercase" }}>
+          <div style={{ backgroundColor: "#ffce00", color: "#000", padding: "6px 20px", fontWeight: "900", fontSize: "22px", borderRadius: "4px", textTransform: "uppercase", whiteSpace: "nowrap" }}>
             {category}
           </div>
         </div>
@@ -999,6 +1002,7 @@ Contenu: ${article.content || ''}`;
             fontWeight: "bold",
             borderTopRightRadius: "20px",
             borderBottomRightRadius: "20px",
+            whiteSpace: "nowrap",
           }}
         >
           {currentData.date}
@@ -1399,9 +1403,11 @@ Contenu: ${article.content || ''}`;
           backgroundColor: activeColors.main,
           color: "#fff",
           padding: "15px 40px",
-          fontSize: "32px",
+          fontSize: "28px",
           fontWeight: "bold",
           textTransform: "uppercase",
+          whiteSpace: "nowrap",
+          textAlign: "center",
         }}
       >
         {currentData.date}
