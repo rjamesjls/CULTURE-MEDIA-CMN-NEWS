@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { Heart, Share2, Download, ArrowRight } from 'lucide-react';
-import * as htmlToImage from 'html-to-image';
 import { supabase } from '@/lib/supabase';
 import { incrementLike } from '@/app/actions/analytics';
 
@@ -203,40 +202,285 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
     }
   };
 
-  const handleDownload = async (article, index) => {
-    const templateNode = document.getElementById(`hero-export-template-${article.id || index}`);
-    if (!templateNode) return;
-
+  // MOTEUR CANVAS HAUTE DÉFINITION : Génère un post 1080x1350 net, complet et sans faille
+  const handleDownload = async (article) => {
     try {
-      showToast('Création du post officiel...');
+      showToast('Génération du post officiel...');
 
-      const dataUrl = await htmlToImage.toPng(templateNode, {
-        quality: 0.98,
-        width: 1080,
-        height: 1350,
-        pixelRatio: 1,
-        fontEmbedCSS: '',
-      });
+      const canvas = document.createElement('canvas');
+      canvas.width = 1080;
+      canvas.height = 1350;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('Impossible de créer le contexte canvas');
 
-      const a = document.createElement('a');
-      a.href = dataUrl;
-      a.download = `afolukutv-${article.slug || 'post'}.png`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      showToast('✅ Post officiel téléchargé (format HD) !');
+      // Helper coins arrondis
+      const drawRoundRect = (x, y, width, height, radius) => {
+        ctx.beginPath();
+        ctx.moveTo(x + radius, y);
+        ctx.lineTo(x + width - radius, y);
+        ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+        ctx.lineTo(x + width, y + height - radius);
+        ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+        ctx.lineTo(x + radius, y + height);
+        ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+        ctx.lineTo(x, y + radius);
+        ctx.quadraticCurveTo(x, y, x + radius, y);
+        ctx.closePath();
+      };
+
+      // Helper retour à la ligne
+      const drawWrapText = (text, x, y, maxWidth, lineHeight, maxLines) => {
+        const words = (text || '').split(' ');
+        let line = '';
+        let linesCount = 0;
+        let currentY = y;
+
+        for (let n = 0; n < words.length; n++) {
+          const testLine = line + words[n] + ' ';
+          const metrics = ctx.measureText(testLine);
+          if (metrics.width > maxWidth && n > 0) {
+            linesCount++;
+            if (maxLines && linesCount >= maxLines) {
+              ctx.fillText(line.trim() + '...', x, currentY);
+              return currentY + lineHeight;
+            }
+            ctx.fillText(line.trim(), x, currentY);
+            line = words[n] + ' ';
+            currentY += lineHeight;
+          } else {
+            line = testLine;
+          }
+        }
+        if (line.trim().length > 0) {
+          ctx.fillText(line.trim(), x, currentY);
+          currentY += lineHeight;
+        }
+        return currentY;
+      };
+
+      // 1. Fond blanc pur
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, 1080, 1350);
+
+      // 2. Chargement des images (Logo et photo) avec gestion timeout et fallback
+      const loadImg = (src, timeoutMs = 4500) => {
+        return new Promise((resolve) => {
+          if (!src) return resolve(null);
+          let done = false;
+          const timer = setTimeout(() => {
+            if (!done) {
+              done = true;
+              resolve(null);
+            }
+          }, timeoutMs);
+
+          const img = new Image();
+          if (src.startsWith('http://') || src.startsWith('https://')) {
+            img.crossOrigin = 'anonymous';
+          }
+          img.onload = () => {
+            if (!done) {
+              done = true;
+              clearTimeout(timer);
+              resolve(img);
+            }
+          };
+          img.onerror = () => {
+            if (!done) {
+              if (img.crossOrigin) {
+                const retryImg = new Image();
+                retryImg.onload = () => {
+                  if (!done) {
+                    done = true;
+                    clearTimeout(timer);
+                    resolve(retryImg);
+                  }
+                };
+                retryImg.onerror = () => {
+                  if (!done) {
+                    done = true;
+                    clearTimeout(timer);
+                    resolve(null);
+                  }
+                };
+                retryImg.src = src;
+              } else {
+                done = true;
+                clearTimeout(timer);
+                resolve(null);
+              }
+            }
+          };
+          img.src = src;
+        });
+      };
+
+      const [logoImg, photoImg] = await Promise.all([
+        loadImg('/afoluku-tv-logo-black.png'),
+        loadImg(getProxiedImageUrl(article.image_url)),
+      ]);
+
+      // 3. En-tête : Logo AFOLUKU TV en haut à gauche
+      if (logoImg) {
+        const logoH = 56;
+        const logoW = (logoImg.width / logoImg.height) * logoH;
+        ctx.drawImage(logoImg, 60, 48, logoW, logoH);
+      } else {
+        ctx.fillStyle = '#0f172a';
+        ctx.font = '900 28px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('AFOLUKU TV', 60, 88);
+      }
+
+      // Slogan + Date en haut à droite
+      const slogan = lang === 'bsh' ? 'WI MEDIA, WI KULTURU, WI TOLI' : 'NOTRE MÉDIA, NOS CULTURES, NOS HISTOIRES';
+      ctx.textAlign = 'right';
+      ctx.fillStyle = '#0f172a';
+      ctx.font = '800 15px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      ctx.fillText(slogan, 1020, 72);
+
+      const pubDate = new Date(article.pub_date || Date.now()).toLocaleDateString(
+        lang === 'bsh' ? 'bs-BA' : 'fr-FR',
+        { day: 'numeric', month: 'long', year: 'numeric' }
+      );
+      ctx.fillStyle = '#64748b';
+      ctx.font = '600 13px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      ctx.fillText(pubDate, 1020, 96);
+
+      // Ligne séparatrice
+      ctx.beginPath();
+      ctx.moveTo(60, 126);
+      ctx.lineTo(1020, 126);
+      ctx.strokeStyle = '#f1f5f9';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // 4. Cadre photo (960px x 560px) avec cadrage propre
+      const photoX = 60;
+      const photoY = 155;
+      const photoW = 960;
+      const photoH = 560;
+
+      ctx.save();
+      drawRoundRect(photoX, photoY, photoW, photoH, 20);
+      ctx.clip();
+
+      if (photoImg) {
+        const imgRatio = photoImg.width / photoImg.height;
+        const targetRatio = photoW / photoH;
+        let sx, sy, sWidth, sHeight;
+        if (imgRatio > targetRatio) {
+          sHeight = photoImg.height;
+          sWidth = photoImg.height * targetRatio;
+          sx = (photoImg.width - sWidth) / 2;
+          sy = 0;
+        } else {
+          sWidth = photoImg.width;
+          sHeight = photoImg.width / targetRatio;
+          sx = 0;
+          sy = (photoImg.height - sHeight) / 2;
+        }
+        ctx.drawImage(photoImg, sx, sy, sWidth, sHeight, photoX, photoY, photoW, photoH);
+      } else {
+        const grad = ctx.createLinearGradient(photoX, photoY, photoX + photoW, photoY + photoH);
+        grad.addColorStop(0, '#1e293b');
+        grad.addColorStop(1, '#0f172a');
+        ctx.fillStyle = grad;
+        ctx.fillRect(photoX, photoY, photoW, photoH);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '900 32px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('AFOLUKU TV', photoX + photoW / 2, photoY + photoH / 2);
+      }
+      ctx.restore();
+
+      // Bordure photo
+      drawRoundRect(photoX, photoY, photoW, photoH, 20);
+      ctx.strokeStyle = '#e2e8f0';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // 5. Badge Catégorie
+      const category = (article.category || dict.home?.headline || 'À LA UNE').toUpperCase();
+      ctx.font = '900 15px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      const catTextW = ctx.measureText(category).width;
+      const catBadgeW = catTextW + 36;
+      const catBadgeY = 746;
+
+      drawRoundRect(60, catBadgeY, catBadgeW, 36, 8);
+      ctx.fillStyle = '#dc2626';
+      ctx.fill();
+
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText(category, 78, catBadgeY + 23);
+
+      // 6. Titre de l'article
+      ctx.fillStyle = '#0f172a';
+      ctx.font = '900 36px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      const titleEndY = drawWrapText(getTitle(article), 60, 830, 960, 48, 3);
+
+      // 7. Introduction de l'article
+      ctx.fillStyle = '#475569';
+      ctx.font = '500 22px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      drawWrapText(getDesc(article) || '', 60, titleEndY + 20, 960, 34, 4);
+
+      // 8. Bas de page : Mention obligatoire
+      ctx.beginPath();
+      ctx.moveTo(60, 1240);
+      ctx.lineTo(1020, 1240);
+      ctx.strokeStyle = '#f1f5f9';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#0f172a';
+      ctx.font = '800 20px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      ctx.fillText('Article complet sur ', 60, 1290);
+      const textLen = ctx.measureText('Article complet sur ').width;
+      ctx.fillStyle = '#dc2626';
+      ctx.fillText('AFOLUKU TV', 60 + textLen, 1290);
+
+      // Badge du domaine
+      ctx.fillStyle = '#0f172a';
+      drawRoundRect(840, 1262, 180, 44, 22);
+      ctx.fill();
+
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '700 17px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      ctx.fillText('afolukutv.com', 930, 1290);
+
+      // 9. Export PNG garanti
+      const triggerDownload = (url) => {
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `afolukutv-${article.slug || 'post'}.png`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        showToast('✅ Post téléchargé avec succès (1080x1350 PNG) !');
+      };
+
+      try {
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const blobUrl = window.URL.createObjectURL(blob);
+            triggerDownload(blobUrl);
+            setTimeout(() => window.URL.revokeObjectURL(blobUrl), 3000);
+          } else {
+            const dataUrl = canvas.toDataURL('image/png');
+            triggerDownload(dataUrl);
+          }
+        }, 'image/png');
+      } catch {
+        const dataUrl = canvas.toDataURL('image/png');
+        triggerDownload(dataUrl);
+      }
     } catch (err) {
-      console.error('Erreur lors du téléchargement du post:', err);
-      // Fallback direct image download
-      const fallbackUrl = article.image_url || '/afoluku-tv-logo-black.png';
-      const a = document.createElement('a');
-      a.href = fallbackUrl;
-      a.target = '_blank';
-      a.download = `${article.slug || 'post'}.jpg`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      showToast('✅ Visuel téléchargé !');
+      console.error('Erreur téléchargement canvas:', err);
+      showToast('Erreur lors de la génération du post');
     }
   };
 
@@ -277,9 +521,9 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
                 width: '100%',
               }}
             >
-              {/* ── 1. AFFICHAGE DU SITE WEB : STRUCTURE STRICTEMENT IDENTIQUE À L'ORIGINE ── */}
+              {/* ── AFFICHAGE SUR LE SITE : STRUCTURE D'ORIGINE 100% ÉPURÉE ── */}
               <div className="hero-slide-wrapper">
-                {/* ENCADREMENT RECTANGLE DU SITE */}
+                {/* 1. ENCADREMENT RECTANGLE */}
                 <Link
                   href={`/${lang}/article/${article.slug}`}
                   className="hero-rectangle-frame-link"
@@ -297,7 +541,7 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
                   </div>
                 </Link>
 
-                {/* CATÉGORIE, TITRE, DESCRIPTION */}
+                {/* 2. CATÉGORIE, TITRE, DESCRIPTION */}
                 <div className="hero-content-below">
                   <div className="hero-badge-wrap">
                     <span className="badge badge-red hero-badge">
@@ -313,7 +557,7 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
                     {(getDesc(article) || '').substring(0, 160) + '...'}
                   </p>
 
-                  {/* Actions interactives sur le site */}
+                  {/* Actions interactives */}
                   <div className="hero-actions-row">
                     <Link
                       href={`/${lang}/article/${article.slug}`}
@@ -364,178 +608,15 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
                         className="hero-social-btn hero-download-btn"
                         onClick={(e) => {
                           e.preventDefault();
-                          handleDownload(article, index);
+                          handleDownload(article);
                         }}
-                        title="Télécharger le visuel du post en haute définition"
+                        title="Télécharger l'aperçu complet du post"
                         aria-label="Télécharger le post"
                       >
                         <Download size={16} color="#475569" />
                         <span className="social-text">Télécharger</span>
                       </button>
                     </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* ── 2. MODÈLE DE TÉLÉCHARGEMENT HORS-ÉCRAN (POST OFFICIEL 1080x1350 HD) ── */}
-              <div
-                id={`hero-export-template-${article.id || index}`}
-                aria-hidden="true"
-                style={{
-                  position: 'fixed',
-                  left: '-9999px',
-                  top: 0,
-                  width: '1080px',
-                  height: '1350px',
-                  backgroundColor: '#ffffff',
-                  padding: '48px 48px',
-                  boxSizing: 'border-box',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  fontFamily: '"Montserrat", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-                  zIndex: -9999,
-                  overflow: 'hidden',
-                }}
-              >
-                {/* EN-TÊTE : LOGO AFOLUKU TV EN HAUT + SLOGAN */}
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    width: '100%',
-                    paddingBottom: '20px',
-                    borderBottom: '2px solid #f1f5f9',
-                  }}
-                >
-                  <img
-                    src="/afoluku-tv-logo-black.png"
-                    alt="A FOLUKU TV"
-                    style={{ height: '58px', width: 'auto', objectFit: 'contain' }}
-                    crossOrigin="anonymous"
-                  />
-                  <div style={{ textAlign: 'right' }}>
-                    <div
-                      style={{
-                        fontSize: '15px',
-                        fontWeight: '800',
-                        color: '#0f172a',
-                        letterSpacing: '1px',
-                        textTransform: 'uppercase',
-                      }}
-                    >
-                      {lang === 'bsh' ? 'WI MEDIA, WI KULTURU, WI TOLI' : 'NOTRE MÉDIA, NOS CULTURES, NOS HISTOIRES'}
-                    </div>
-                    <div style={{ fontSize: '13px', color: '#64748b', marginTop: '4px', fontWeight: '600' }}>
-                      {new Date(article.pub_date || Date.now()).toLocaleDateString(lang === 'bsh' ? 'bs-BA' : 'fr-FR', {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric',
-                      })}
-                    </div>
-                  </div>
-                </div>
-
-                {/* PHOTO PRINCIPALE EN GRAND FORMAT */}
-                <div
-                  style={{
-                    width: '100%',
-                    height: '560px',
-                    borderRadius: '20px',
-                    overflow: 'hidden',
-                    border: '2px solid #e2e8f0',
-                    backgroundColor: '#f8fafc',
-                    margin: '20px 0',
-                    boxShadow: '0 12px 32px rgba(0,0,0,0.06)',
-                  }}
-                >
-                  <img
-                    src={getProxiedImageUrl(article.image_url)}
-                    alt={getTitle(article)}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    crossOrigin="anonymous"
-                  />
-                </div>
-
-                {/* CONTENU : BADGE CATÉGORIE + TITRE + INTRODUCTION */}
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                  <div style={{ marginBottom: '14px' }}>
-                    <span
-                      style={{
-                        display: 'inline-block',
-                        backgroundColor: '#dc2626',
-                        color: '#ffffff',
-                        padding: '6px 18px',
-                        borderRadius: '8px',
-                        fontSize: '15px',
-                        fontWeight: '900',
-                        letterSpacing: '1.2px',
-                        textTransform: 'uppercase',
-                      }}
-                    >
-                      {article.category || dict.home?.headline || 'À LA UNE'}
-                    </span>
-                  </div>
-
-                  <h1
-                    style={{
-                      fontSize: '34px',
-                      fontWeight: '900',
-                      lineHeight: '1.3',
-                      color: '#0f172a',
-                      margin: '0 0 14px 0',
-                      display: '-webkit-box',
-                      WebkitLineClamp: 3,
-                      WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden',
-                    }}
-                  >
-                    {getTitle(article)}
-                  </h1>
-
-                  <p
-                    style={{
-                      fontSize: '20px',
-                      lineHeight: '1.5',
-                      color: '#475569',
-                      margin: 0,
-                      display: '-webkit-box',
-                      WebkitLineClamp: 3,
-                      WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden',
-                    }}
-                  >
-                    {getDesc(article) || ''}
-                  </p>
-                </div>
-
-                {/* BAS DE PAGE : MENTION ARTICLE COMPLET AFOLUKU TV */}
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    paddingTop: '20px',
-                    borderTop: '2px solid #f1f5f9',
-                    width: '100%',
-                  }}
-                >
-                  <div style={{ fontSize: '18px', fontWeight: '800', color: '#0f172a' }}>
-                    Article complet sur <span style={{ color: '#dc2626' }}>AFOLUKU TV</span>
-                  </div>
-                  <div
-                    style={{
-                      backgroundColor: '#0f172a',
-                      color: '#ffffff',
-                      padding: '8px 22px',
-                      borderRadius: '9999px',
-                      fontSize: '16px',
-                      fontWeight: '700',
-                      letterSpacing: '0.5px',
-                    }}
-                  >
-                    afolukutv.com
                   </div>
                 </div>
               </div>
