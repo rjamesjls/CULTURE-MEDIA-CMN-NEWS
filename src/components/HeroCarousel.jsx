@@ -92,24 +92,13 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
                   title={getTitle(article)}
                 >
                   <div className="hero-rectangle-encadrement">
-                    {/* Arrière-plan d'ambiance flouté */}
-                    <img
-                      src={
-                        article.image_url ||
-                        'https://images.unsplash.com/photo-1620287341056-49a2f1ab2fdc?q=80&w=1200&auto=format&fit=crop'
-                      }
-                      alt=""
-                      className="hero-frame-bg-blur"
-                      aria-hidden="true"
-                    />
-                    {/* Photo entière sans aucun rognage */}
                     <img
                       src={
                         article.image_url ||
                         'https://images.unsplash.com/photo-1620287341056-49a2f1ab2fdc?q=80&w=1200&auto=format&fit=crop'
                       }
                       alt={getTitle(article)}
-                      className="hero-frame-photo-entire"
+                      className="hero-frame-photo-cover"
                     />
                   </div>
                 </Link>
@@ -233,23 +222,17 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
           box-shadow: 0 14px 34px rgba(239, 68, 68, 0.25);
         }
 
-        .hero-frame-bg-blur {
-          position: absolute;
-          inset: 0;
+        .hero-frame-photo-cover {
           width: 100%;
           height: 100%;
           object-fit: cover;
-          filter: blur(20px) brightness(0.35);
-          transform: scale(1.1);
+          object-position: center;
+          display: block;
+          transition: transform 0.4s ease;
         }
 
-        .hero-frame-photo-entire {
-          position: relative;
-          width: 100%;
-          height: 100%;
-          object-fit: contain;
-          z-index: 2;
-          display: block;
+        .hero-rectangle-frame-link:hover .hero-frame-photo-cover {
+          transform: scale(1.03);
         }
 
         /* 2. CONTENU JUSTE EN BAS DU CADRE */
