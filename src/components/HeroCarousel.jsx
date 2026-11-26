@@ -321,15 +321,13 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
       const fbSvg = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="256" height="256"><path fill="#0f172a" d="M504 256C504 119 393 8 256 8S8 119 8 256c0 123.78 90.69 226.38 209.25 245V327.69h-63V256h63v-54.64c0-62.15 37-96.48 93.67-96.48 27.14 0 55.52 4.84 55.52 4.84v61h-31.28c-30.8 0-40.41 19.12-40.41 38.73V256h68.78l-11 71.69h-57.78V501C413.31 482.38 504 379.78 504 256z"/></svg>');
       const igSvg = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="256" height="256"><path fill="#0f172a" d="M224.1 141c-63.6 0-114.9 51.3-114.9 114.9s51.3 114.9 114.9 114.9S339 319.5 339 255.9 287.7 141 224.1 141zm0 189.6c-41.1 0-74.7-33.5-74.7-74.7s33.5-74.7 74.7-74.7 74.7 33.5 74.7 74.7-33.6 74.7-74.7 74.7zm146.4-194.3c0 14.9-12 26.8-26.8 26.8-14.9 0-26.8-12-26.8-26.8s12-26.8 26.8-26.8 26.8 12 26.8 26.8zm76.1 27.2c-1.7-35.9-9.9-67.7-36.2-93.9-26.2-26.2-58-34.4-93.9-36.2-37-2.1-147.9-2.1-184.9 0-35.8 1.7-67.6 9.9-93.9 36.1s-34.4 58-36.2 93.9c-2.1 37-2.1 147.9 0 184.9 1.7 35.9 9.9 67.7 36.2 93.9s58 34.4 93.9 36.2c37 2.1 147.9 2.1 184.9 0 35.9-1.7 67.7-9.9 93.9-36.2 26.2-26.2 34.4-58 36.2-93.9 2.1-37 2.1-147.8 0-184.8zM398.8 388c-7.8 19.6-22.9 34.7-42.6 42.6-29.5 11.7-99.5 9-132.1 9s-102.7 2.6-132.1-9c-19.6-7.8-34.7-22.9-42.6-42.6-11.7-29.5-9-99.5-9-132.1s-2.6-102.7 9-132.1c7.8-19.6 22.9-34.7 42.6-42.6 29.5-11.7 99.5-9 132.1-9s102.7-2.6 132.1 9c19.6 7.8 34.7 22.9 42.6 42.6 11.7 29.5 9 99.5 9 132.1s2.7 102.7-9 132.1z"/></svg>');
       const ttSvg = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="256" height="256"><path fill="#0f172a" d="M448 209.91a210.06 210.06 0 0 1-122.77-39.25V349.38A162.55 162.55 0 1 1 185 188.31V278.2a74.62 74.62 0 1 0 52.23 71.18V0l88 0a121.18 121.18 0 0 0 1.86 22.17h0A122.18 122.18 0 0 0 381 102.39a121.43 121.43 0 0 0 67 20.14z"/></svg>');
-      const scSvg = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="256" height="256"><path fill="#0f172a" d="M256 8c-77.9 0-141 63.1-141 141 0 28.3 8.3 54.7 22.7 76.8-4.5 1.7-10.7 4.7-14.8 7.3-10.6 6.7-17 17.5-17 29.7 0 16 11.5 29.7 28.1 33.6 2.4.6 4.9.9 7.4 1.3-1.7 8.3-5.2 20.3-14.4 34.1-14.7 22-33 29.2-48.8 29.2-7.2 0-14.3-1.5-20.9-4.5-4.4-2-9.6-1.5-13.6 1.3-4 2.8-6.3 7.3-5.8 12.2.8 8.1 7.9 19.3 21.6 29 17.8 12.6 42.4 19.2 71.1 19.2 8.6 0 17.6-.7 26.8-2 13-1.9 26.7-6.2 39.2-10.3 7.2-2.4 14.3-4.8 21.2-6.2 4.5-1 9.3-.2 13.3 2.3 6.5 4 14 11.6 23.4 19.2 20 16.1 44.4 29.7 75.3 29.7 30.8 0 55.2-13.6 75.2-29.7 9.4-7.6 16.9-15.2 23.4-19.2 4-2.5 8.8-3.3 13.3-2.3 6.9 1.4 14 3.8 21.2 6.2 12.5 4.1 26.2 8.4 39.2 10.3 9.2 1.3 18.2 2 26.8 2 28.7 0 53.3-6.6 71.1-19.2 13.7-9.7 20.8-20.9 21.6-29 .5-4.9-1.8-9.4-5.8-12.2-4-2.8-9.2-3.3-13.6-1.3-6.6 3-13.7 4.5-20.9 4.5-15.8 0-34.1-7.2-48.8-29.2-9.2-13.8-12.7-25.8-14.4-34.1 2.5-.4 5-.7 7.4-1.3 16.6-3.9 28.1-17.6 28.1-33.6 0-12.2-6.4-23-17-29.7-4.1-2.6-10.3-5.6-14.8-7.3 14.4-22.1 22.7-48.5 22.7-76.8C397 71.1 333.9 8 256 8z"/></svg>');
 
-      const [logoImg, photoImg, fbImg, igImg, ttImg, scImg] = await Promise.all([
+      const [logoImg, photoImg, fbImg, igImg, ttImg] = await Promise.all([
         loadImg('/afoluku-tv-logo-black.png'),
         loadImg(getProxiedImageUrl(article.image_url)),
         loadImg(fbSvg),
         loadImg(igSvg),
-        loadImg(ttSvg),
-        loadImg(scSvg),
+        loadImg(ttImg),
       ]);
 
       // 3. En-tête : Logo AFOLUKU TV en haut à gauche
@@ -457,10 +455,10 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
       ctx.fillStyle = '#dc2626';
       ctx.fillText('AFOLUKU TV', 60 + textLen, 1290);
 
-      // Icônes réseaux sociaux officielles en noir (Facebook, Instagram, TikTok, Snapchat)
-      const socialIcons = [fbImg, igImg, ttImg, scImg];
+      // Icônes réseaux sociaux officielles en noir (Facebook, Instagram, TikTok)
+      const socialIcons = [fbImg, igImg, ttImg];
       const iconSize = 30;
-      const iconGap = 18;
+      const iconGap = 20;
       const totalIconsW = (socialIcons.length * iconSize) + ((socialIcons.length - 1) * iconGap);
       const iconsCenterX = 585;
       let iconStartX = iconsCenterX - (totalIconsW / 2);
