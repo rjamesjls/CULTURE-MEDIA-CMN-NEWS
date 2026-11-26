@@ -61,6 +61,21 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
   const [imageUrl, setImageUrl] = useState(initialData?.image_url || '');
   const [imageCaption, setImageCaption] = useState(initialData?.seo_metadata?.image_caption || '');
   const [imageCredit, setImageCredit] = useState(initialData?.seo_metadata?.image_credit || '');
+
+  // Cadrage / Point focal de l'image (Axe X et Y de 0 à 100%, Zoom de 100 à 200%)
+  const initialPosStr = initialData?.seo_metadata?.image_position || '50% 50%';
+  const [initPosX, initPosY] = initialPosStr.split(' ');
+  const [imagePosX, setImagePosX] = useState(
+    !isNaN(parseInt(initPosX, 10)) ? parseInt(initPosX, 10) : 50
+  );
+  const [imagePosY, setImagePosY] = useState(
+    !isNaN(parseInt(initPosY, 10)) ? parseInt(initPosY, 10) : 50
+  );
+  const [imageZoom, setImageZoom] = useState(
+    initialData?.seo_metadata?.image_zoom || 100
+  );
+  const [imageRatioPreview, setImageRatioPreview] = useState('16-9'); // '16-9' | '4-5' | '1-1'
+
   const [content, setContent] = useState(initialData?.content || '');
   const [isSpecialEdition, setIsSpecialEdition] = useState(initialData?.is_special_edition || false);
 
@@ -416,6 +431,8 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
       mergedMetadata.header_badge = headerBadge;
       mergedMetadata.image_caption = imageCaption ? imageCaption.trim() : '';
       mergedMetadata.image_credit = imageCredit ? imageCredit.trim() : '';
+      mergedMetadata.image_position = `${imagePosX}% ${imagePosY}%`;
+      mergedMetadata.image_zoom = imageZoom;
       if (magCoverUrl) {
         mergedMetadata.magazine_cover_url = magCoverUrl;
       }
@@ -989,6 +1006,239 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
                 placeholder="https://exemple.com/image.jpg"
               />
 
+              {/* OUTIL DE REPOSITIONNEMENT ET RECADRAGE DE L'IMAGE PRINCIPALE */}
+              {imageUrl && (
+                <div style={{
+                  marginTop: '16px',
+                  marginBottom: '16px',
+                  padding: '16px',
+                  borderRadius: '12px',
+                  backgroundColor: '#f8fafc',
+                  border: '1.5px solid #cbd5e1',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{ width: '28px', height: '28px', borderRadius: '6px', backgroundColor: '#2563eb', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px' }}>
+                        <i className="fas fa-crop-alt"></i>
+                      </div>
+                      <div>
+                        <strong style={{ fontSize: '13.5px', color: '#0f172a' }}>Outil de recadrage & recentrage en direct</strong>
+                        <p style={{ margin: 0, fontSize: '11.5px', color: '#64748b' }}>Cliquez sur l'image ou déplacez les curseurs pour ajuster la partie visible.</p>
+                      </div>
+                    </div>
+
+                    {/* Raccourcis Rapides */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                      {[
+                        { label: '⬆️ Haut', x: 50, y: 15 },
+                        { label: '🎯 Centre', x: 50, y: 50 },
+                        { label: '⬇️ Bas', x: 50, y: 85 },
+                        { label: '⬅️ Gauche', x: 15, y: 50 },
+                        { label: '➡️ Droite', x: 85, y: 50 },
+                        { label: '↺ Réinitialiser', x: 50, y: 50, z: 100 }
+                      ].map((preset, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => {
+                            setImagePosX(preset.x);
+                            setImagePosY(preset.y);
+                            if (preset.z) setImageZoom(preset.z);
+                          }}
+                          style={{
+                            padding: '4px 9px',
+                            fontSize: '11.5px',
+                            fontWeight: '600',
+                            borderRadius: '6px',
+                            border: '1px solid #cbd5e1',
+                            backgroundColor: imagePosX === preset.x && imagePosY === preset.y ? '#2563eb' : '#fff',
+                            color: imagePosX === preset.x && imagePosY === preset.y ? '#fff' : '#334155',
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease'
+                          }}
+                        >
+                          {preset.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Zone d'aperçu interactive avec point focal */}
+                  <div style={{ position: 'relative', marginBottom: '14px' }}>
+                    <div
+                      onClick={(e) => {
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        const clickX = Math.round(Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100)));
+                        const clickY = Math.round(Math.max(0, Math.min(100, ((e.clientY - rect.top) / rect.height) * 100)));
+                        setImagePosX(clickX);
+                        setImagePosY(clickY);
+                      }}
+                      style={{
+                        position: 'relative',
+                        width: '100%',
+                        height: imageRatioPreview === '4-5' ? '300px' : (imageRatioPreview === '1-1' ? '240px' : '200px'),
+                        maxHeight: '340px',
+                        borderRadius: '10px',
+                        overflow: 'hidden',
+                        backgroundColor: '#090d16',
+                        border: '2px solid #94a3b8',
+                        cursor: 'crosshair',
+                        userSelect: 'none',
+                        transition: 'height 0.2s ease'
+                      }}
+                    >
+                      <img
+                        src={imageUrl}
+                        alt="Aperçu cadrage"
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          objectPosition: `${imagePosX}% ${imagePosY}%`,
+                          transform: imageZoom > 100 ? `scale(${imageZoom / 100})` : 'none',
+                          transformOrigin: `${imagePosX}% ${imagePosY}%`,
+                          transition: 'object-position 0.1s ease, transform 0.1s ease',
+                          pointerEvents: 'none'
+                        }}
+                      />
+
+                      {/* Viseur / Cible de cadrage */}
+                      <div
+                        style={{
+                          position: 'absolute',
+                          left: `${imagePosX}%`,
+                          top: `${imagePosY}%`,
+                          transform: 'translate(-50%, -50%)',
+                          width: '32px',
+                          height: '32px',
+                          borderRadius: '50%',
+                          border: '2px solid #fff',
+                          boxShadow: '0 0 0 2px #2563eb, 0 4px 12px rgba(0,0,0,0.4)',
+                          pointerEvents: 'none',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          transition: 'left 0.1s ease, top 0.1s ease'
+                        }}
+                      >
+                        <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#2563eb' }}></div>
+                      </div>
+
+                      {/* Badges d'état */}
+                      <div style={{
+                        position: 'absolute',
+                        top: '8px',
+                        left: '8px',
+                        backgroundColor: 'rgba(15, 23, 42, 0.75)',
+                        backdropFilter: 'blur(4px)',
+                        color: '#fff',
+                        fontSize: '11px',
+                        padding: '3px 8px',
+                        borderRadius: '5px',
+                        fontWeight: '600',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '5px'
+                      }}>
+                        <i className="fas fa-crosshairs" style={{ color: '#60a5fa' }}></i>
+                        X: {imagePosX}% | Y: {imagePosY}% {imageZoom > 100 ? `| Zoom: ${imageZoom}%` : ''}
+                      </div>
+
+                      <div style={{
+                        position: 'absolute',
+                        bottom: '8px',
+                        right: '8px',
+                        backgroundColor: 'rgba(15, 23, 42, 0.85)',
+                        color: '#facc15',
+                        fontSize: '10.5px',
+                        padding: '3px 9px',
+                        borderRadius: '5px',
+                        fontWeight: '700',
+                        letterSpacing: '0.3px'
+                      }}>
+                        Aperçu direct du cadrage
+                      </div>
+                    </div>
+
+                    {/* Ratios de prévisualisation */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px', fontSize: '11.5px', color: '#64748b' }}>
+                      <span>Astuce : Cliquez directement sur la photo pour pointer le sujet principal</span>
+                      <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                        <span style={{ fontSize: '11px', marginRight: '4px' }}>Simuler le format :</span>
+                        {['16-9', '4-5', '1-1'].map((r) => (
+                          <button
+                            key={r}
+                            type="button"
+                            onClick={() => setImageRatioPreview(r)}
+                            style={{
+                              fontSize: '10.5px',
+                              padding: '2px 6px',
+                              borderRadius: '4px',
+                              border: '1px solid #cbd5e1',
+                              backgroundColor: imageRatioPreview === r ? '#e2e8f0' : '#fff',
+                              fontWeight: imageRatioPreview === r ? '700' : '500',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            {r === '16-9' ? '16:9 (Site Web)' : (r === '4-5' ? '4:5 (Post Social)' : '1:1 (Carré)')}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Curseurs de réglage fin X, Y et Zoom */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '14px', paddingTop: '4px' }}>
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#334155', marginBottom: '4px' }}>
+                        <span style={{ fontWeight: '600' }}>Gauche ↔ Droite (X)</span>
+                        <span style={{ fontWeight: '700', color: '#2563eb' }}>{imagePosX}%</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={imagePosX}
+                        onChange={(e) => setImagePosX(Number(e.target.value))}
+                        style={{ width: '100%', cursor: 'pointer' }}
+                      />
+                    </div>
+
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#334155', marginBottom: '4px' }}>
+                        <span style={{ fontWeight: '600' }}>Haut ↕ Bas (Y)</span>
+                        <span style={{ fontWeight: '700', color: '#2563eb' }}>{imagePosY}%</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={imagePosY}
+                        onChange={(e) => setImagePosY(Number(e.target.value))}
+                        style={{ width: '100%', cursor: 'pointer' }}
+                      />
+                    </div>
+
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#334155', marginBottom: '4px' }}>
+                        <span style={{ fontWeight: '600' }}>Zoom / Échelle</span>
+                        <span style={{ fontWeight: '700', color: '#2563eb' }}>{imageZoom}%</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="100"
+                        max="200"
+                        step="5"
+                        value={imageZoom}
+                        onChange={(e) => setImageZoom(Number(e.target.value))}
+                        style={{ width: '100%', cursor: 'pointer' }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Légende & Crédit photo */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginTop: '15px', marginBottom: '15px' }}>
               <div className="admin-form-group" style={{ marginBottom: 0 }}>
@@ -1349,8 +1599,16 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
         </div>
         
         <div style={{ backgroundColor: '#fff', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
-          {/* Image */}
-          <div style={{ width: '100%', height: '200px', backgroundColor: '#e5e7eb', backgroundImage: imageUrl ? `url(${imageUrl})` : 'none', backgroundSize: 'cover', backgroundPosition: 'center' }}>
+          {/* Image avec cadrage dynamique en direct */}
+          <div style={{ 
+            width: '100%', 
+            height: '200px', 
+            backgroundColor: '#e5e7eb', 
+            backgroundImage: imageUrl ? `url(${imageUrl})` : 'none', 
+            backgroundSize: imageZoom > 100 ? `${imageZoom}%` : 'cover', 
+            backgroundPosition: `${imagePosX}% ${imagePosY}%`,
+            transition: 'background-position 0.1s ease, background-size 0.1s ease'
+          }}>
             {!imageUrl && (
               <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', fontWeight: '500' }}>
                 {articleFormat === 'web_magazine' ? 'Couverture Web Magazine' : 'Image de couverture'}

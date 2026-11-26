@@ -250,7 +250,17 @@ export default async function ArticlePage({ params }) {
         </header>
 
         <div className="article-featured-image" style={{ margin: '30px 0' }}>
-          <img src={article.image_url || 'https://images.unsplash.com/photo-1620287341056-49a2f1ab2fdc?q=80&w=800&auto=format&fit=crop'} alt={getTitle(article)} style={{ width: '100%', borderRadius: '12px' }} />
+          <img 
+            src={article.image_url || 'https://images.unsplash.com/photo-1620287341056-49a2f1ab2fdc?q=80&w=800&auto=format&fit=crop'} 
+            alt={getTitle(article)} 
+            style={{ 
+              width: '100%', 
+              maxHeight: '560px', 
+              objectFit: 'cover', 
+              objectPosition: article.seo_metadata?.image_position || 'center', 
+              borderRadius: '12px' 
+            }} 
+          />
           {(article.seo_metadata?.image_caption || article.seo_metadata?.image_credit) && (
             <div style={{
               display: 'flex',

@@ -38,7 +38,7 @@ export default function CustomEditor({ value, onChange, style, className }) {
           ["customColor", "customBgColor"],
           [{ list: "ordered" }, { list: "bullet" }],
           [{ align: [] }],
-          ["link", "blockquote"],
+          ["link", "image", "blockquote"],
           ["clean"],
         ],
         handlers: {

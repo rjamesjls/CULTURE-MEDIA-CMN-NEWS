@@ -347,16 +347,21 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
         const imgRatio = photoImg.width / photoImg.height;
         const targetRatio = photoW / photoH;
         let sx, sy, sWidth, sHeight;
+
+        const posParts = (article.seo_metadata?.image_position || '50% 50%').split(' ');
+        const posX = Math.max(0, Math.min(100, parseInt(posParts[0], 10) || 50)) / 100;
+        const posY = Math.max(0, Math.min(100, parseInt(posParts[1], 10) || 50)) / 100;
+
         if (imgRatio > targetRatio) {
           sHeight = photoImg.height;
           sWidth = photoImg.height * targetRatio;
-          sx = (photoImg.width - sWidth) / 2;
+          sx = Math.max(0, Math.min(photoImg.width - sWidth, (photoImg.width - sWidth) * posX));
           sy = 0;
         } else {
           sWidth = photoImg.width;
           sHeight = photoImg.width / targetRatio;
           sx = 0;
-          sy = (photoImg.height - sHeight) / 2;
+          sy = Math.max(0, Math.min(photoImg.height - sHeight, (photoImg.height - sHeight) * posY));
         }
         ctx.drawImage(photoImg, sx, sy, sWidth, sHeight, photoX, photoY, photoW, photoH);
       } else {
@@ -555,6 +560,9 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
                       }
                       alt={getTitle(article)}
                       className="hero-frame-photo-cover"
+                      style={{
+                        objectPosition: article.seo_metadata?.image_position || 'center'
+                      }}
                     />
                   </div>
                 </Link>
