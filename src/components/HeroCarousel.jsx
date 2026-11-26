@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Heart, Share2, MessageCircle, ArrowRight } from 'lucide-react';
+import { Heart, Share2, Download, ArrowRight } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { incrementLike } from '@/app/actions/analytics';
 
@@ -200,6 +200,33 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
     }
   };
 
+  const handleDownload = async (article) => {
+    const imageUrl = article.image_url || 'https://images.unsplash.com/photo-1620287341056-49a2f1ab2fdc?q=80&w=1200&auto=format&fit=crop';
+    try {
+      showToast('Téléchargement du post...');
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = `${article.slug || 'afoluku-post'}.png`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(blobUrl);
+      showToast('✅ Post téléchargé en image (PNG) !');
+    } catch {
+      const a = document.createElement('a');
+      a.href = imageUrl;
+      a.target = '_blank';
+      a.download = `${article.slug || 'afoluku-post'}.jpg`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      showToast('✅ Téléchargement lancé !');
+    }
+  };
+
   return (
     <section
       className="hero-carousel hero-rectangle-stage"
@@ -320,16 +347,20 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
                         <span className="social-text">Partager</span>
                       </button>
 
-                      {/* Bouton Commentaire */}
-                      <Link
-                        href={`/${lang}/article/${article.slug}#comments`}
+                      {/* Bouton Télécharger */}
+                      <button
+                        type="button"
                         className="hero-social-btn"
-                        title="Voir ou ajouter un commentaire"
-                        aria-label="Commentaires de l'article"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleDownload(article);
+                        }}
+                        title="Télécharger le visuel du post"
+                        aria-label="Télécharger le post"
                       >
-                        <MessageCircle size={16} color="#475569" />
-                        <span className="social-text">Commenter</span>
-                      </Link>
+                        <Download size={16} color="#475569" />
+                        <span className="social-text">Télécharger</span>
+                      </button>
                     </div>
                   </div>
                 </div>

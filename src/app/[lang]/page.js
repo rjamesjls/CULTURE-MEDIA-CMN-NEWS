@@ -72,11 +72,13 @@ export default async function Home({ params }) {
           <Link href={`/${lang}/faits-divers`} className="mobile-pill">
             <span>🚨 Faits divers</span>
           </Link>
-          {(categoriesList || []).map((cat) => (
-            <Link key={cat.id} href={`/${lang}/category/${cat.slug}`} className="mobile-pill">
-              <span>{cat.name}</span>
-            </Link>
-          ))}
+          {(categoriesList || [])
+            .filter((cat) => cat.slug !== 'faits-divers' && cat.name?.toLowerCase() !== 'faits divers')
+            .map((cat) => (
+              <Link key={cat.id} href={`/${lang}/category/${cat.slug}`} className="mobile-pill">
+                <span>{cat.name}</span>
+              </Link>
+            ))}
         </div>
       </div>
 
