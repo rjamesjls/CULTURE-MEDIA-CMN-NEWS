@@ -59,7 +59,7 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
 
   return (
     <section
-      className="hero-carousel hero-triangle-stage"
+      className="hero-carousel hero-rectangle-stage"
       id="heroCarousel"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
@@ -77,7 +77,7 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
               style={{
                 opacity: isActive ? 1 : 0,
                 pointerEvents: isActive ? 'all' : 'none',
-                transition: 'opacity 0.5s ease-in-out',
+                transition: 'opacity 0.4s ease-in-out',
                 position: isActive ? 'relative' : 'absolute',
                 top: 0,
                 left: 0,
@@ -85,23 +85,32 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
               }}
             >
               <div className="hero-slide-wrapper">
-                {/* 1. ENCADREMENT TRIANGULAIRE DE LA PHOTO */}
+                {/* 1. ENCADREMENT RECTANGLE : AFFICHE LA PHOTO ENTIÈRE SANS AUCUNE COUPURE */}
                 <Link
                   href={`/${lang}/article/${article.slug}`}
-                  className="hero-triangle-link"
+                  className="hero-rectangle-frame-link"
                   title={getTitle(article)}
                 >
-                  <div className="hero-triangle-frame-outer">
-                    <div className="hero-triangle-frame-inner">
-                      <img
-                        src={
-                          article.image_url ||
-                          'https://images.unsplash.com/photo-1620287341056-49a2f1ab2fdc?q=80&w=1200&auto=format&fit=crop'
-                        }
-                        alt={getTitle(article)}
-                        className="hero-triangle-image"
-                      />
-                    </div>
+                  <div className="hero-rectangle-encadrement">
+                    {/* Arrière-plan d'ambiance flouté */}
+                    <img
+                      src={
+                        article.image_url ||
+                        'https://images.unsplash.com/photo-1620287341056-49a2f1ab2fdc?q=80&w=1200&auto=format&fit=crop'
+                      }
+                      alt=""
+                      className="hero-frame-bg-blur"
+                      aria-hidden="true"
+                    />
+                    {/* Photo entière sans aucun rognage */}
+                    <img
+                      src={
+                        article.image_url ||
+                        'https://images.unsplash.com/photo-1620287341056-49a2f1ab2fdc?q=80&w=1200&auto=format&fit=crop'
+                      }
+                      alt={getTitle(article)}
+                      className="hero-frame-photo-entire"
+                    />
                   </div>
                 </Link>
 
@@ -160,7 +169,7 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
       )}
 
       <style jsx>{`
-        .hero-triangle-stage {
+        .hero-rectangle-stage {
           position: relative;
           width: 100%;
           background: linear-gradient(180deg, #0b1120 0%, #0f172a 100%);
@@ -168,13 +177,12 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
           overflow: hidden;
           box-shadow: 0 12px 36px rgba(0, 0, 0, 0.22);
           border: 1px solid rgba(255, 255, 255, 0.08);
-          padding: 24px 20px 48px 20px;
+          padding: 20px 20px 48px 20px;
         }
 
         .carousel-container {
           position: relative;
           width: 100%;
-          min-height: 440px;
         }
 
         .carousel-slide {
@@ -194,49 +202,57 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
           text-align: center;
         }
 
-        /* 1. Encadrement triangulaire */
-        .hero-triangle-link {
+        /* 1. ENCADREMENT RECTANGLE */
+        .hero-rectangle-frame-link {
           display: block;
+          width: 100%;
+          max-width: 680px;
           text-decoration: none;
           margin: 0 auto 16px auto;
           cursor: pointer;
         }
 
-        .hero-triangle-frame-outer {
-          width: 290px;
-          height: 200px;
-          margin: 0 auto;
+        .hero-rectangle-encadrement {
           position: relative;
-          background: linear-gradient(135deg, #ef4444 0%, #f59e0b 50%, #dc2626 100%);
-          clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
-          padding: 4px;
-          filter: drop-shadow(0 10px 24px rgba(239, 68, 68, 0.35));
-          transition: transform 0.3s ease, filter 0.3s ease;
-        }
-
-        .hero-triangle-frame-outer:hover {
-          transform: scale(1.03);
-          filter: drop-shadow(0 14px 28px rgba(239, 68, 68, 0.55));
-        }
-
-        .hero-triangle-frame-inner {
           width: 100%;
-          height: 100%;
-          background: #0b0f19;
-          clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
-          position: relative;
+          height: 280px;
+          border-radius: 16px;
           overflow: hidden;
+          background: #030712;
+          border: 2px solid rgba(255, 255, 255, 0.16);
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
         }
 
-        .hero-triangle-image {
+        .hero-rectangle-frame-link:hover .hero-rectangle-encadrement {
+          transform: scale(1.015);
+          border-color: rgba(239, 68, 68, 0.6);
+          box-shadow: 0 14px 34px rgba(239, 68, 68, 0.25);
+        }
+
+        .hero-frame-bg-blur {
+          position: absolute;
+          inset: 0;
           width: 100%;
           height: 100%;
           object-fit: cover;
-          object-position: center 30%;
+          filter: blur(20px) brightness(0.35);
+          transform: scale(1.1);
+        }
+
+        .hero-frame-photo-entire {
+          position: relative;
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+          z-index: 2;
           display: block;
         }
 
-        /* 2. Contenu en bas */
+        /* 2. CONTENU JUSTE EN BAS DU CADRE */
         .hero-content-below {
           display: flex;
           flex-direction: column;
@@ -344,18 +360,14 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
         }
 
         @media (max-width: 768px) {
-          .hero-triangle-stage {
-            padding: 16px 12px 38px 12px;
+          .hero-rectangle-stage {
+            padding: 14px 12px 38px 12px;
             border-radius: 18px;
           }
 
-          .carousel-container {
-            min-height: 420px;
-          }
-
-          .hero-triangle-frame-outer {
-            width: 240px;
-            height: 170px;
+          .hero-rectangle-encadrement {
+            height: 210px;
+            border-radius: 14px;
           }
 
           .hero-article-title {
