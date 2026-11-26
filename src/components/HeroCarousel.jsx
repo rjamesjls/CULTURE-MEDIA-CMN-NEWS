@@ -590,7 +590,7 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
                       className="btn btn-primary hero-btn-read"
                     >
                       <span>{dict.home?.read_more || 'Lire la suite'}</span>
-                      <ArrowRight size={14} style={{ marginLeft: '4px' }} />
+                      <ArrowRight size={13} style={{ marginLeft: '3px' }} />
                     </Link>
 
                     <div className="hero-social-actions">
@@ -606,7 +606,7 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
                         aria-label="Liker cet article"
                       >
                         <Heart
-                          size={16}
+                          size={14}
                           fill={isLiked ? '#dc2626' : 'none'}
                           color={isLiked ? '#dc2626' : '#475569'}
                         />
@@ -624,7 +624,7 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
                         title="Partager cet article"
                         aria-label="Partager cet article"
                       >
-                        <Share2 size={16} color="#475569" />
+                        <Share2 size={14} color="#475569" />
                         <span className="social-text">Partager</span>
                       </button>
 
@@ -639,7 +639,7 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
                         title="Télécharger l'aperçu complet du post"
                         aria-label="Télécharger le post"
                       >
-                        <Download size={16} color="#475569" />
+                        <Download size={14} color="#475569" />
                         <span className="social-text">Télécharger</span>
                       </button>
                     </div>
@@ -833,60 +833,69 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
           overflow: hidden;
         }
 
-        /* ── LIGNE D'ACTIONS INTERACTIVES ── */
+        /* ── LIGNE D'ACTIONS INTERACTIVES MODERNISÉE & COMPACTE ── */
         .hero-actions-row {
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 12px;
+          gap: 10px;
           flex-wrap: wrap;
         }
 
         .hero-btn-read {
           display: inline-flex;
           align-items: center;
-          gap: 6px;
-          padding: 8px 18px;
-          font-size: 12.5px;
-          font-weight: 700;
+          gap: 5px;
+          padding: 6px 14px;
+          font-size: 11.5px;
+          font-weight: 600;
+          letter-spacing: 0.2px;
           border-radius: 9999px;
-          box-shadow: 0 4px 14px rgba(220, 38, 38, 0.3);
-          transition: transform 0.2s ease;
+          background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+          color: #ffffff;
+          box-shadow: 0 2px 6px rgba(220, 38, 38, 0.22);
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
           text-decoration: none;
+          line-height: 1;
         }
 
         .hero-btn-read:hover {
-          transform: translateY(-2px);
+          transform: translateY(-1px);
+          box-shadow: 0 4px 10px rgba(220, 38, 38, 0.32);
+          color: #ffffff;
         }
 
         .hero-social-actions {
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: 6px;
         }
 
         .hero-social-btn {
           display: inline-flex;
           align-items: center;
-          gap: 6px;
-          padding: 7px 14px;
+          gap: 5px;
+          padding: 5px 11px;
           border-radius: 9999px;
-          background: #f8fafc;
-          border: 1px solid #e2e8f0;
-          color: #334155;
-          font-size: 12px;
-          font-weight: 600;
+          background: rgba(255, 255, 255, 0.9);
+          backdrop-filter: blur(8px);
+          border: 1px solid rgba(226, 232, 240, 0.95);
+          color: #475569;
+          font-size: 11.5px;
+          font-weight: 500;
           cursor: pointer;
           text-decoration: none;
-          transition: all 0.2s ease;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
           line-height: 1;
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
         }
 
         .hero-social-btn:hover {
-          background: #f1f5f9;
+          background: #ffffff;
           border-color: #cbd5e1;
           color: #0f172a;
           transform: translateY(-1px);
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
         }
 
         .hero-social-btn.is-liked {
@@ -897,6 +906,7 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
 
         .hero-social-btn.is-liked:hover {
           background: #fee2e2;
+          border-color: #fca5a5;
         }
 
         .hero-download-btn:hover {
@@ -905,13 +915,13 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
         }
 
         .social-count {
-          font-size: 12px;
-          font-weight: 700;
+          font-size: 11px;
+          font-weight: 600;
         }
 
         .social-text {
-          font-size: 12px;
-          font-weight: 600;
+          font-size: 11px;
+          font-weight: 500;
         }
 
         /* Indicateurs */
@@ -997,17 +1007,17 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
 
           .hero-actions-row {
             justify-content: flex-start;
-            gap: 14px;
+            gap: 10px;
           }
 
           .hero-btn-read {
-            padding: 9px 22px;
-            font-size: 13.5px;
+            padding: 7px 16px;
+            font-size: 12px;
           }
 
           .hero-social-btn {
-            padding: 8px 16px;
-            font-size: 13px;
+            padding: 6px 12px;
+            font-size: 11.5px;
           }
         }
 
@@ -1038,18 +1048,18 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
           }
 
           .hero-actions-row {
-            gap: 8px;
+            gap: 6px;
           }
 
           .hero-btn-read {
-            padding: 6px 14px;
-            font-size: 11.5px;
+            padding: 5px 12px;
+            font-size: 11px;
           }
 
           .hero-social-btn {
-            padding: 6px 10px;
+            padding: 5px 9px;
             gap: 4px;
-            font-size: 11px;
+            font-size: 10.5px;
           }
 
           .carousel-indicators {
