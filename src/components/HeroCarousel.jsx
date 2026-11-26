@@ -264,71 +264,39 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, 1080, 1350);
 
-      // 2. Chargement des images (Logo officiel, photo de l'article et icônes réseaux sociaux noires)
-      const loadImg = (src, timeoutMs = 4500) => {
-        return new Promise((resolve) => {
-          if (!src) return resolve(null);
-          let done = false;
-          const timer = setTimeout(() => {
-            if (!done) {
-              done = true;
-              resolve(null);
-            }
-          }, timeoutMs);
+      // 2. Chargement sécurisé des images (Fetch/Blob pour garantir ZÉRO corruption CORS)
+      const loadSafeImg = async (url, timeoutMs = 4500) => {
+        if (!url) return null;
+        try {
+          const controller = new AbortController();
+          const timer = setTimeout(() => controller.abort(), timeoutMs);
+          const res = await fetch(url, { signal: controller.signal });
+          clearTimeout(timer);
+          if (!res.ok) return null;
+          const blob = await res.blob();
+          const blobUrl = URL.createObjectURL(blob);
 
-          const img = new Image();
-          if (src.startsWith('http://') || src.startsWith('https://')) {
-            img.crossOrigin = 'anonymous';
-          }
-          img.onload = () => {
-            if (!done) {
-              done = true;
-              clearTimeout(timer);
-              resolve(img);
-            }
-          };
-          img.onerror = () => {
-            if (!done) {
-              if (img.crossOrigin) {
-                const retryImg = new Image();
-                retryImg.onload = () => {
-                  if (!done) {
-                    done = true;
-                    clearTimeout(timer);
-                    resolve(retryImg);
-                  }
-                };
-                retryImg.onerror = () => {
-                  if (!done) {
-                    done = true;
-                    clearTimeout(timer);
-                    resolve(null);
-                  }
-                };
-                retryImg.src = src;
-              } else {
-                done = true;
-                clearTimeout(timer);
-                resolve(null);
-              }
-            }
-          };
-          img.src = src;
-        });
+          return await new Promise((resolve) => {
+            const img = new Image();
+            img.onload = () => resolve({ img, blobUrl });
+            img.onerror = () => {
+              URL.revokeObjectURL(blobUrl);
+              resolve(null);
+            };
+            img.src = blobUrl;
+          });
+        } catch {
+          return null;
+        }
       };
 
-      // SVGs vectoriels officiels haute définition (256x256) en noir (#0f172a)
-      const fbSvg = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="256" height="256"><path fill="#0f172a" d="M504 256C504 119 393 8 256 8S8 119 8 256c0 123.78 90.69 226.38 209.25 245V327.69h-63V256h63v-54.64c0-62.15 37-96.48 93.67-96.48 27.14 0 55.52 4.84 55.52 4.84v61h-31.28c-30.8 0-40.41 19.12-40.41 38.73V256h68.78l-11 71.69h-57.78V501C413.31 482.38 504 379.78 504 256z"/></svg>');
-      const igSvg = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="256" height="256"><path fill="#0f172a" d="M224.1 141c-63.6 0-114.9 51.3-114.9 114.9s51.3 114.9 114.9 114.9S339 319.5 339 255.9 287.7 141 224.1 141zm0 189.6c-41.1 0-74.7-33.5-74.7-74.7s33.5-74.7 74.7-74.7 74.7 33.5 74.7 74.7-33.6 74.7-74.7 74.7zm146.4-194.3c0 14.9-12 26.8-26.8 26.8-14.9 0-26.8-12-26.8-26.8s12-26.8 26.8-26.8 26.8 12 26.8 26.8zm76.1 27.2c-1.7-35.9-9.9-67.7-36.2-93.9-26.2-26.2-58-34.4-93.9-36.2-37-2.1-147.9-2.1-184.9 0-35.8 1.7-67.6 9.9-93.9 36.1s-34.4 58-36.2 93.9c-2.1 37-2.1 147.9 0 184.9 1.7 35.9 9.9 67.7 36.2 93.9s58 34.4 93.9 36.2c37 2.1 147.9 2.1 184.9 0 35.9-1.7 67.7-9.9 93.9-36.2 26.2-26.2 34.4-58 36.2-93.9 2.1-37 2.1-147.8 0-184.8zM398.8 388c-7.8 19.6-22.9 34.7-42.6 42.6-29.5 11.7-99.5 9-132.1 9s-102.7 2.6-132.1-9c-19.6-7.8-34.7-22.9-42.6-42.6-11.7-29.5-9-99.5-9-132.1s-2.6-102.7 9-132.1c7.8-19.6 22.9-34.7 42.6-42.6 29.5-11.7 99.5-9 132.1-9s102.7-2.6 132.1 9c19.6 7.8 34.7 22.9 42.6 42.6 11.7 29.5 9 99.5 9 132.1s2.7 102.7-9 132.1z"/></svg>');
-      const ttSvg = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="256" height="256"><path fill="#0f172a" d="M448 209.91a210.06 210.06 0 0 1-122.77-39.25V349.38A162.55 162.55 0 1 1 185 188.31V278.2a74.62 74.62 0 1 0 52.23 71.18V0l88 0a121.18 121.18 0 0 0 1.86 22.17h0A122.18 122.18 0 0 0 381 102.39a121.43 121.43 0 0 0 67 20.14z"/></svg>');
-
-      const [logoImg, photoImg, fbImg, igImg, ttImg] = await Promise.all([
-        loadImg('/afoluku-tv-logo-black.png'),
-        loadImg(getProxiedImageUrl(article.image_url)),
-        loadImg(fbSvg),
-        loadImg(igSvg),
-        loadImg(ttImg),
+      const [logoData, photoData] = await Promise.all([
+        loadSafeImg('/afoluku-tv-logo-black.png'),
+        loadSafeImg(getProxiedImageUrl(article.image_url)),
       ]);
+
+      const logoImg = logoData?.img || null;
+      const photoImg = photoData?.img || null;
 
       // 3. En-tête : Logo AFOLUKU TV en haut à gauche
       if (logoImg) {
@@ -455,14 +423,19 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
       ctx.fillStyle = '#dc2626';
       ctx.fillText('AFOLUKU TV', 60 + textLen, 1290);
 
-      // Icônes réseaux sociaux officielles en noir (Facebook, Instagram, TikTok)
-      const socialIcons = [fbImg, igImg, ttImg];
-      const iconSize = 30;
-      const iconGap = 20;
-      const totalIconsW = (socialIcons.length * iconSize) + ((socialIcons.length - 1) * iconGap);
+      // Rendu vectoriel natif des logos réseaux sociaux en noir (ZÉRO risque de canvas tainting)
+      const drawSvgPath = (pathString, origW, origH, targetX, targetY, targetSize) => {
+        ctx.save();
+        ctx.translate(targetX, targetY);
+        const s = targetSize / Math.max(origW, origH);
+        ctx.scale(s, s);
+        const path = new Path2D(pathString);
+        ctx.fillStyle = '#0f172a';
+        ctx.fill(path);
+        ctx.restore();
+      };
+
       const iconsCenterX = 585;
-      let iconStartX = iconsCenterX - (totalIconsW / 2);
-      const iconY = 1270;
 
       // Texte 'SUIVEZ-NOUS' au-dessus des logos
       ctx.textAlign = 'center';
@@ -470,12 +443,15 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
       ctx.font = '800 12px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
       ctx.fillText('SUIVEZ-NOUS', iconsCenterX, 1254);
 
-      socialIcons.forEach((icon) => {
-        if (icon) {
-          ctx.drawImage(icon, iconStartX, iconY, iconSize, iconSize);
-        }
-        iconStartX += iconSize + iconGap;
-      });
+      // Tracés vectoriels officiels
+      const fbPath = 'M504 256C504 119 393 8 256 8S8 119 8 256c0 123.78 90.69 226.38 209.25 245V327.69h-63V256h63v-54.64c0-62.15 37-96.48 93.67-96.48 27.14 0 55.52 4.84 55.52 4.84v61h-31.28c-30.8 0-40.41 19.12-40.41 38.73V256h68.78l-11 71.69h-57.78V501C413.31 482.38 504 379.78 504 256z';
+      const igPath = 'M224.1 141c-63.6 0-114.9 51.3-114.9 114.9s51.3 114.9 114.9 114.9S339 319.5 339 255.9 287.7 141 224.1 141zm0 189.6c-41.1 0-74.7-33.5-74.7-74.7s33.5-74.7 74.7-74.7 74.7 33.5 74.7 74.7-33.6 74.7-74.7 74.7zm146.4-194.3c0 14.9-12 26.8-26.8 26.8-14.9 0-26.8-12-26.8-26.8s12-26.8 26.8-26.8 26.8 12 26.8 26.8zm76.1 27.2c-1.7-35.9-9.9-67.7-36.2-93.9-26.2-26.2-58-34.4-93.9-36.2-37-2.1-147.9-2.1-184.9 0-35.8 1.7-67.6 9.9-93.9 36.1s-34.4 58-36.2 93.9c-2.1 37-2.1 147.9 0 184.9 1.7 35.9 9.9 67.7 36.2 93.9s58 34.4 93.9 36.2c37 2.1 147.9 2.1 184.9 0 35.9-1.7 67.7-9.9 93.9-36.2 26.2-26.2 34.4-58 36.2-93.9 2.1-37 2.1-147.8 0-184.8zM398.8 388c-7.8 19.6-22.9 34.7-42.6 42.6-29.5 11.7-99.5 9-132.1 9s-102.7 2.6-132.1-9c-19.6-7.8-34.7-22.9-42.6-42.6-11.7-29.5-9-99.5-9-132.1s-2.6-102.7 9-132.1c7.8-19.6 22.9-34.7 42.6-42.6 29.5-11.7 99.5-9 132.1-9s102.7-2.6 132.1 9c19.6 7.8 34.7 22.9 42.6 42.6 11.7 29.5 9 99.5 9 132.1s2.7 102.7-9 132.1z';
+      const ttPath = 'M448 209.91a210.06 210.06 0 0 1-122.77-39.25V349.38A162.55 162.55 0 1 1 185 188.31V278.2a74.62 74.62 0 1 0 52.23 71.18V0l88 0a121.18 121.18 0 0 0 1.86 22.17h0A122.18 122.18 0 0 0 381 102.39a121.43 121.43 0 0 0 67 20.14z';
+
+      // Placement des 3 logos en noir officiel
+      drawSvgPath(fbPath, 512, 512, 520, 1270, 30);
+      drawSvgPath(igPath, 448, 512, 570, 1270, 30);
+      drawSvgPath(ttPath, 448, 512, 620, 1270, 30);
 
       // Badge du domaine
       ctx.fillStyle = '#0f172a';
@@ -500,16 +476,23 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
 
       try {
         canvas.toBlob((blob) => {
-          if (blob) {
-            const blobUrl = window.URL.createObjectURL(blob);
-            triggerDownload(blobUrl);
-            setTimeout(() => window.URL.revokeObjectURL(blobUrl), 3000);
-          } else {
+          try {
+            if (blob) {
+              const blobUrl = window.URL.createObjectURL(blob);
+              triggerDownload(blobUrl);
+              setTimeout(() => window.URL.revokeObjectURL(blobUrl), 4000);
+            } else {
+              const dataUrl = canvas.toDataURL('image/png');
+              triggerDownload(dataUrl);
+            }
+          } catch (innerErr) {
+            console.error('Erreur export blob:', innerErr);
             const dataUrl = canvas.toDataURL('image/png');
             triggerDownload(dataUrl);
           }
         }, 'image/png');
-      } catch {
+      } catch (blobErr) {
+        console.warn('Fallback toDataURL direct:', blobErr);
         const dataUrl = canvas.toDataURL('image/png');
         triggerDownload(dataUrl);
       }
@@ -949,6 +932,75 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
         .indicator.active {
           width: 24px;
           background-color: #ef4444;
+        }
+
+        @media (min-width: 992px) {
+          .hero-rectangle-stage {
+            padding: 24px 32px 48px 32px;
+          }
+
+          .hero-slide-wrapper {
+            max-width: 1240px;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            text-align: left;
+            gap: 40px;
+          }
+
+          .hero-rectangle-frame-link {
+            flex: 1.25;
+            max-width: 650px;
+            margin: 0;
+          }
+
+          .hero-rectangle-encadrement {
+            height: 400px;
+            border-radius: 20px;
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.08);
+          }
+
+          .hero-content-below {
+            flex: 1;
+            align-items: flex-start;
+            text-align: left;
+            padding: 8px 0;
+          }
+
+          .hero-badge-wrap {
+            margin-bottom: 12px;
+          }
+
+          .hero-article-title {
+            font-size: 2.15rem;
+            line-height: 1.25;
+            margin-bottom: 14px;
+            -webkit-line-clamp: 3;
+          }
+
+          .hero-article-desc {
+            font-size: 1.05rem;
+            line-height: 1.55;
+            margin-bottom: 24px;
+            max-width: 540px;
+            -webkit-line-clamp: 3;
+          }
+
+          .hero-actions-row {
+            justify-content: flex-start;
+            gap: 14px;
+          }
+
+          .hero-btn-read {
+            padding: 9px 22px;
+            font-size: 13.5px;
+          }
+
+          .hero-social-btn {
+            padding: 8px 16px;
+            font-size: 13px;
+          }
         }
 
         @media (max-width: 768px) {
