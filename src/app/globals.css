@@ -2780,12 +2780,6 @@ body.theme-alternate .reading-progress {
     margin: 0 auto !important;
     gap: 2px !important;
   }
-  .header-home-left .header-slogan {
-    font-size: 9px !important;
-    text-align: center !important;
-    letter-spacing: 0.5px !important;
-    margin: 0 auto !important;
-  }
   .header-left-cluster {
     gap: 4px !important;
     flex-shrink: 1 !important;
@@ -2831,12 +2825,16 @@ body.theme-alternate .reading-progress {
     text-overflow: clip !important;
   }
   .header-home-left .header-slogan {
-    font-size: 9px !important;
+    font-size: clamp(8px, 2.3vw, 10.5px) !important;
     letter-spacing: 0.3px !important;
-    white-space: normal !important;
-    line-height: 1.25 !important;
-    max-width: 210px !important;
-    display: inline-block !important;
+    white-space: nowrap !important;
+    line-height: 1 !important;
+    max-width: 100% !important;
+    width: auto !important;
+    display: block !important;
+    text-align: center !important;
+    margin: 2px auto 0 auto !important;
+    overflow: visible !important;
   }
   .header-right-article {
     gap: 2px !important;
