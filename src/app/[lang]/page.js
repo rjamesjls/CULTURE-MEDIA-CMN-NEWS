@@ -272,8 +272,14 @@ export default async function Home({ params }) {
 
       <style>{`
         /* ===================================================
-           MOBILE APP DESIGN ENHANCEMENTS
+           MOBILE APP & HERO DESIGN ENHANCEMENTS
            =================================================== */
+
+        .app-hero-container {
+          max-width: 1400px;
+          margin: 0 auto;
+          padding: 16px 16px 0 16px;
+        }
 
         /* 1. HORIZONTAL CATEGORY PILLS BAR */
         .mobile-app-pills-bar {
@@ -323,16 +329,40 @@ export default async function Home({ params }) {
         }
 
         .mobile-pill.active {
-          background: #0f172a;
-          color: #fff;
-          border-color: #0f172a;
+          background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+          color: #ffffff !important;
+          border-color: #dc2626 !important;
+          box-shadow: 0 4px 12px rgba(220, 38, 38, 0.35) !important;
+        }
+
+        .mobile-pill.active span {
+          color: #ffffff !important;
+          font-weight: 700;
         }
 
         .pill-active-dot {
-          width: 7px;
-          height: 7px;
+          width: 8px;
+          height: 8px;
           border-radius: 50%;
-          background: #38bdf8;
+          background: #ffffff;
+          box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.85);
+          animation: pulseWhite 1.8s infinite;
+          flex-shrink: 0;
+        }
+
+        @keyframes pulseWhite {
+          0% {
+            box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.85);
+            transform: scale(0.95);
+          }
+          70% {
+            box-shadow: 0 0 0 7px rgba(255, 255, 255, 0);
+            transform: scale(1.05);
+          }
+          100% {
+            box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+            transform: scale(0.95);
+          }
         }
 
         .mobile-pill.radio-pill {
