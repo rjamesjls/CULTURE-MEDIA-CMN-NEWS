@@ -597,7 +597,8 @@ export default async function Home({ params }) {
           }
 
           .hero-carousel {
-            height: 380px !important;
+            min-height: 410px !important;
+            height: auto !important;
             border-radius: 18px !important;
             overflow: hidden !important;
             box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;
