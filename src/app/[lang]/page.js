@@ -69,10 +69,6 @@ export default async function Home({ params }) {
             <span className="pill-active-dot"></span>
             <span>À la une</span>
           </Link>
-          <Link href={`/${lang}/radio`} className="mobile-pill radio-pill">
-            <span className="live-pulse-dot"></span>
-            <span>📻 Webradio Live</span>
-          </Link>
           <Link href={`/${lang}/faits-divers`} className="mobile-pill">
             <span>🚨 Faits divers</span>
           </Link>
@@ -114,22 +110,7 @@ export default async function Home({ params }) {
         <AdBannerCarousel placement="header" initialBanners={headerBanners} />
       </div>
 
-      {/* 5. WEBRADIO LIVE MINI-CARD (Mobile App Widget) */}
-      <div className="mobile-webradio-widget">
-        <Link href={`/${lang}/radio`} className="webradio-app-card">
-          <div className="webradio-badge-col">
-            <div className="webradio-status">
-              <span className="webradio-live-dot"></span>
-              <span className="webradio-live-text">DIRECT RADIO</span>
-            </div>
-            <div className="webradio-name">AFOLUKU Radio • Musique & Infos</div>
-          </div>
-          <div className="webradio-play-button">
-            <i className="fas fa-play"></i>
-            <span>Écouter</span>
-          </div>
-        </Link>
-      </div>
+
 
       {/* 6. DERNIÈRES MINUTES (SWIPEABLE HORIZONTAL STORY CAROUSEL - MOBILE ONLY) */}
       <section className="mobile-swipe-section">
@@ -365,92 +346,7 @@ export default async function Home({ params }) {
           }
         }
 
-        .mobile-pill.radio-pill {
-          background: linear-gradient(135deg, #eff6ff 0%, #f5f3ff 100%);
-          border-color: #c7d2fe;
-          color: #4338ca;
-        }
 
-        .live-pulse-dot {
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          background: #ef4444;
-          box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
-          animation: pulseRed 1.8s infinite;
-        }
-
-        @keyframes pulseRed {
-          0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-          70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
-          100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-        }
-
-        /* 2. WEBRADIO MINI LIVE WIDGET */
-        .mobile-webradio-widget {
-          display: none;
-          padding: 0 14px;
-          margin: 12px 0 6px 0;
-        }
-
-        .webradio-app-card {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);
-          border: 1px solid rgba(129, 140, 248, 0.25);
-          padding: 12px 16px;
-          border-radius: 16px;
-          text-decoration: none;
-          color: #fff;
-          box-shadow: 0 6px 20px rgba(15, 23, 42, 0.25);
-        }
-
-        .webradio-badge-col {
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-        }
-
-        .webradio-status {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-        }
-
-        .webradio-live-dot {
-          width: 7px;
-          height: 7px;
-          background: #22c55e;
-          border-radius: 50%;
-          box-shadow: 0 0 8px #22c55e;
-        }
-
-        .webradio-live-text {
-          font-size: 10px;
-          font-weight: 800;
-          letter-spacing: 1px;
-          color: #86efac;
-        }
-
-        .webradio-name {
-          font-size: 13px;
-          font-weight: 700;
-          color: #fff;
-        }
-
-        .webradio-play-button {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          background: #facc15;
-          color: #0f172a;
-          padding: 8px 14px;
-          border-radius: 9999px;
-          font-size: 12px;
-          font-weight: 800;
-          box-shadow: 0 4px 12px rgba(250, 204, 21, 0.4);
-        }
 
         /* 3. MOBILE SWIPEABLE CAROUSEL: "DERNIÈRES MINUTES" */
         .mobile-swipe-section {
@@ -688,10 +584,6 @@ export default async function Home({ params }) {
             display: block;
           }
 
-          .mobile-webradio-widget {
-            display: block;
-          }
-
           .mobile-swipe-section {
             display: block;
           }
@@ -811,9 +703,6 @@ export default async function Home({ params }) {
 
         @media (min-width: 769px) and (max-width: 1023px) {
           .mobile-app-pills-bar {
-            display: block;
-          }
-          .mobile-webradio-widget {
             display: block;
           }
           .featured-grid {
