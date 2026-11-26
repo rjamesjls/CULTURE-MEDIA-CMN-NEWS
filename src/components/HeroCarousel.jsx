@@ -161,11 +161,11 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
         .hero-rectangle-stage {
           position: relative;
           width: 100%;
-          background: linear-gradient(180deg, #0b1120 0%, #0f172a 100%);
+          background: #ffffff;
           border-radius: 22px;
           overflow: hidden;
-          box-shadow: 0 12px 36px rgba(0, 0, 0, 0.22);
-          border: 1px solid rgba(255, 255, 255, 0.08);
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+          border: 1px solid #e2e8f0;
           padding: 20px 20px 48px 20px;
         }
 
@@ -207,9 +207,9 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
           height: 280px;
           border-radius: 16px;
           overflow: hidden;
-          background: #030712;
-          border: 2px solid rgba(255, 255, 255, 0.16);
-          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+          background: #f8fafc;
+          border: 1.5px solid #e2e8f0;
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -218,8 +218,8 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
 
         .hero-rectangle-frame-link:hover .hero-rectangle-encadrement {
           transform: scale(1.015);
-          border-color: rgba(239, 68, 68, 0.6);
-          box-shadow: 0 14px 34px rgba(239, 68, 68, 0.25);
+          border-color: rgba(239, 68, 68, 0.5);
+          box-shadow: 0 12px 28px rgba(239, 68, 68, 0.15);
         }
 
         .hero-frame-photo-cover {
@@ -254,7 +254,7 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
           letter-spacing: 0.8px;
           padding: 4px 12px;
           border-radius: 9999px;
-          box-shadow: 0 3px 10px rgba(220, 38, 38, 0.4);
+          box-shadow: 0 3px 10px rgba(220, 38, 38, 0.3);
         }
 
         .hero-title-link {
@@ -268,8 +268,7 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
           font-weight: 800;
           line-height: 1.3;
           margin: 0 0 10px 0;
-          color: #ffffff;
-          text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+          color: #0f172a;
           display: -webkit-box;
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
@@ -278,12 +277,12 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
         }
 
         .hero-title-link:hover .hero-article-title {
-          color: #fca5a5;
+          color: #dc2626;
         }
 
         .hero-article-desc {
           font-size: 0.92rem;
-          color: #cbd5e1;
+          color: #475569;
           line-height: 1.45;
           margin: 0 0 16px 0;
           max-width: 680px;
@@ -306,7 +305,7 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
           font-size: 13px;
           font-weight: 700;
           border-radius: 9999px;
-          box-shadow: 0 4px 14px rgba(220, 38, 38, 0.4);
+          box-shadow: 0 4px 14px rgba(220, 38, 38, 0.3);
           transition: transform 0.2s ease;
         }
 
@@ -330,7 +329,7 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
           width: 8px;
           height: 8px;
           border-radius: 4px;
-          background-color: rgba(255, 255, 255, 0.35);
+          background-color: #cbd5e1;
           border: none;
           cursor: pointer;
           padding: 0;
@@ -346,6 +345,7 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
           .hero-rectangle-stage {
             padding: 14px 12px 38px 12px;
             border-radius: 18px;
+            box-shadow: 0 2px 14px rgba(0, 0, 0, 0.05);
           }
 
           .hero-rectangle-encadrement {
@@ -357,12 +357,14 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
             font-size: 1.18rem;
             line-height: 1.3;
             margin-bottom: 8px;
+            color: #0f172a;
           }
 
           .hero-article-desc {
             font-size: 0.82rem;
             line-height: 1.35;
             margin-bottom: 12px;
+            color: #475569;
           }
 
           .hero-btn-read {

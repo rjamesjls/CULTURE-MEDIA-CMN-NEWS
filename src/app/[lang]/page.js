@@ -85,25 +85,7 @@ export default async function Home({ params }) {
         <HeroCarousel articles={articles || []} dict={dict} lang={lang} />
       </div>
 
-      {/* 3. FLASH NEWS TICKER */}
-      <section className="flash-ticker" id="flashTicker">
-        <div className="ticker-container">
-          <div className="ticker-label">
-            <i className="fas fa-bolt"></i>
-            <span>{dict.home.flash_info}</span>
-          </div>
-          <div className="ticker-content">
-            <div className="ticker-track">
-              {articles && articles.map((article, i) => (
-                <span key={i} className="ticker-item">🔥 {getTitle(article)}</span>
-              ))}
-              {articles && articles.map((article, i) => (
-                <span key={`dup-${i}`} className="ticker-item">🔥 {getTitle(article)}</span>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+
 
       {/* 4. AD BANNER: HEADER */}
       <div className="app-ad-wrapper" style={{ maxWidth: '1400px', margin: '0 auto', padding: '12px 16px 0 16px' }}>
