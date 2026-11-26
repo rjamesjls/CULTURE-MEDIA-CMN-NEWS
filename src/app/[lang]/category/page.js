@@ -78,15 +78,41 @@ export default async function CategoryPage({ params, searchParams }) {
 
   return (
     <>
-      <div className="page-header" style={{ padding: '60px 0', background: 'var(--color-dark)', color: 'white', textAlign: 'center' }}>
-        <div className="container">
-          <h1 className="page-title" style={{ fontSize: '3rem', fontFamily: 'var(--font-heading)' }}>{categoryName}</h1>
-          <p style={{ color: 'var(--color-gray-400)', marginTop: '15px' }}>{dict.category?.subtitle || 'Retrouvez tous nos articles dans cette rubrique.'}</p>
-        </div>
-      </div>
+      <section className="section featured-section" style={{ padding: '30px 0 60px 0', minHeight: '60vh' }}>
+        <div className="container" style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 16px' }}>
+          {/* Header épuré avec bouton retour */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '28px', borderBottom: '1px solid #e2e8f0', paddingBottom: '16px', flexWrap: 'wrap', gap: '14px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <Link
+                href={`/${lang}`}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '7px 16px',
+                  borderRadius: '9999px',
+                  background: '#f8fafc',
+                  border: '1px solid #e2e8f0',
+                  color: '#475569',
+                  fontSize: '12.5px',
+                  fontWeight: '600',
+                  textDecoration: 'none',
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                <i className="fas fa-arrow-left" style={{ fontSize: '11px' }}></i>
+                <span>{lang === 'bsh' ? 'Dray go baka' : 'Retour à l\'accueil'}</span>
+              </Link>
+              <h1 className="page-title" style={{ fontSize: '2rem', fontFamily: 'var(--font-heading)', margin: 0, color: '#0f172a', fontWeight: '800' }}>
+                {categoryName}
+              </h1>
+            </div>
 
-      <section className="section featured-section">
-        <div className="container">
+            <span style={{ fontSize: '13px', color: '#64748b', fontWeight: '600', backgroundColor: '#f1f5f9', padding: '4px 12px', borderRadius: '9999px' }}>
+              {articles?.length || 0} article{(articles?.length || 0) > 1 ? 's' : ''}
+            </span>
+          </div>
+
           <div className="grid grid-4 featured-grid">
             {error && <p>{dict.home?.error_loading || 'Erreur lors du chargement des articles.'}</p>}
             {(!articles || articles.length === 0) && !error && (

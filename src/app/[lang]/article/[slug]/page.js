@@ -2,6 +2,7 @@ import { supabase } from '@/lib/supabase';
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import ArticleInteractions from '@/components/ArticleInteractions';
+import ArticleHeaderActions from '@/components/ArticleHeaderActions';
 import ArticleComments from '@/components/ArticleComments';
 import ViewTracker from '@/components/ViewTracker';
 import TextToSpeechButton from '@/components/TextToSpeechButton';
@@ -230,13 +231,38 @@ export default async function ArticlePage({ params }) {
       {/* Center: Main Article */}
       <article className="article-container" style={{ flex: 1, minWidth: 0, padding: '0', margin: '0' }}>
         <header className="article-header">
-          <span className="badge" style={{ background: 'var(--color-primary)', color: 'white', padding: '5px 10px', borderRadius: '4px' }}>
-            {article.category}
-          </span>
-          <h1 className="article-title" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)', marginTop: '15px', fontFamily: 'var(--font-heading)', lineHeight: '1.2' }}>
+          {/* Navigation retour & Catégorie */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
+            <Link
+              href={`/${lang}`}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 14px',
+                borderRadius: '9999px',
+                background: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                color: '#475569',
+                fontSize: '12px',
+                fontWeight: '600',
+                textDecoration: 'none',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              <i className="fas fa-arrow-left" style={{ fontSize: '11px' }}></i>
+              <span>{lang === 'bsh' ? 'Dray go baka' : 'Retour aux actualités'}</span>
+            </Link>
+
+            <span className="badge" style={{ background: 'var(--color-primary)', color: 'white', padding: '5px 12px', borderRadius: '9999px', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase' }}>
+              {article.category}
+            </span>
+          </div>
+
+          <h1 className="article-title" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)', marginTop: '10px', fontFamily: 'var(--font-heading)', lineHeight: '1.2' }}>
             {getTitle(article)}
           </h1>
-          <div className="article-meta" style={{ display: 'flex', gap: '20px', color: 'var(--color-gray-500)', marginTop: '20px', paddingBottom: '20px', borderBottom: '1px solid var(--color-gray-200)', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div className="article-meta" style={{ display: 'flex', gap: '16px', color: 'var(--color-gray-500)', marginTop: '20px', paddingBottom: '20px', borderBottom: '1px solid var(--color-gray-200)', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
               <span className="author">
                 <i className="far fa-user"></i> {article.author || 'La Rédaction'}
@@ -245,7 +271,12 @@ export default async function ArticlePage({ params }) {
                 <i className="far fa-calendar"></i> {new Date(article.pub_date).toLocaleDateString(lang === 'bsh' ? 'bs-BA' : 'fr-FR')}
               </time>
             </div>
-            <TextToSpeechButton title={getTitle(article)} content={getDesc(article) + " " + getContent(article)} />
+            
+            {/* Actions d'interaction du header : Écoute, Like & Partager */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+              <TextToSpeechButton title={getTitle(article)} content={getDesc(article) + " " + getContent(article)} />
+              <ArticleHeaderActions article={article} lang={lang} />
+            </div>
           </div>
         </header>
 
