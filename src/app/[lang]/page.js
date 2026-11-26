@@ -46,7 +46,7 @@ export default async function Home({ params }) {
       .from('articles')
       .select('*')
       .eq('status', 'published')
-      .order('likes_count', { ascending: false })
+      .order('views_count', { ascending: false, nullsFirst: false })
       .limit(5),
     supabase
       .from('categories')

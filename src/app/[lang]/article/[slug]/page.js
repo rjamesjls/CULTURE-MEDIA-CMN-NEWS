@@ -2,7 +2,7 @@ import { supabase } from '@/lib/supabase';
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import ArticleInteractions from '@/components/ArticleInteractions';
-import ArticleHeaderActions from '@/components/ArticleHeaderActions';
+import ArticleStickyBar from '@/components/ArticleStickyBar';
 import ArticleComments from '@/components/ArticleComments';
 import ViewTracker from '@/components/ViewTracker';
 import TextToSpeechButton from '@/components/TextToSpeechButton';
@@ -152,13 +152,13 @@ export default async function ArticlePage({ params }) {
     .order('pub_date', { ascending: false })
     .limit(4);
 
-  // Fetch Most Read Articles (using likes_count as proxy)
+  // Fetch Most Read Articles (synced with real views_count stats)
   const { data: mostReadArticles } = await supabase
     .from('articles')
     .select('*')
     .eq('status', 'published')
     .neq('id', article.id)
-    .order('likes_count', { ascending: false })
+    .order('views_count', { ascending: false, nullsFirst: false })
     .limit(4);
 
   const getTitle = (item) => (lang === 'bsh' && item.title_bsh) ? item.title_bsh : item.title;
@@ -202,6 +202,10 @@ export default async function ArticlePage({ params }) {
         category={article.category}
         pubDate={article.pub_date}
       />
+
+      {/* Barre d'action épinglée juste sous le header du site, visible en continu lors du scroll */}
+      <ArticleStickyBar article={article} lang={lang} />
+
       <div className="article-layout-wrapper" style={{ maxWidth: '1400px', padding: '0 20px', display: 'flex', gap: '40px', alignItems: 'flex-start' }}>
         <ViewTracker articleId={article.id} />
         
@@ -231,35 +235,11 @@ export default async function ArticlePage({ params }) {
       {/* Center: Main Article */}
       <article className="article-container" style={{ flex: 1, minWidth: 0, padding: '0', margin: '0' }}>
         <header className="article-header">
-          {/* Navigation retour & Catégorie */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
-            <Link
-              href={`/${lang}`}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '6px 14px',
-                borderRadius: '9999px',
-                background: '#f8fafc',
-                border: '1px solid #e2e8f0',
-                color: '#475569',
-                fontSize: '12px',
-                fontWeight: '600',
-                textDecoration: 'none',
-                transition: 'all 0.2s ease',
-              }}
-            >
-              <i className="fas fa-arrow-left" style={{ fontSize: '11px' }}></i>
-              <span>{lang === 'bsh' ? 'Dray go baka' : 'Retour aux actualités'}</span>
-            </Link>
+          <span className="badge" style={{ background: 'var(--color-primary)', color: 'white', padding: '5px 12px', borderRadius: '9999px', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', display: 'inline-block' }}>
+            {article.category}
+          </span>
 
-            <span className="badge" style={{ background: 'var(--color-primary)', color: 'white', padding: '5px 12px', borderRadius: '9999px', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase' }}>
-              {article.category}
-            </span>
-          </div>
-
-          <h1 className="article-title" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)', marginTop: '10px', fontFamily: 'var(--font-heading)', lineHeight: '1.2' }}>
+          <h1 className="article-title" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)', marginTop: '12px', fontFamily: 'var(--font-heading)', lineHeight: '1.2' }}>
             {getTitle(article)}
           </h1>
           <div className="article-meta" style={{ display: 'flex', gap: '16px', color: 'var(--color-gray-500)', marginTop: '20px', paddingBottom: '20px', borderBottom: '1px solid var(--color-gray-200)', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -272,11 +252,7 @@ export default async function ArticlePage({ params }) {
               </time>
             </div>
             
-            {/* Actions d'interaction du header : Écoute, Like & Partager */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-              <TextToSpeechButton title={getTitle(article)} content={getDesc(article) + " " + getContent(article)} />
-              <ArticleHeaderActions article={article} lang={lang} />
-            </div>
+            <TextToSpeechButton title={getTitle(article)} content={getDesc(article) + " " + getContent(article)} />
           </div>
         </header>
 
