@@ -9,11 +9,13 @@ export async function middleware(request) {
     const supabaseResponse = await updateSession(request);
     const { pathname } = request.nextUrl;
 
-    // Ignore /api, /admin, /auth, legal pages and files
+    // Ignore /api, /admin, /auth, short links, legal pages and files
     if (
       pathname.startsWith('/api') ||
       pathname.startsWith('/admin') ||
       pathname.startsWith('/auth') ||
+      pathname.startsWith('/a/') ||
+      pathname.startsWith('/p/') ||
       pathname === '/interviews' ||
       pathname.startsWith('/_next') ||
       pathname.startsWith('/js') ||

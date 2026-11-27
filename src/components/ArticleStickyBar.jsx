@@ -79,7 +79,8 @@ export default function ArticleStickyBar({ article, lang = 'fr' }) {
   };
 
   const handleShare = async () => {
-    const url = typeof window !== 'undefined' ? window.location.href : '';
+    const shortUrl = (typeof window !== 'undefined' && articleId) ? `${window.location.origin}/a/${articleId}` : '';
+    const url = shortUrl || (typeof window !== 'undefined' ? window.location.href : '');
 
     if (navigator.share) {
       try {

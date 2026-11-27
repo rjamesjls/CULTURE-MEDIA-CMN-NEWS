@@ -74,13 +74,13 @@ export default function ProfileDashboardClient({
     }
   };
 
-  const handleShareLink = (slug) => {
-    const url = `${window.location.origin}/${lang}/article/${slug}`;
+  const handleShareLink = (slug, id) => {
+    const shortUrl = id ? `${window.location.origin}/a/${id}` : `${window.location.origin}/${lang}/article/${slug}`;
     if (navigator.clipboard) {
-      navigator.clipboard.writeText(url);
-      showToast('Lien de l\'article copié dans le presse-papier !');
+      navigator.clipboard.writeText(shortUrl);
+      showToast('🔗 Lien court copié dans le presse-papier !');
     } else {
-      showToast(url);
+      showToast(shortUrl);
     }
   };
 
@@ -549,7 +549,7 @@ export default function ProfileDashboardClient({
 
                         <button
                           type="button"
-                          onClick={() => handleShareLink(post.slug)}
+                          onClick={() => handleShareLink(post.slug, post.id)}
                           style={{
                             width: '36px',
                             height: '36px',
@@ -563,7 +563,7 @@ export default function ProfileDashboardClient({
                             justifyContent: 'center',
                             fontSize: '13px'
                           }}
-                          title="Copier le lien"
+                          title="Copier le lien court"
                         >
                           <i className="fas fa-share-alt"></i>
                         </button>

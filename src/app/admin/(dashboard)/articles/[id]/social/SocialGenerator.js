@@ -3030,6 +3030,70 @@ return (
                 </button>
               </div>
 
+              {/* Lien Court Rapide */}
+              <div style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                backgroundColor: "#f8fafc",
+                padding: "6px 10px",
+                borderRadius: "6px",
+                border: "1px solid #e2e8f0",
+                marginBottom: "8px",
+                fontSize: "12px"
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#475569" }}>
+                  <i className="fas fa-link" style={{ color: "#2563eb" }}></i>
+                  <span>Lien court :</span>
+                  <code style={{ fontWeight: "bold", color: "#0f172a", backgroundColor: "#e2e8f0", padding: "1px 6px", borderRadius: "4px" }}>
+                    /a/{article.id}
+                  </code>
+                </div>
+                <div style={{ display: "flex", gap: "4px" }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const shortUrl = `${window.location.origin}/a/${article.id}`;
+                      navigator.clipboard.writeText(shortUrl);
+                      alert(`Lien court copié : ${shortUrl}`);
+                    }}
+                    style={{
+                      padding: "3px 8px",
+                      fontSize: "11px",
+                      borderRadius: "4px",
+                      border: "1px solid #cbd5e1",
+                      backgroundColor: "#fff",
+                      color: "#334155",
+                      cursor: "pointer",
+                      fontWeight: "600"
+                    }}
+                    title="Copier le lien court"
+                  >
+                    Copier
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const shortUrl = `${window.location.origin}/a/${article.id}`;
+                      setPublishCaption(prev => prev ? `${prev}\n\n👉 Lire l'article : ${shortUrl}` : `👉 Lire l'article : ${shortUrl}`);
+                    }}
+                    style={{
+                      padding: "3px 8px",
+                      fontSize: "11px",
+                      borderRadius: "4px",
+                      border: "none",
+                      backgroundColor: "#eff6ff",
+                      color: "#2563eb",
+                      cursor: "pointer",
+                      fontWeight: "700"
+                    }}
+                    title="Insérer le lien court à la fin de la légende"
+                  >
+                    + Insérer
+                  </button>
+                </div>
+              </div>
+
               <textarea
                 value={publishCaption}
                 onChange={(e) => setPublishCaption(e.target.value)}

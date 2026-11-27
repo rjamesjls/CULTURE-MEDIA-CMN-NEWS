@@ -1443,6 +1443,41 @@ export default function ArticleForm({ initialData = null, categories = [] }) {
             )}
           </div>
 
+          {initialData?.id && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '10px 14px',
+              backgroundColor: '#f8fafc',
+              borderRadius: '8px',
+              border: '1px solid #e2e8f0',
+              marginBottom: '15px',
+              flexWrap: 'wrap',
+              gap: '10px'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#334155' }}>
+                <i className="fas fa-link" style={{ color: '#2563eb' }}></i>
+                <strong>Lien court de l'article :</strong>
+                <code style={{ backgroundColor: '#e2e8f0', padding: '2px 8px', borderRadius: '4px', fontWeight: 'bold' }}>
+                  /a/{initialData.id}
+                </code>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  const shortUrl = `${window.location.origin}/a/${initialData.id}`;
+                  navigator.clipboard.writeText(shortUrl);
+                  alert(`Lien court copié : ${shortUrl}`);
+                }}
+                className="admin-btn admin-btn-sm"
+                style={{ padding: '5px 12px', fontSize: '12px', backgroundColor: '#fff', border: '1px solid #cbd5e1', cursor: 'pointer' }}
+              >
+                <i className="fas fa-copy" style={{ marginRight: '5px' }}></i> Copier le lien court
+              </button>
+            </div>
+          )}
+
           <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', backgroundColor: '#f3f4f6', padding: '15px', borderRadius: '8px', flexWrap: 'wrap' }}>
             <button 
               type="submit" 
