@@ -8,7 +8,7 @@ const CustomEditor = dynamic(() => import("@/components/CustomEditor"), {
 });
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { publishToMeta } from "./social-actions";
+import { publishToMeta, sendPostToReadersAction, unsendPostFromReadersAction } from "./social-actions";
 import { saveInstagramState, generateTitles, generateCaption } from "./instagram-actions";
 
 export default function SocialGenerator({ article, recentArticles = [] }) {
@@ -58,6 +58,11 @@ export default function SocialGenerator({ article, recentArticles = [] }) {
   const [publishCaption, setPublishCaption] = useState(article.instagram_state?.publishCaption || "");
   const [isGeneratingCaption, setIsGeneratingCaption] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [isSendingToReaders, setIsSendingToReaders] = useState(false);
+  const [sentToReadersInfo, setSentToReadersInfo] = useState({
+    sent: Boolean(article.instagram_state?.sent_to_readers),
+    sentAt: article.instagram_state?.sent_to_readers_at || null,
+  });
 
 
   const handleGenerateCaption = async () => {
@@ -222,6 +227,76 @@ export default function SocialGenerator({ article, recentArticles = [] }) {
       alert("Erreur système: " + e.message);
     } finally {
       setIsPublishing(false);
+    }
+  };
+
+  const handleSendToReaders = async () => {
+    setIsSendingToReaders(true);
+    try {
+      const base64Fr = await getCanvasImage("fr");
+      const base64Bsh = await getCanvasImage("bsh");
+
+      if (!base64Fr && !base64Bsh) {
+        alert("Erreur lors de la capture du visuel pour les lecteurs.");
+        setIsSendingToReaders(false);
+        return;
+      }
+
+      const formData = new FormData();
+      if (base64Fr) formData.append("base64Image1", base64Fr);
+      if (base64Bsh) formData.append("base64Image2", base64Bsh);
+      formData.append("caption", publishCaption || "");
+      formData.append("instagramTags", instagramTags || "");
+      formData.append("articleId", article.id);
+
+      const currentState = {
+        templateData,
+        carouselOrder,
+        instagramTags,
+        publishCaption,
+        activeLang,
+        selectedTemplateFr,
+        selectedTemplateBsh,
+        customImageUrl,
+        imagePosX,
+        imagePosY,
+        imageZoom
+      };
+      formData.append("currentState", JSON.stringify(currentState));
+
+      const res = await sendPostToReadersAction(formData);
+      if (res.success) {
+        setSentToReadersInfo({
+          sent: true,
+          sentAt: res.sentAt
+        });
+        alert("✅ Post envoyé avec succès aux lecteurs connectés !\n\nIl apparaît désormais directement dans leur tableau de bord personnel, sans avoir été publié sur les réseaux sociaux externes.");
+      } else {
+        alert("Erreur lors de l'envoi aux lecteurs : " + res.error);
+      }
+    } catch (e) {
+      console.error("Erreur send to readers:", e);
+      alert("Erreur système: " + e.message);
+    } finally {
+      setIsSendingToReaders(false);
+    }
+  };
+
+  const handleUnsendFromReaders = async () => {
+    if (!confirm("Voulez-vous retirer ce post du tableau de bord des lecteurs connectés ?")) return;
+    setIsSendingToReaders(true);
+    try {
+      const res = await unsendPostFromReadersAction(article.id);
+      if (res.success) {
+        setSentToReadersInfo({ sent: false, sentAt: null });
+        alert("✓ Le post a été retiré du tableau de bord des lecteurs.");
+      } else {
+        alert("Erreur: " + res.error);
+      }
+    } catch (e) {
+      alert("Erreur: " + e.message);
+    } finally {
+      setIsSendingToReaders(false);
     }
   };
 
@@ -435,7 +510,9 @@ export default function SocialGenerator({ article, recentArticles = [] }) {
       customImageUrl,
       imagePosX,
       imagePosY,
-      imageZoom
+      imageZoom,
+      sent_to_readers: sentToReadersInfo.sent,
+      sent_to_readers_at: sentToReadersInfo.sentAt
     };
     
     const timeoutId = setTimeout(() => {
@@ -455,6 +532,7 @@ export default function SocialGenerator({ article, recentArticles = [] }) {
     imagePosX,
     imagePosY,
     imageZoom,
+    sentToReadersInfo,
     article.id
   ]);
 
@@ -2967,7 +3045,97 @@ return (
                   marginBottom: "15px"
                 }}
               />
-              
+
+              {/* ── SECTION EXCLUSIVE : DIFFUSION TABLEAU DE BORD LECTEURS ── */}
+              <div style={{
+                marginBottom: "20px",
+                padding: "14px",
+                backgroundColor: "#f0fdf4",
+                borderRadius: "10px",
+                border: "1.5px solid #86efac",
+                boxShadow: "0 2px 6px rgba(16,185,129,0.08)"
+              }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px", flexWrap: "wrap", gap: "6px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <div style={{ width: "26px", height: "26px", borderRadius: "6px", backgroundColor: "#16a34a", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px" }}>
+                      <i className="fas fa-users"></i>
+                    </div>
+                    <strong style={{ fontSize: "13px", color: "#14532d" }}>Tableau de bord Lecteurs</strong>
+                  </div>
+                  {sentToReadersInfo.sent && (
+                    <span style={{ fontSize: "11px", backgroundColor: "#dcfce7", color: "#15803d", padding: "2px 8px", borderRadius: "12px", fontWeight: "700", border: "1px solid #bbf7d0" }}>
+                      ✓ En ligne pour les membres
+                    </span>
+                  )}
+                </div>
+
+                <p style={{ fontSize: "11.5px", color: "#166534", margin: "0 0 10px 0", lineHeight: "1.4" }}>
+                  Diffusez ce visuel directement dans le tableau de bord des abonnés connectés d'A FOLUKU TV (<strong>sans publication sur les réseaux sociaux externes</strong>).
+                </p>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                  <button
+                    type="button"
+                    onClick={handleSendToReaders}
+                    disabled={isSendingToReaders || isPublishing || isSaving}
+                    style={{
+                      width: "100%",
+                      padding: "10px 14px",
+                      backgroundColor: "#16a34a",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: "7px",
+                      fontWeight: "bold",
+                      fontSize: "13px",
+                      cursor: (isSendingToReaders || isPublishing || isSaving) ? "wait" : "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "8px",
+                      boxShadow: "0 2px 6px rgba(22,163,74,0.3)"
+                    }}
+                  >
+                    {isSendingToReaders ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-paper-plane"></i>}
+                    {sentToReadersInfo.sent ? "Mettre à jour pour les lecteurs" : "Envoyer aux lecteurs"}
+                  </button>
+
+                  {sentToReadersInfo.sent && (
+                    <button
+                      type="button"
+                      onClick={handleUnsendFromReaders}
+                      disabled={isSendingToReaders}
+                      style={{
+                        width: "100%",
+                        padding: "5px 10px",
+                        backgroundColor: "transparent",
+                        color: "#dc2626",
+                        border: "1px dashed #fca5a5",
+                        borderRadius: "6px",
+                        fontSize: "11px",
+                        fontWeight: "600",
+                        cursor: "pointer",
+                        marginTop: "2px"
+                      }}
+                    >
+                      <i className="fas fa-eye-slash" style={{ marginRight: "4px" }}></i>
+                      Retirer du tableau de bord des lecteurs
+                    </button>
+                  )}
+                </div>
+
+                {sentToReadersInfo.sentAt && (
+                  <div style={{ marginTop: "8px", fontSize: "11px", color: "#15803d", textAlign: "center" }}>
+                    Dernier envoi : {new Date(sentToReadersInfo.sentAt).toLocaleString("fr-FR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                  </div>
+                )}
+              </div>
+
+              <div style={{ borderTop: "1px dashed #d1d5db", paddingTop: "15px", marginBottom: "8px" }}>
+                <span style={{ fontSize: "11px", fontWeight: "700", color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                  Publication Réseaux Sociaux (Meta & TikTok)
+                </span>
+              </div>
+
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <button
                   onClick={() => handlePublish(['instagram'])}

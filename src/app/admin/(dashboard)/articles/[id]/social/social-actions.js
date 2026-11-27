@@ -247,3 +247,139 @@ export async function publishToMeta(formData) {
     return { success: false, error: err.message || "Une erreur inconnue s'est produite." };
   }
 }
+
+/**
+ * Diffuse le visuel social dans le tableau de bord des lecteurs connectés
+ * SANS publier sur les réseaux sociaux externes (Meta/TikTok).
+ */
+export async function sendPostToReadersAction(formData) {
+  try {
+    const articleId = formData.get('articleId');
+    const base64Fr = formData.get('base64Image1');
+    const base64Bsh = formData.get('base64Image2');
+    const caption = formData.get('caption') || '';
+    const tags = formData.get('instagramTags') || '';
+    const currentStateStr = formData.get('currentState');
+    const currentState = currentStateStr ? JSON.parse(currentStateStr) : {};
+
+    if (!articleId) {
+      return { success: false, error: "Identifiant d'article manquant." };
+    }
+
+    const uploadBuffer = async (base64, suffix) => {
+      if (!base64 || typeof base64 !== 'string') return null;
+      if (!base64.startsWith('data:')) return base64; // C'est déjà une URL publique
+      try {
+        const base64Data = base64.replace(/^data:image\/\w+;base64,/, "");
+        const buffer = Buffer.from(base64Data, 'base64');
+        const fileName = `social_readers_${articleId}_${suffix}_${Date.now()}.jpg`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('media')
+          .upload(fileName, buffer, {
+            contentType: 'image/jpeg',
+            upsert: true
+          });
+
+        if (uploadError) {
+          console.warn("Upload social reader image warning:", uploadError);
+          return null;
+        }
+
+        const { data: publicUrlData } = supabase.storage
+          .from('media')
+          .getPublicUrl(fileName);
+
+        return publicUrlData?.publicUrl || null;
+      } catch (e) {
+        console.warn("Upload buffer error:", e);
+        return null;
+      }
+    };
+
+    let urlFr = null;
+    let urlBsh = null;
+
+    if (base64Fr) {
+      urlFr = await uploadBuffer(base64Fr, 'fr');
+    }
+    if (base64Bsh) {
+      urlBsh = await uploadBuffer(base64Bsh, 'bsh');
+    }
+
+    // Récupérer l'état actuel de l'article dans Supabase
+    const { data: articleData, error: fetchErr } = await supabase
+      .from('articles')
+      .select('instagram_state')
+      .eq('id', articleId)
+      .single();
+
+    if (fetchErr) {
+      console.warn("Article fetch error for instagram_state:", fetchErr);
+    }
+
+    const previousState = articleData?.instagram_state || {};
+    const sentAt = new Date().toISOString();
+
+    const updatedState = {
+      ...previousState,
+      ...currentState,
+      sent_to_readers: true,
+      sent_to_readers_at: sentAt,
+      reader_post_fr_image: urlFr || previousState.reader_post_fr_image || null,
+      reader_post_bsh_image: urlBsh || previousState.reader_post_bsh_image || null,
+      reader_caption: caption,
+      reader_tags: tags
+    };
+
+    const { error: updateErr } = await supabase
+      .from('articles')
+      .update({ instagram_state: updatedState })
+      .eq('id', articleId);
+
+    if (updateErr) throw updateErr;
+
+    return { 
+      success: true, 
+      sentAt,
+      urlFr: updatedState.reader_post_fr_image,
+      urlBsh: updatedState.reader_post_bsh_image
+    };
+  } catch (err) {
+    console.error("Erreur sendPostToReadersAction:", err);
+    return { success: false, error: err.message || "Erreur inconnue." };
+  }
+}
+
+/**
+ * Retire le visuel social du tableau de bord des lecteurs connectés
+ */
+export async function unsendPostFromReadersAction(articleId) {
+  try {
+    if (!articleId) return { success: false, error: "Identifiant manquant." };
+
+    const { data: articleData } = await supabase
+      .from('articles')
+      .select('instagram_state')
+      .eq('id', articleId)
+      .single();
+
+    const previousState = articleData?.instagram_state || {};
+    const updatedState = {
+      ...previousState,
+      sent_to_readers: false,
+      unsend_at: new Date().toISOString()
+    };
+
+    const { error: updateErr } = await supabase
+      .from('articles')
+      .update({ instagram_state: updatedState })
+      .eq('id', articleId);
+
+    if (updateErr) throw updateErr;
+    return { success: true };
+  } catch (err) {
+    console.error("Erreur unsendPostFromReadersAction:", err);
+    return { success: false, error: err.message };
+  }
+}
