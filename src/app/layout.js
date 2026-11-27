@@ -22,11 +22,12 @@ export const metadata = {
     siteName: 'A FOLUKU TV',
     images: [
       {
-        url: 'https://www.afolukutv.com/afoluku-tv-logo.png',
-        secureUrl: 'https://www.afolukutv.com/afoluku-tv-logo.png',
+        url: 'https://www.afolukutv.com/og-default.jpg',
+        secureUrl: 'https://www.afolukutv.com/og-default.jpg',
         width: 1200,
         height: 630,
         alt: 'A FOLUKU TV',
+        type: 'image/jpeg',
       },
     ],
     locale: 'fr_FR',
@@ -37,7 +38,7 @@ export const metadata = {
     site: '@afolukutv',
     title: 'A FOLUKU TV',
     description: 'Le premier site dédié à l\'information et à la culture',
-    images: ['https://www.afolukutv.com/afoluku-tv-logo.png'],
+    images: ['https://www.afolukutv.com/og-default.jpg'],
   },
 };
 

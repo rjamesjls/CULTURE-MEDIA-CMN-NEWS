@@ -34,15 +34,34 @@ export async function generateMetadata({ params }) {
 
   let rawImage = article.image_url;
   if (!rawImage) {
-    rawImage = `${baseUrl}/afoluku-tv-logo.png`;
+    rawImage = `${baseUrl}/og-default.jpg`;
   } else if (rawImage.startsWith('/')) {
     rawImage = `${baseUrl}${rawImage}`;
   }
 
-  // Image optimisée haute compatibilité via API Sharp (1200x630 JPEG progressif ~50Ko, idéal WhatsApp / réseaux sociaux)
-  const ogImageUrl = `${baseUrl}/api/og-image?slug=${slug}`;
+  // Image optimisée haute compatibilité via API Sharp (1200x630 JPEG progressif ~20-50Ko, idéal WhatsApp / réseaux sociaux)
+  const ogImageUrl = `${baseUrl}/api/og-image?slug=${encodeURIComponent(slug)}`;
 
   const pageUrl = `${baseUrl}/${lang}/article/${slug}`;
+
+  const images = [
+    {
+      url: ogImageUrl,
+      secureUrl: ogImageUrl,
+      width: 1200,
+      height: 630,
+      alt: title,
+      type: 'image/jpeg',
+    },
+  ];
+
+  if (rawImage && rawImage.startsWith('https://') && rawImage !== ogImageUrl) {
+    images.push({
+      url: rawImage,
+      secureUrl: rawImage,
+      alt: title,
+    });
+  }
 
   return {
     title: `${title} | A FOLUKU TV`,
@@ -66,16 +85,7 @@ export async function generateMetadata({ params }) {
       modifiedTime: article.created_at || article.pub_date,
       authors: ['A FOLUKU TV'],
       section: categoryName,
-      images: [
-        {
-          url: ogImageUrl,
-          secureUrl: ogImageUrl,
-          width: 1200,
-          height: 630,
-          alt: title,
-          type: 'image/jpeg',
-        },
-      ],
+      images: images,
     },
     twitter: {
       card: 'summary_large_image',
@@ -86,6 +96,10 @@ export async function generateMetadata({ params }) {
     },
     other: {
       'image_src': ogImageUrl,
+      'og:image:secure_url': ogImageUrl,
+      'og:image:width': '1200',
+      'og:image:height': '630',
+      'og:image:type': 'image/jpeg',
     },
   };
 }
