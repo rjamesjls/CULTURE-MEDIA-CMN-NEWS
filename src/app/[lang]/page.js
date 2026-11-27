@@ -164,7 +164,7 @@ export default async function Home({ params }) {
               {articles && articles.slice(0, 6).map(article => (
                 <article key={article.id} className="card article-card app-feed-card">
                   <div className="card-image-wrapper">
-                    <img src={article.image_url || 'https://images.unsplash.com/photo-1620287341056-49a2f1ab2fdc?q=80&w=600&auto=format&fit=crop'} alt={getTitle(article)} className="card-image" loading="lazy" style={{ objectFit: 'cover', width: '100%' }} />
+                    <img src={article.image_url || 'https://images.unsplash.com/photo-1620287341056-49a2f1ab2fdc?q=80&w=600&auto=format&fit=crop'} alt={getTitle(article)} className="card-image" loading="lazy" style={{ objectFit: 'cover', width: '100%', objectPosition: article.seo_metadata?.image_position || 'center' }} />
                     <span className="badge card-badge">{article.category}</span>
                   </div>
                   <div className="card-body">

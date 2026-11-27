@@ -11,7 +11,7 @@ export default async function SocialGeneratorPage(props) {
 
   let { data: article, error } = await supabase
     .from('articles')
-    .select('id, title, category, pub_date, slug, image_url, user_id, content, instagram_state')
+    .select('id, title, category, pub_date, slug, image_url, user_id, content, instagram_state, seo_metadata')
     .eq('id', id)
     .single();
 
@@ -19,7 +19,7 @@ export default async function SocialGeneratorPage(props) {
   if (error && error.code === '42703') { // 42703 = undefined_column
     const fallback = await supabase
       .from('articles')
-      .select('id, title, category, pub_date, slug, image_url, user_id, content')
+      .select('id, title, category, pub_date, slug, image_url, user_id, content, seo_metadata')
       .eq('id', id)
       .single();
     

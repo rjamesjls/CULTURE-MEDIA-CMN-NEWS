@@ -7,6 +7,7 @@ const CustomEditor = dynamic(() => import("@/components/CustomEditor"), {
   ssr: false,
 });
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 import { publishToMeta } from "./social-actions";
 import { saveInstagramState, generateTitles, generateCaption } from "./instagram-actions";
 
@@ -310,9 +311,107 @@ export default function SocialGenerator({ article, recentArticles = [] }) {
       : (article.instagram_state?.selectedTemplateBsh || "template-2")
   ); // default to Editorial Bleu (template-2) comme en FR
 
+  // Gestion de l'image personnalisée & cadrage
+  const [customImageUrl, setCustomImageUrl] = useState(
+    article.instagram_state?.customImageUrl || ""
+  );
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const imageInputRef = useRef(null);
+  const [imageRatioPreview, setImageRatioPreview] = useState("4-5"); // "4-5" | "1-1" | "16-9"
+
+  // Position et Zoom
+  const getInitialImagePos = () => {
+    if (article.instagram_state?.imagePosX !== undefined && article.instagram_state?.imagePosY !== undefined) {
+      return { x: article.instagram_state.imagePosX, y: article.instagram_state.imagePosY };
+    }
+    if (article.seo_metadata?.image_position) {
+      const [xStr, yStr] = article.seo_metadata.image_position.split(" ");
+      const x = parseInt(xStr, 10);
+      const y = parseInt(yStr, 10);
+      return { x: !isNaN(x) ? x : 50, y: !isNaN(y) ? y : 50 };
+    }
+    return { x: 50, y: 50 };
+  };
+
+  const initialPos = getInitialImagePos();
+  const [imagePosX, setImagePosX] = useState(initialPos.x);
+  const [imagePosY, setImagePosY] = useState(initialPos.y);
+  const [imageZoom, setImageZoom] = useState(
+    article.instagram_state?.imageZoom ?? article.seo_metadata?.image_zoom ?? 100
+  );
+
+  const uploadToSupabaseStorage = async (fileOrBlobOrDataUri, folder = 'articles/social') => {
+    if (!fileOrBlobOrDataUri) return null;
+    let blob;
+    let ext = 'jpg';
+
+    if (typeof fileOrBlobOrDataUri === 'string') {
+      if (fileOrBlobOrDataUri.startsWith('data:')) {
+        const mimeMatch = fileOrBlobOrDataUri.match(/^data:([^;]+);base64,/);
+        if (mimeMatch) {
+          ext = mimeMatch[1].split('/')[1] || 'jpg';
+          if (ext === 'jpeg') ext = 'jpg';
+        }
+        const res = await fetch(fileOrBlobOrDataUri);
+        blob = await res.blob();
+      } else {
+        return fileOrBlobOrDataUri;
+      }
+    } else if (fileOrBlobOrDataUri instanceof Blob || fileOrBlobOrDataUri instanceof File) {
+      blob = fileOrBlobOrDataUri;
+      if (fileOrBlobOrDataUri.name) {
+        ext = fileOrBlobOrDataUri.name.split('.').pop() || 'jpg';
+      }
+    } else {
+      return null;
+    }
+
+    const fileName = `${folder}/${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${ext}`;
+    const { error: uploadError } = await supabase.storage
+      .from('media')
+      .upload(fileName, blob, { cacheControl: '3600', upsert: false });
+
+    if (uploadError) {
+      console.error("Erreur lors de l'upload de l'image (Supabase):", uploadError);
+      return null;
+    }
+
+    const { data: publicUrlData } = supabase.storage.from('media').getPublicUrl(fileName);
+    return publicUrlData?.publicUrl || null;
+  };
+
+  const handleImageFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      const dataUrl = ev.target.result;
+      setCustomImageUrl(dataUrl);
+
+      try {
+        setIsUploadingImage(true);
+        const uploadedUrl = await uploadToSupabaseStorage(file, 'articles/social');
+        if (uploadedUrl) {
+          setCustomImageUrl(uploadedUrl);
+        }
+      } catch (uploadErr) {
+        console.warn("Upload Supabase social:", uploadErr);
+      } finally {
+        setIsUploadingImage(false);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Image active (personnalisée ou de l'article)
+  const activeImageUrl = customImageUrl || article.image_url || "";
+
   // Utilisation du proxy d'image personnalisé pour éviter les problèmes CORS et de configuration Next.js
-  const proxiedImageUrl = article.image_url
-    ? `/api/proxy-image?url=${encodeURIComponent(article.image_url)}`
+  const proxiedImageUrl = activeImageUrl
+    ? (activeImageUrl.startsWith("data:") || activeImageUrl.startsWith("blob:")
+        ? activeImageUrl
+        : `/api/proxy-image?url=${encodeURIComponent(activeImageUrl)}`)
     : "";
 
   const postRefFr = useRef(null);
@@ -332,7 +431,11 @@ export default function SocialGenerator({ article, recentArticles = [] }) {
       publishCaption,
       activeLang,
       selectedTemplateFr,
-      selectedTemplateBsh
+      selectedTemplateBsh,
+      customImageUrl,
+      imagePosX,
+      imagePosY,
+      imageZoom
     };
     
     const timeoutId = setTimeout(() => {
@@ -340,7 +443,20 @@ export default function SocialGenerator({ article, recentArticles = [] }) {
     }, 1500); // 1.5s debounce
 
     return () => clearTimeout(timeoutId);
-  }, [templateData, carouselOrder, instagramTags, publishCaption, activeLang, selectedTemplateFr, selectedTemplateBsh, article.id]);
+  }, [
+    templateData,
+    carouselOrder,
+    instagramTags,
+    publishCaption,
+    activeLang,
+    selectedTemplateFr,
+    selectedTemplateBsh,
+    customImageUrl,
+    imagePosX,
+    imagePosY,
+    imageZoom,
+    article.id
+  ]);
 
   const updateData = (field, value) => {
     // Fields that represent content should be synchronized across all templates
@@ -657,7 +773,14 @@ Contenu: ${article.content || ''}`;
         >
           <img
             src={proxiedImageUrl}
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              objectPosition: `${imagePosX}% ${imagePosY}%`,
+              transform: imageZoom > 100 ? `scale(${imageZoom / 100})` : "none",
+              transformOrigin: `${imagePosX}% ${imagePosY}%`,
+            }}
             alt="Background"
             crossOrigin="anonymous"
           />
@@ -880,7 +1003,15 @@ Contenu: ${article.content || ''}`;
         {proxiedImageUrl && (
           <img
             src={proxiedImageUrl}
-            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              objectPosition: `${imagePosX}% ${imagePosY}%`,
+              transform: imageZoom > 100 ? `scale(${imageZoom / 100})` : "none",
+              transformOrigin: `${imagePosX}% ${imagePosY}%`,
+              display: "block"
+            }}
             alt="Hero"
             crossOrigin="anonymous"
           />
@@ -986,7 +1117,14 @@ Contenu: ${article.content || ''}`;
       >
         <img
           src={proxiedImageUrl}
-          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            objectPosition: `${imagePosX}% ${imagePosY}%`,
+            transform: imageZoom > 100 ? `scale(${imageZoom / 100})` : "none",
+            transformOrigin: `${imagePosX}% ${imagePosY}%`,
+          }}
           alt="Background"
           crossOrigin="anonymous"
         />
@@ -1336,7 +1474,14 @@ Contenu: ${article.content || ''}`;
       >
         <img
           src={proxiedImageUrl}
-          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            objectPosition: `${imagePosX}% ${imagePosY}%`,
+            transform: imageZoom > 100 ? `scale(${imageZoom / 100})` : "none",
+            transformOrigin: `${imagePosX}% ${imagePosY}%`,
+          }}
           alt="Globe"
           crossOrigin="anonymous"
         />
@@ -1502,7 +1647,14 @@ Contenu: ${article.content || ''}`;
       >
         <img
           src={proxiedImageUrl}
-          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            objectPosition: `${imagePosX}% ${imagePosY}%`,
+            transform: imageZoom > 100 ? `scale(${imageZoom / 100})` : "none",
+            transformOrigin: `${imagePosX}% ${imagePosY}%`,
+          }}
           alt="Background"
           crossOrigin="anonymous"
         />
@@ -1963,6 +2115,313 @@ return (
               </label>
             </div>
 
+            {/* ── AJUSTEUR & REMPLACEMENT DE PHOTO SOCIAL POST ── */}
+            <div style={{
+              marginBottom: "25px",
+              backgroundColor: "#f8fafc",
+              border: "1.5px solid #cbd5e1",
+              borderRadius: "12px",
+              padding: "16px",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.04)"
+            }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px", flexWrap: "wrap", gap: "8px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <div style={{ width: "32px", height: "32px", borderRadius: "8px", backgroundColor: "#2563eb", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px" }}>
+                    <i className="fas fa-camera"></i>
+                  </div>
+                  <div>
+                    <strong style={{ fontSize: "14px", color: "#0f172a", display: "block" }}>2. Photo du Post Social</strong>
+                    <span style={{ fontSize: "11.5px", color: customImageUrl ? "#2563eb" : "#64748b", fontWeight: customImageUrl ? "600" : "normal" }}>
+                      {customImageUrl ? "✓ Photo personnalisée pour ce post" : "Photo originale de l'article"}
+                    </span>
+                  </div>
+                </div>
+                {customImageUrl && (
+                  <button
+                    type="button"
+                    onClick={() => setCustomImageUrl("")}
+                    style={{
+                      padding: "4px 10px",
+                      fontSize: "11.5px",
+                      fontWeight: "600",
+                      borderRadius: "6px",
+                      border: "1px solid #f87171",
+                      backgroundColor: "#fef2f2",
+                      color: "#dc2626",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "5px"
+                    }}
+                    title="Revenir à l'image principale de l'article"
+                  >
+                    <i className="fas fa-undo"></i> Rétablir photo article
+                  </button>
+                )}
+              </div>
+
+              {/* Remplacement : Téléversement ou URL */}
+              <div style={{ marginBottom: "12px" }}>
+                <input
+                  ref={imageInputRef}
+                  type="file"
+                  accept="image/*"
+                  style={{ display: "none" }}
+                  onChange={handleImageFileChange}
+                />
+                <div style={{ display: "flex", gap: "8px", marginBottom: "8px" }}>
+                  <button
+                    type="button"
+                    onClick={() => imageInputRef.current?.click()}
+                    disabled={isUploadingImage}
+                    style={{
+                      flex: 1,
+                      padding: "8px 12px",
+                      backgroundColor: "#2563eb",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: "6px",
+                      fontSize: "12.5px",
+                      fontWeight: "600",
+                      cursor: isUploadingImage ? "wait" : "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "6px",
+                      boxShadow: "0 1px 3px rgba(37,99,235,0.3)"
+                    }}
+                  >
+                    {isUploadingImage ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-upload"></i>}
+                    {isUploadingImage ? "Téléversement..." : "Changer la photo (Fichier)"}
+                  </button>
+                </div>
+                <div>
+                  <input
+                    type="url"
+                    placeholder="Ou coller une URL d'image (https://...)"
+                    value={customImageUrl || ""}
+                    onChange={(e) => setCustomImageUrl(e.target.value)}
+                    className="admin-form-control"
+                    style={{ fontSize: "12px", padding: "6px 10px" }}
+                  />
+                </div>
+              </div>
+
+              {/* Ajusteur interactif si une image est active */}
+              {activeImageUrl ? (
+                <div>
+                  {/* Raccourcis Rapides */}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px", flexWrap: "wrap", gap: "4px" }}>
+                    <span style={{ fontSize: "12px", fontWeight: "700", color: "#334155" }}>
+                      <i className="fas fa-crop-alt" style={{ marginRight: "4px", color: "#2563eb" }}></i>
+                      Cadrage :
+                    </span>
+                    <div style={{ display: "flex", alignItems: "center", gap: "3px", flexWrap: "wrap" }}>
+                      {[
+                        { label: "⬆️ Haut", x: 50, y: 15 },
+                        { label: "🎯 Centre", x: 50, y: 50 },
+                        { label: "⬇️ Bas", x: 50, y: 85 },
+                        { label: "⬅️ G.", x: 15, y: 50 },
+                        { label: "➡️ D.", x: 85, y: 50 },
+                        { label: "↺ Reset", x: 50, y: 50, z: 100 }
+                      ].map((preset, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => {
+                            setImagePosX(preset.x);
+                            setImagePosY(preset.y);
+                            if (preset.z) setImageZoom(preset.z);
+                          }}
+                          style={{
+                            padding: "3px 6px",
+                            fontSize: "11px",
+                            fontWeight: "600",
+                            borderRadius: "5px",
+                            border: "1px solid #cbd5e1",
+                            backgroundColor: imagePosX === preset.x && imagePosY === preset.y ? "#2563eb" : "#fff",
+                            color: imagePosX === preset.x && imagePosY === preset.y ? "#fff" : "#334155",
+                            cursor: "pointer",
+                            transition: "all 0.15s ease"
+                          }}
+                        >
+                          {preset.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Zone d'aperçu interactive avec réticule de point focal */}
+                  <div style={{ position: "relative", marginBottom: "10px" }}>
+                    <div
+                      onClick={(e) => {
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        const clickX = Math.round(Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100)));
+                        const clickY = Math.round(Math.max(0, Math.min(100, ((e.clientY - rect.top) / rect.height) * 100)));
+                        setImagePosX(clickX);
+                        setImagePosY(clickY);
+                      }}
+                      style={{
+                        position: "relative",
+                        width: "100%",
+                        height: imageRatioPreview === "4-5" ? "250px" : (imageRatioPreview === "1-1" ? "210px" : "160px"),
+                        borderRadius: "10px",
+                        overflow: "hidden",
+                        backgroundColor: "#090d16",
+                        border: "2px solid #94a3b8",
+                        cursor: "crosshair",
+                        userSelect: "none",
+                        transition: "height 0.2s ease"
+                      }}
+                    >
+                      <img
+                        src={activeImageUrl}
+                        alt="Aperçu cadrage"
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          objectPosition: `${imagePosX}% ${imagePosY}%`,
+                          transform: imageZoom > 100 ? `scale(${imageZoom / 100})` : "none",
+                          transformOrigin: `${imagePosX}% ${imagePosY}%`,
+                          transition: "object-position 0.1s ease, transform 0.1s ease",
+                          pointerEvents: "none"
+                        }}
+                      />
+
+                      {/* Viseur / Cible */}
+                      <div
+                        style={{
+                          position: "absolute",
+                          left: `${imagePosX}%`,
+                          top: `${imagePosY}%`,
+                          transform: "translate(-50%, -50%)",
+                          width: "28px",
+                          height: "28px",
+                          borderRadius: "50%",
+                          border: "2px solid #fff",
+                          boxShadow: "0 0 0 2px #2563eb, 0 4px 12px rgba(0,0,0,0.5)",
+                          pointerEvents: "none",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          transition: "left 0.1s ease, top 0.1s ease"
+                        }}
+                      >
+                        <div style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: "#2563eb" }}></div>
+                      </div>
+
+                      {/* Badges d'état */}
+                      <div style={{
+                        position: "absolute",
+                        top: "8px",
+                        left: "8px",
+                        backgroundColor: "rgba(15, 23, 42, 0.75)",
+                        backdropFilter: "blur(4px)",
+                        color: "#fff",
+                        fontSize: "10.5px",
+                        padding: "3px 8px",
+                        borderRadius: "5px",
+                        fontWeight: "600",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "5px"
+                      }}>
+                        <i className="fas fa-crosshairs" style={{ color: "#60a5fa" }}></i>
+                        X: {imagePosX}% | Y: {imagePosY}% {imageZoom > 100 ? `| Zoom: ${imageZoom}%` : ""}
+                      </div>
+                    </div>
+
+                    {/* Ratios & aide */}
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "11px", color: "#64748b" }}>
+                      <span>💡 Cliquez sur l'image pour cadrer le sujet</span>
+                      <div style={{ display: "flex", gap: "3px", alignItems: "center" }}>
+                        {["4-5", "1-1", "16-9"].map((r) => (
+                          <button
+                            key={r}
+                            type="button"
+                            onClick={() => setImageRatioPreview(r)}
+                            style={{
+                              fontSize: "10px",
+                              padding: "2px 5px",
+                              borderRadius: "4px",
+                              border: "1px solid #cbd5e1",
+                              backgroundColor: imageRatioPreview === r ? "#e2e8f0" : "#fff",
+                              fontWeight: imageRatioPreview === r ? "700" : "500",
+                              cursor: "pointer"
+                            }}
+                          >
+                            {r === "4-5" ? "4:5 (Post)" : (r === "1-1" ? "1:1" : "16:9")}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Curseurs X, Y et Zoom */}
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px", paddingTop: "4px" }}>
+                    <div>
+                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: "#334155", marginBottom: "2px" }}>
+                        <span style={{ fontWeight: "600" }}>X (Horiz.)</span>
+                        <span style={{ fontWeight: "700", color: "#2563eb" }}>{imagePosX}%</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={imagePosX}
+                        onChange={(e) => setImagePosX(Number(e.target.value))}
+                        style={{ width: "100%", cursor: "pointer" }}
+                      />
+                    </div>
+
+                    <div>
+                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: "#334155", marginBottom: "2px" }}>
+                        <span style={{ fontWeight: "600" }}>Y (Vertic.)</span>
+                        <span style={{ fontWeight: "700", color: "#2563eb" }}>{imagePosY}%</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={imagePosY}
+                        onChange={(e) => setImagePosY(Number(e.target.value))}
+                        style={{ width: "100%", cursor: "pointer" }}
+                      />
+                    </div>
+
+                    <div>
+                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: "#334155", marginBottom: "2px" }}>
+                        <span style={{ fontWeight: "600" }}>Zoom</span>
+                        <span style={{ fontWeight: "700", color: "#2563eb" }}>{imageZoom}%</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="100"
+                        max="200"
+                        step="5"
+                        value={imageZoom}
+                        onChange={(e) => setImageZoom(Number(e.target.value))}
+                        style={{ width: "100%", cursor: "pointer" }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div style={{
+                  padding: "20px",
+                  textAlign: "center",
+                  border: "2px dashed #cbd5e1",
+                  borderRadius: "8px",
+                  color: "#64748b",
+                  fontSize: "12.5px"
+                }}>
+                  <i className="fas fa-image" style={{ fontSize: "28px", color: "#94a3b8", marginBottom: "8px", display: "block" }}></i>
+                  Aucune photo disponible. Téléversez une photo ou collez une URL ci-dessus.
+                </div>
+              )}
+            </div>
+
             <div style={{ marginBottom: "20px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
                 <label
@@ -1972,7 +2431,7 @@ return (
                     margin: 0,
                   }}
                 >
-                  2. Titre (Gros texte) ({activeLang === "fr" ? "FR" : "BSH"}) :
+                  3. Titre (Gros texte) ({activeLang === "fr" ? "FR" : "BSH"}) :
                 </label>
                 <button
                   onClick={generateAITitle}

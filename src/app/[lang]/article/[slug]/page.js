@@ -220,7 +220,7 @@ export default async function ArticlePage({ params }) {
         {latestArticles && latestArticles.map((item) => (
           <Link href={`/${lang}/article/${item.slug}`} key={item.slug} style={{ display: 'flex', flexDirection: 'column', gap: '10px', textDecoration: 'none', color: 'inherit' }} className="sidebar-article">
             <div style={{ height: '140px', borderRadius: '8px', overflow: 'hidden', backgroundColor: '#f3f4f6' }}>
-              <img src={item.image_url || 'https://images.unsplash.com/photo-1620287341056-49a2f1ab2fdc?q=80&w=400&auto=format&fit=crop'} alt={getTitle(item)} style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.3s ease' }} className="hover-zoom" />
+              <img src={item.image_url || 'https://images.unsplash.com/photo-1620287341056-49a2f1ab2fdc?q=80&w=400&auto=format&fit=crop'} alt={getTitle(item)} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: item.seo_metadata?.image_position || 'center', transition: 'transform 0.3s ease' }} className="hover-zoom" />
             </div>
             <div>
               <span style={{ fontSize: '0.7rem', fontWeight: 'bold', color: 'var(--color-primary)', textTransform: 'uppercase' }}>{item.category}</span>
@@ -257,17 +257,31 @@ export default async function ArticlePage({ params }) {
         </header>
 
         <div className="article-featured-image" style={{ margin: '30px 0' }}>
-          <img 
-            src={article.image_url || 'https://images.unsplash.com/photo-1620287341056-49a2f1ab2fdc?q=80&w=800&auto=format&fit=crop'} 
-            alt={getTitle(article)} 
-            style={{ 
-              width: '100%', 
-              maxHeight: '560px', 
-              objectFit: 'cover', 
-              objectPosition: article.seo_metadata?.image_position || 'center', 
-              borderRadius: '12px' 
-            }} 
-          />
+          <div style={{
+            position: 'relative',
+            width: '100%',
+            aspectRatio: '16 / 9',
+            maxHeight: '560px',
+            borderRadius: '12px',
+            overflow: 'hidden',
+            backgroundColor: '#0f172a'
+          }}>
+            <img 
+              src={article.image_url || 'https://images.unsplash.com/photo-1620287341056-49a2f1ab2fdc?q=80&w=800&auto=format&fit=crop'} 
+              alt={getTitle(article)} 
+              style={{ 
+                width: '100%', 
+                height: '100%', 
+                objectFit: 'cover', 
+                objectPosition: article.seo_metadata?.image_position || '50% 50%', 
+                transform: (Number(article.seo_metadata?.image_zoom) > 100)
+                  ? `scale(${Number(article.seo_metadata.image_zoom) / 100})`
+                  : 'none',
+                transformOrigin: article.seo_metadata?.image_position || '50% 50%',
+                display: 'block'
+              }} 
+            />
+          </div>
           {(article.seo_metadata?.image_caption || article.seo_metadata?.image_credit) && (
             <div style={{
               display: 'flex',

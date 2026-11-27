@@ -123,7 +123,7 @@ export default async function CategorySlugPage({ params }) {
             {articles && articles.map(article => (
               <article key={article.id} className="card article-card app-feed-card" style={{ background: '#fff', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 2px 10px rgba(0,0,0,0.04)' }}>
                 <div className="card-image-wrapper" style={{ position: 'relative', height: '190px' }}>
-                  <img src={article.image_url || 'https://images.unsplash.com/photo-1620287341056-49a2f1ab2fdc?q=80&w=600&auto=format&fit=crop'} alt={getTitle(article)} className="card-image" loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <img src={article.image_url || 'https://images.unsplash.com/photo-1620287341056-49a2f1ab2fdc?q=80&w=600&auto=format&fit=crop'} alt={getTitle(article)} className="card-image" loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: article.seo_metadata?.image_position || 'center' }} />
                   <span className="badge card-badge" style={{ position: 'absolute', top: '10px', left: '10px' }}>{article.category}</span>
                 </div>
                 <div className="card-body" style={{ padding: '16px' }}>

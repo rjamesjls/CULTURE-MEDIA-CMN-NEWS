@@ -561,7 +561,11 @@ export default function HeroCarousel({ articles = [], dict = {}, lang = 'fr' }) 
                       alt={getTitle(article)}
                       className="hero-frame-photo-cover"
                       style={{
-                        objectPosition: article.seo_metadata?.image_position || 'center'
+                        objectPosition: article.seo_metadata?.image_position || 'center',
+                        transform: (Number(article.seo_metadata?.image_zoom) > 100)
+                          ? `scale(${Number(article.seo_metadata.image_zoom) / 100})`
+                          : 'none',
+                        transformOrigin: article.seo_metadata?.image_position || 'center'
                       }}
                     />
                   </div>

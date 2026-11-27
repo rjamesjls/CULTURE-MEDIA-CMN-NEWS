@@ -252,11 +252,30 @@ export default function PrivateReaderGate({
               boxShadow: '0 10px 25px rgba(0,0,0,0.08)',
               backgroundColor: '#e5e7eb',
             }}>
-              <img
-                src={article.image_url}
-                alt={getTitle(article)}
-                style={{ width: '100%', height: 'auto', maxHeight: '520px', objectFit: 'cover', display: 'block' }}
-              />
+              <div style={{
+                position: 'relative',
+                width: '100%',
+                aspectRatio: '16 / 9',
+                maxHeight: '520px',
+                overflow: 'hidden',
+                backgroundColor: '#0f172a',
+              }}>
+                <img
+                  src={article.image_url}
+                  alt={getTitle(article)}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    objectPosition: article.seo_metadata?.image_position || '50% 50%',
+                    transform: (Number(article.seo_metadata?.image_zoom) > 100)
+                      ? `scale(${Number(article.seo_metadata.image_zoom) / 100})`
+                      : 'none',
+                    transformOrigin: article.seo_metadata?.image_position || '50% 50%',
+                    display: 'block'
+                  }}
+                />
+              </div>
               {(article.seo_metadata?.image_caption || article.seo_metadata?.image_credit) && (
                 <div style={{
                   display: 'flex',
